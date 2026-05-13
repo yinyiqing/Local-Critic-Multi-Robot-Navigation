@@ -49,3 +49,15 @@ class ReplayBuffer(object):
     def clear(self):
         self.buffer.clear()
         self.count = 0
+
+    def state_dict(self):
+        return {
+            "buffer_size": self.buffer_size,
+            "count": self.count,
+            "buffer": list(self.buffer),
+        }
+
+    def load_state_dict(self, state):
+        self.buffer_size = state["buffer_size"]
+        self.count = state["count"]
+        self.buffer = deque(state["buffer"], maxlen=None)

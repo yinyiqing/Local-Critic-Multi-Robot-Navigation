@@ -77,6 +77,14 @@ class GazeboEnv:
         self.lower = -5.0
         self.velodyne_data = np.ones(self.environment_dim) * 10
         self.last_odom = None
+        self.previous_distance = None
+        self.last_step_info = {
+            "target": False,
+            "collision": False,
+            "distance": None,
+            "progress": 0.0,
+            "min_laser": None,
+        }
 
         self.set_self_state = ModelState()
         self.set_self_state.model_name = "r1"
@@ -129,6 +137,15 @@ class GazeboEnv:
         self.odom = rospy.Subscriber(
             "/r1/odom", Odometry, self.odom_callback, queue_size=1
         )
+
+    def wait_for_odom(self, timeout=60.0):
+        """Wait until at least one odometry message has been received."""
+        if self.last_odom is not None:
+            return
+        try:
+            self.last_odom = rospy.wait_for_message("/r1/odom", Odometry, timeout=timeout)
+        except rospy.ROSException as exc:
+            raise TimeoutError(f"Timed out waiting for /r1/odom after {timeout} seconds") from exc
 
     # Read velodyne pointcloud and turn it into distance data, then select the minimum value for each angle
     # range as state representation
@@ -184,6 +201,8 @@ class GazeboEnv:
         v_state[:] = self.velodyne_data[:]
         laser_state = [v_state]
 
+        self.wait_for_odom()
+
         # Calculate robot heading from odometry data
         self.odom_x = self.last_odom.pose.pose.position.x
         self.odom_y = self.last_odom.pose.pose.position.y
@@ -226,9 +245,18 @@ class GazeboEnv:
             target = True
             done = True
 
+        progress = 0.0 if self.previous_distance is None else self.previous_distance - distance
         robot_state = [distance, theta, action[0], action[1]]
         state = np.append(laser_state, robot_state)
-        reward = self.get_reward(target, collision, action, min_laser)
+        reward = self.get_reward(target, collision, action, min_laser, progress)
+        self.previous_distance = distance
+        self.last_step_info = {
+            "target": target,
+            "collision": collision,
+            "distance": distance,
+            "progress": progress,
+            "min_laser": min_laser,
+        }
         return state, reward, done, target
 
     def reset(self):
@@ -287,6 +315,8 @@ class GazeboEnv:
         v_state[:] = self.velodyne_data[:]
         laser_state = [v_state]
 
+        self.wait_for_odom()
+
         distance = np.linalg.norm(
             [self.odom_x - self.goal_x, self.odom_y - self.goal_y]
         )
@@ -315,6 +345,14 @@ class GazeboEnv:
 
         robot_state = [distance, theta, 0.0, 0.0]
         state = np.append(laser_state, robot_state)
+        self.previous_distance = distance
+        self.last_step_info = {
+            "target": False,
+            "collision": False,
+            "distance": distance,
+            "progress": 0.0,
+            "min_laser": min(v_state) if len(v_state) > 0 else None,
+        }
         return state
 
     def change_goal(self):
@@ -431,11 +469,14 @@ class GazeboEnv:
         return False, False, min_laser
 
     @staticmethod
-    def get_reward(target, collision, action, min_laser):
+    def get_reward(target, collision, action, min_laser, progress):
         if target:
             return 100.0
         elif collision:
             return -100.0
         else:
-            r3 = lambda x: 1 - x if x < 1 else 0.0
-            return action[0] / 2 - abs(action[1]) / 2 - r3(min_laser) / 2
+            obstacle_penalty = 1 - min_laser if min_laser < 1 else 0.0
+            progress_reward = 20.0 * progress
+            forward_reward = 0.5 * action[0]
+            turn_penalty = 0.2 * abs(action[1])
+            return progress_reward + forward_reward - turn_penalty - 0.5 * obstacle_penalty

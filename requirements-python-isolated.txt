@@ -1,0 +1,14 @@
+numpy==1.24.4
+tensorboard==2.14.0
+protobuf==4.25.3
+squaternion==2023.9.2
+six==1.17.0
+setuptools<60
+PyYAML==6.0.3
+rospkg==1.6.1
+catkin_pkg==1.1.0
+empy==4.2.1
+defusedxml==0.7.1
+netifaces==0.11.0
+torch==2.4.1+cu121
+--index-url https://download.pytorch.org/whl/cu121

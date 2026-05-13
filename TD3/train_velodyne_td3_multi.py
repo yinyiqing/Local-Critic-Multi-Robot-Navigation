@@ -1,0 +1,395 @@
+import os
+import time
+
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from numpy import inf
+from torch.utils.tensorboard import SummaryWriter
+
+from multi_agent_velodyne_env import MultiAgentGazeboEnv
+from replay_buffer import ReplayBuffer
+
+
+def evaluate(network, env, epoch, eval_episodes=10):
+    previous_mode = env.cooperative_reward
+    env.set_cooperative_reward(False)
+
+    total_reward = 0.0
+    total_collisions = 0
+    total_targets = 0
+    total_agents = eval_episodes * env.num_agents
+
+    for _ in range(eval_episodes):
+        states = env.reset()
+        active_mask = [True] * env.num_agents
+        count = 0
+        while any(active_mask) and count < max_ep:
+            actions = []
+            for idx in range(env.num_agents):
+                if active_mask[idx]:
+                    action = network.get_action(np.array(states[idx]))
+                    actions.append([(action[0] + 1) / 2, action[1]])
+                else:
+                    actions.append([0.0, 0.0])
+
+            next_states, rewards, dones, targets, collisions = env.step(
+                actions, active_mask
+            )
+            total_reward += sum(rewards)
+            total_collisions += sum(int(flag) for flag in collisions)
+            total_targets += sum(int(flag) for flag in targets)
+
+            for idx, done in enumerate(dones):
+                if active_mask[idx] and done:
+                    active_mask[idx] = False
+
+            states = next_states
+            count += 1
+
+    avg_reward = total_reward / total_agents
+    success_rate = total_targets / total_agents
+    collision_rate = total_collisions / total_agents
+
+    print("..............................................")
+    print(
+        "Multi-Agent Eval Epoch %i | Avg Reward: %f | Success Rate: %f | Collision Rate: %f"
+        % (epoch, avg_reward, success_rate, collision_rate)
+    )
+    print("..............................................")
+
+    env.set_cooperative_reward(previous_mode)
+    return avg_reward, success_rate, collision_rate
+
+
+class Actor(nn.Module):
+    def __init__(self, state_dim, action_dim):
+        super(Actor, self).__init__()
+
+        self.layer_1 = nn.Linear(state_dim, 800)
+        self.layer_2 = nn.Linear(800, 600)
+        self.layer_3 = nn.Linear(600, action_dim)
+        self.tanh = nn.Tanh()
+
+    def forward(self, s):
+        s = F.relu(self.layer_1(s))
+        s = F.relu(self.layer_2(s))
+        a = self.tanh(self.layer_3(s))
+        return a
+
+
+class Critic(nn.Module):
+    def __init__(self, state_dim, action_dim):
+        super(Critic, self).__init__()
+
+        self.layer_1 = nn.Linear(state_dim, 800)
+        self.layer_2_s = nn.Linear(800, 600)
+        self.layer_2_a = nn.Linear(action_dim, 600)
+        self.layer_3 = nn.Linear(600, 1)
+
+        self.layer_4 = nn.Linear(state_dim, 800)
+        self.layer_5_s = nn.Linear(800, 600)
+        self.layer_5_a = nn.Linear(action_dim, 600)
+        self.layer_6 = nn.Linear(600, 1)
+
+    def forward(self, s, a):
+        s1 = F.relu(self.layer_1(s))
+        self.layer_2_s(s1)
+        self.layer_2_a(a)
+        s11 = torch.mm(s1, self.layer_2_s.weight.data.t())
+        s12 = torch.mm(a, self.layer_2_a.weight.data.t())
+        s1 = F.relu(s11 + s12 + self.layer_2_a.bias.data)
+        q1 = self.layer_3(s1)
+
+        s2 = F.relu(self.layer_4(s))
+        self.layer_5_s(s2)
+        self.layer_5_a(a)
+        s21 = torch.mm(s2, self.layer_5_s.weight.data.t())
+        s22 = torch.mm(a, self.layer_5_a.weight.data.t())
+        s2 = F.relu(s21 + s22 + self.layer_5_a.bias.data)
+        q2 = self.layer_6(s2)
+        return q1, q2
+
+
+class TD3(object):
+    def __init__(self, state_dim, action_dim, max_action):
+        self.actor = Actor(state_dim, action_dim).to(device)
+        self.actor_target = Actor(state_dim, action_dim).to(device)
+        self.actor_target.load_state_dict(self.actor.state_dict())
+        self.actor_optimizer = torch.optim.Adam(self.actor.parameters())
+
+        self.critic = Critic(state_dim, action_dim).to(device)
+        self.critic_target = Critic(state_dim, action_dim).to(device)
+        self.critic_target.load_state_dict(self.critic.state_dict())
+        self.critic_optimizer = torch.optim.Adam(self.critic.parameters())
+
+        self.max_action = max_action
+        self.writer = SummaryWriter()
+        self.iter_count = 0
+
+    def get_action(self, state):
+        state = torch.Tensor(state.reshape(1, -1)).to(device)
+        return self.actor(state).cpu().data.numpy().flatten()
+
+    def train(
+        self,
+        replay_buffer,
+        iterations,
+        batch_size=100,
+        discount=1,
+        tau=0.005,
+        policy_noise=0.2,
+        noise_clip=0.5,
+        policy_freq=2,
+    ):
+        av_Q = 0
+        max_Q = -inf
+        av_loss = 0
+        for it in range(iterations):
+            (
+                batch_states,
+                batch_actions,
+                batch_rewards,
+                batch_dones,
+                batch_next_states,
+            ) = replay_buffer.sample_batch(batch_size)
+            state = torch.Tensor(batch_states).to(device)
+            next_state = torch.Tensor(batch_next_states).to(device)
+            action = torch.Tensor(batch_actions).to(device)
+            reward = torch.Tensor(batch_rewards).to(device)
+            done = torch.Tensor(batch_dones).to(device)
+
+            next_action = self.actor_target(next_state)
+            noise = torch.Tensor(batch_actions).data.normal_(0, policy_noise).to(device)
+            noise = noise.clamp(-noise_clip, noise_clip)
+            next_action = (next_action + noise).clamp(-self.max_action, self.max_action)
+
+            target_Q1, target_Q2 = self.critic_target(next_state, next_action)
+            target_Q = torch.min(target_Q1, target_Q2)
+            av_Q += torch.mean(target_Q)
+            max_Q = max(max_Q, torch.max(target_Q))
+            target_Q = reward + ((1 - done) * discount * target_Q).detach()
+
+            current_Q1, current_Q2 = self.critic(state, action)
+            loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
+
+            self.critic_optimizer.zero_grad()
+            loss.backward()
+            self.critic_optimizer.step()
+
+            if it % policy_freq == 0:
+                actor_grad, _ = self.critic(state, self.actor(state))
+                actor_grad = -actor_grad.mean()
+                self.actor_optimizer.zero_grad()
+                actor_grad.backward()
+                self.actor_optimizer.step()
+
+                for param, target_param in zip(
+                    self.actor.parameters(), self.actor_target.parameters()
+                ):
+                    target_param.data.copy_(
+                        tau * param.data + (1 - tau) * target_param.data
+                    )
+
+                for param, target_param in zip(
+                    self.critic.parameters(), self.critic_target.parameters()
+                ):
+                    target_param.data.copy_(
+                        tau * param.data + (1 - tau) * target_param.data
+                    )
+
+            av_loss += loss
+
+        self.iter_count += 1
+        self.writer.add_scalar("loss", av_loss / iterations, self.iter_count)
+        self.writer.add_scalar("Av. Q", av_Q / iterations, self.iter_count)
+        self.writer.add_scalar("Max. Q", max_Q, self.iter_count)
+
+    def save(self, filename, directory):
+        torch.save(self.actor.state_dict(), "%s/%s_actor.pth" % (directory, filename))
+        torch.save(self.critic.state_dict(), "%s/%s_critic.pth" % (directory, filename))
+
+    def load(self, filename, directory):
+        self.actor.load_state_dict(
+            torch.load("%s/%s_actor.pth" % (directory, filename))
+        )
+        self.critic.load_state_dict(
+            torch.load("%s/%s_critic.pth" % (directory, filename))
+        )
+
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+seed = 0
+eval_freq = 5e3
+max_ep = 500
+eval_ep = 10
+max_timesteps = 5e6
+expl_noise = 1
+expl_decay_steps = 500000
+expl_min = 0.1
+batch_size = 40
+discount = 0.99999
+tau = 0.005
+policy_noise = 0.2
+noise_clip = 0.5
+policy_freq = 2
+buffer_size = 1e6
+agent_names = ["r1", "r2", "r3"]
+use_dynamic_reward = False
+file_name = "TD3_velodyne_multi"
+if use_dynamic_reward:
+    file_name += "_coop"
+save_model = True
+load_model = False
+random_near_obstacle = True
+
+if not os.path.exists("./results"):
+    os.makedirs("./results")
+if save_model and not os.path.exists("./pytorch_models"):
+    os.makedirs("./pytorch_models")
+
+environment_dim = 20
+robot_dim = 4
+env = MultiAgentGazeboEnv(
+    "multi_robot_scenario_multi.launch",
+    environment_dim,
+    agent_names=agent_names,
+    cooperative_reward=use_dynamic_reward,
+)
+time.sleep(5)
+torch.manual_seed(seed)
+np.random.seed(seed)
+state_dim = environment_dim + robot_dim
+action_dim = 2
+max_action = 1
+
+network = TD3(state_dim, action_dim, max_action)
+replay_buffer = ReplayBuffer(buffer_size, seed)
+if load_model:
+    try:
+        network.load(file_name, "./pytorch_models")
+    except Exception:
+        print("Could not load the stored model parameters, initializing randomly")
+
+evaluations = []
+timestep = 0
+timesteps_since_eval = 0
+episode_num = 0
+episode_done = True
+epoch = 1
+count_rand_actions = [0 for _ in agent_names]
+random_actions = [np.zeros(2) for _ in agent_names]
+
+while timestep < max_timesteps:
+    if episode_done:
+        if timestep != 0:
+            train_iterations = max(episode_sample_count, 1)
+            network.train(
+                replay_buffer,
+                train_iterations,
+                batch_size,
+                discount,
+                tau,
+                policy_noise,
+                noise_clip,
+                policy_freq,
+            )
+            print(
+                "Episode %i finished | Env steps: %i | Agent samples: %i | Mean reward: %.3f"
+                % (
+                    episode_num,
+                    episode_timesteps,
+                    episode_sample_count,
+                    float(np.mean(episode_rewards)),
+                )
+            )
+
+        if timesteps_since_eval >= eval_freq:
+            print("Validating")
+            timesteps_since_eval %= eval_freq
+            eval_reward, eval_success_rate, eval_collision_rate = evaluate(
+                network=network, env=env, epoch=epoch, eval_episodes=eval_ep
+            )
+            evaluations.append(
+                [eval_reward, eval_success_rate, eval_collision_rate]
+            )
+            network.save(file_name, directory="./pytorch_models")
+            np.save("./results/%s" % file_name, evaluations)
+            epoch += 1
+
+        states = env.reset()
+        active_mask = [True] * len(agent_names)
+        episode_done = False
+        episode_rewards = np.zeros(len(agent_names), dtype=np.float32)
+        episode_timesteps = 0
+        episode_sample_count = 0
+        episode_num += 1
+
+    if expl_noise > expl_min:
+        expl_noise = expl_noise - ((1 - expl_min) / expl_decay_steps)
+
+    raw_actions = []
+    env_actions = []
+
+    for idx, state in enumerate(states):
+        if not active_mask[idx]:
+            raw_actions.append(np.zeros(action_dim, dtype=np.float32))
+            env_actions.append([0.0, 0.0])
+            continue
+
+        action = network.get_action(np.array(state))
+        action = (action + np.random.normal(0, expl_noise, size=action_dim)).clip(
+            -max_action, max_action
+        )
+
+        if random_near_obstacle:
+            if (
+                np.random.uniform(0, 1) > 0.85
+                and min(state[4:-8]) < 0.6
+                and count_rand_actions[idx] < 1
+            ):
+                count_rand_actions[idx] = np.random.randint(8, 15)
+                random_actions[idx] = np.random.uniform(-1, 1, 2)
+
+            if count_rand_actions[idx] > 0:
+                count_rand_actions[idx] -= 1
+                action = random_actions[idx].copy()
+                action[0] = -1
+
+        raw_actions.append(action)
+        env_actions.append([(action[0] + 1) / 2, action[1]])
+
+    next_states, rewards, dones, targets, collisions = env.step(
+        env_actions, active_mask
+    )
+
+    truncated = episode_timesteps + 1 == max_ep
+    for idx in range(len(agent_names)):
+        if not active_mask[idx]:
+            continue
+        done_bool = 0 if truncated else int(dones[idx])
+        replay_buffer.add(
+            states[idx], raw_actions[idx], rewards[idx], done_bool, next_states[idx]
+        )
+        episode_rewards[idx] += rewards[idx]
+        episode_sample_count += 1
+        timestep += 1
+        timesteps_since_eval += 1
+
+        if dones[idx] or truncated:
+            active_mask[idx] = False
+
+    states = next_states
+    episode_timesteps += 1
+
+    if truncated or not any(active_mask):
+        episode_done = True
+
+eval_reward, eval_success_rate, eval_collision_rate = evaluate(
+    network=network, env=env, epoch=epoch, eval_episodes=eval_ep
+)
+evaluations.append([eval_reward, eval_success_rate, eval_collision_rate])
+if save_model:
+    network.save("%s" % file_name, directory="./pytorch_models")
+np.save("./results/%s" % file_name, evaluations)
