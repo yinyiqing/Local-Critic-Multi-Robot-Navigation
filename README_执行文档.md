@@ -30,10 +30,14 @@
   `/home/jiutian/my_reproduction/DRL-robot-navigation-main/scripts/run_readme_training.sh`
 - 后台训练启动脚本：
   `/home/jiutian/my_reproduction/DRL-robot-navigation-main/scripts/start_training_detached.sh`
+- 后台测试启动脚本：
+  `/home/jiutian/my_reproduction/DRL-robot-navigation-main/scripts/start_test_detached.sh`
 - 重新观察 RViz：
   `/home/jiutian/my_reproduction/DRL-robot-navigation-main/scripts/observe_rviz.sh`
 - 停止后台训练：
   `/home/jiutian/my_reproduction/DRL-robot-navigation-main/scripts/stop_training_detached.sh`
+- 停止后台测试：
+  `/home/jiutian/my_reproduction/DRL-robot-navigation-main/scripts/stop_test_detached.sh`
 - 清理旧训练记录：
   `/home/jiutian/my_reproduction/DRL-robot-navigation-main/scripts/clean_training_artifacts.sh`
 
@@ -489,6 +493,38 @@ source devel_isolated/setup.bash
 cd /home/jiutian/my_reproduction/DRL-robot-navigation-main/TD3
 python3 test_velodyne_td3.py
 ```
+
+如果你想像训练一样让测试在后台继续跑，直接执行：
+
+```bash
+bash /home/jiutian/my_reproduction/DRL-robot-navigation-main/scripts/start_test_detached.sh
+```
+
+后台测试默认使用 headless launch，不会主动打开 RViz。  
+你之后可以再单独执行：
+
+```bash
+bash /home/jiutian/my_reproduction/DRL-robot-navigation-main/scripts/observe_rviz.sh
+```
+
+来重新观察同一套 ROS/Gazebo 运行状态。
+
+测试日志会写到：
+
+```bash
+/home/jiutian/my_reproduction/DRL-robot-navigation-main/logs/test_detached_*.log
+```
+
+测试状态会写到：
+
+```bash
+/home/jiutian/my_reproduction/DRL-robot-navigation-main/TD3/checkpoints/TD3_velodyne_test_state.pt
+```
+
+注意：
+
+- 测试不像训练那样需要保存 optimizer 或 replay buffer
+- 这里保存的是测试进度和统计信息，方便断线后继续看结果
 
 测试脚本会加载：
 
