@@ -41,6 +41,39 @@
 - 清理旧训练记录：
   `/home/jiutian/DRL-robot-navigation/scripts/clean_training_artifacts.sh`
 
+### 1.1 建议先看哪里
+
+如果当前目标不是从零部署，而是快速理解这份仓库已经完成了什么，建议先看：
+
+- `README.md`
+  - 说明这份仓库和原始开源项目的关系，以及当前改动主线。
+- `experiments/实验总览.md`
+  - 汇总四个正式实验的横向对比和阶段性结论。
+- `experiments/多智能体/README.md`
+  - 说明多智能体 baseline、动态 reward、weighted08 三版实验的产物位置。
+
+### 1.2 当前正式多智能体实验入口
+
+普通多智能体共享 policy baseline：
+
+- 后台训练：`bash /home/jiutian/DRL-robot-navigation/scripts/start_training_detached_multi.sh`
+- 公平 300 episode 测试：`bash /home/jiutian/DRL-robot-navigation/scripts/start_test_detached_multi_baseline_fair300.sh`
+
+动态 reward 完全平均：
+
+- 后台训练：`bash /home/jiutian/DRL-robot-navigation/scripts/start_training_detached_multi_coop.sh`
+- 后台测试：`bash /home/jiutian/DRL-robot-navigation/scripts/start_test_detached_multi_coop.sh`
+
+动态 reward weighted08：
+
+- 后台训练：`bash /home/jiutian/DRL-robot-navigation/scripts/start_training_detached_multi_coop_weighted08.sh`
+- 测试 best 模型：`bash /home/jiutian/DRL-robot-navigation/scripts/start_test_detached_multi_coop_weighted08_best.sh`
+
+补充说明：
+
+- `logs/` 保存运行中的实时日志，方便 `tail -f` 观察。
+- `experiments/` 保存正式归档日志和实验总结，上传和汇报时以这里为准。
+
 ## 2. 开机后的基础检查
 
 登录服务器后，先确认 Python 和 GPU 正常：
