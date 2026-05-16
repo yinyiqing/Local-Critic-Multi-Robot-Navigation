@@ -45,13 +45,31 @@ class TD3(object):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 seed = 0
 max_ep = 300
-file_name = "TD3_velodyne_multi_v4"
+target_test_episodes = int(os.environ.get("DRL_MULTI_TEST_TARGET_EPISODES", "0"))
+base_file_name = "TD3_velodyne_multi_v4"
+file_name = os.environ.get("DRL_MULTI_TEST_FILE_NAME", base_file_name)
 launchfile = os.environ.get(
     "DRL_MULTI_TEST_LAUNCHFILE", "multi_robot_scenario_multi_2.launch"
 )
 resume_testing = True
-state_path = "./checkpoints/TD3_velodyne_multi_test_state.pt"
-test_stats_path = "./results/TD3_velodyne_multi_test.npy"
+default_state_path = (
+    "./checkpoints/TD3_velodyne_multi_test_state.pt"
+    if file_name == base_file_name
+    else f"./checkpoints/{file_name}_test_state.pt"
+)
+default_test_stats_path = (
+    "./results/TD3_velodyne_multi_test.npy"
+    if file_name == base_file_name
+    else f"./results/{file_name}_test.npy"
+)
+state_path = os.environ.get(
+    "DRL_MULTI_TEST_STATE_PATH",
+    default_state_path,
+)
+test_stats_path = os.environ.get(
+    "DRL_MULTI_TEST_STATS_PATH",
+    default_test_stats_path,
+)
 print_every_episodes = 10
 environment_dim = 20
 robot_dim = 4
@@ -60,7 +78,7 @@ agent_names = ["r1", "r2"]
 
 def make_test_run_dir():
     timestamp = datetime.now().strftime("%b%d_%H-%M-%S")
-    return os.path.join("runs", f"test_multi_{timestamp}_{socket.gethostname()}")
+    return os.path.join("runs", f"test_{file_name}_{timestamp}_{socket.gethostname()}")
 
 
 def load_test_state():
@@ -122,6 +140,7 @@ print("==============================================")
 print("Test version: multi-agent-eval-v1-headless")
 print("Test process PID:", os.getpid())
 print("Launchfile:", launchfile)
+print("Model file:", file_name)
 print("Device:", device)
 if torch.cuda.is_available():
     print("GPU:", torch.cuda.get_device_name(0))
@@ -132,6 +151,7 @@ print("Resume mode:", resume_testing)
 print("Starting episode:", episode_num)
 print("Starting env steps:", total_env_steps)
 print("Starting agent samples:", total_agent_samples)
+print("Target test episodes:", target_test_episodes or "unlimited")
 print("==============================================")
 
 states = env.reset()
@@ -290,6 +310,14 @@ while True:
             mean_final_distance,
         ]
     )
+
+    if target_test_episodes and episode_num >= target_test_episodes:
+        print(
+            "Target test episodes reached | episode_num=%i | target=%i"
+            % (episode_num, target_test_episodes)
+        )
+        writer.close()
+        break
 
     states = env.reset()
     active_mask = [True] * len(agent_names)

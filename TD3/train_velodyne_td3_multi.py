@@ -268,10 +268,26 @@ class TD3(object):
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def env_flag(name, default=False):
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def env_float(name, default=None):
+    value = os.environ.get(name)
+    if value is None or value.strip() == "":
+        return default
+    return float(value)
+
+
 seed = 0
 eval_freq = 5e3
 max_ep = 300
-eval_ep = 10
+eval_ep = int(os.environ.get("DRL_MULTI_EVAL_EPISODES", "10"))
 max_timesteps = 5e6
 expl_noise = 1.0
 expl_decay_steps = 500000
@@ -284,12 +300,16 @@ noise_clip = 0.5
 policy_freq = 2
 buffer_size = 1e6
 agent_names = ["r1", "r2"]
-use_dynamic_reward = False
-file_name = "TD3_velodyne_multi_v4"
-if use_dynamic_reward:
-    file_name += "_coop"
+use_dynamic_reward = env_flag("DRL_MULTI_USE_DYNAMIC_REWARD", False)
+cooperative_reward_self_weight = env_float("DRL_MULTI_REWARD_SELF_WEIGHT", None)
+base_file_name = "TD3_velodyne_multi_v4"
+file_name = os.environ.get(
+    "DRL_MULTI_TRAIN_FILE_NAME",
+    f"{base_file_name}_coop" if use_dynamic_reward else base_file_name,
+)
 save_model = True
-load_model = False
+load_model = env_flag("DRL_MULTI_LOAD_MODEL", False)
+load_model_name = os.environ.get("DRL_MULTI_LOAD_MODEL_NAME", file_name)
 random_near_obstacle = False
 resume_training = True
 launchfile = os.environ.get(
@@ -297,11 +317,16 @@ launchfile = os.environ.get(
 )
 checkpoint_dir = "./checkpoints"
 checkpoint_path = os.path.join(checkpoint_dir, f"{file_name}_latest.pt")
+best_checkpoint_path = os.path.join(checkpoint_dir, f"{file_name}_best.pt")
 checkpoint_interval_episodes = 10
+status_interval_episodes = 5
 training_version = (
-    "multi-agent-shared-policy-v4-coop"
-    if use_dynamic_reward
-    else "multi-agent-shared-policy-v4"
+    os.environ.get("DRL_MULTI_TRAINING_VERSION")
+    or (
+        "multi-agent-shared-policy-v4-coop"
+        if use_dynamic_reward
+        else "multi-agent-shared-policy-v4"
+    )
 )
 
 if not os.path.exists("./results"):
@@ -314,7 +339,8 @@ if not os.path.exists(checkpoint_dir):
 
 def make_run_log_dir():
     timestamp = datetime.now().strftime("%b%d_%H-%M-%S")
-    return os.path.join("runs", f"multi_{timestamp}_{socket.gethostname()}")
+    prefix = "multi_coop" if use_dynamic_reward else "multi"
+    return os.path.join("runs", f"{prefix}_{timestamp}_{socket.gethostname()}")
 
 
 def save_training_checkpoint(
@@ -327,6 +353,9 @@ def save_training_checkpoint(
     episode_num,
     epoch,
     expl_noise_value,
+    best_eval_summary=None,
+    best_epoch=None,
+    path=checkpoint_path,
 ):
     torch.save(
         {
@@ -339,8 +368,10 @@ def save_training_checkpoint(
             "episode_num": episode_num,
             "epoch": epoch,
             "expl_noise": expl_noise_value,
+            "best_eval_summary": best_eval_summary,
+            "best_epoch": best_epoch,
         },
-        checkpoint_path,
+        path,
     )
 
 
@@ -357,6 +388,7 @@ env = MultiAgentGazeboEnv(
     environment_dim,
     agent_names=agent_names,
     cooperative_reward=use_dynamic_reward,
+    cooperative_reward_self_weight=cooperative_reward_self_weight,
     robot_safe_distance=0.0,
     weak_coupling_layout=True,
 )
@@ -379,7 +411,8 @@ if checkpoint:
     print("Resumed multi-agent training from checkpoint:", checkpoint_path)
 elif load_model:
     try:
-        network.load(file_name, "./pytorch_models")
+        network.load(load_model_name, "./pytorch_models")
+        print("Loaded initial model parameters from:", load_model_name)
     except Exception:
         print("Could not load the stored model parameters, initializing randomly")
 
@@ -393,6 +426,8 @@ epoch = checkpoint["epoch"] if checkpoint else 1
 count_rand_actions = [0 for _ in agent_names]
 random_actions = [np.zeros(2) for _ in agent_names]
 expl_noise = checkpoint["expl_noise"] if checkpoint else expl_noise
+best_eval_summary = checkpoint.get("best_eval_summary") if checkpoint else None
+best_epoch = checkpoint.get("best_epoch") if checkpoint else None
 skip_episode_summary_once = checkpoint is not None
 train_start_time = time.time()
 
@@ -405,8 +440,13 @@ if torch.cuda.is_available():
     print("GPU:", torch.cuda.get_device_name(0))
 print("Agent names:", ", ".join(agent_names))
 print("Cooperative reward:", use_dynamic_reward)
+print("Cooperative reward self weight:", cooperative_reward_self_weight)
+print("Eval episodes:", eval_ep)
 print("TensorBoard log dir:", log_dir)
 print("Checkpoint path:", checkpoint_path)
+print("Best checkpoint path:", best_checkpoint_path)
+print("Model prefix:", file_name)
+print("Checkpoint interval episodes:", checkpoint_interval_episodes)
 print("Resume mode:", resume_training)
 print("Starting agent samples:", timestep)
 print("Starting env steps:", env_step_count)
@@ -414,6 +454,24 @@ print("Starting epoch:", epoch)
 print("==============================================")
 
 last_eval_summary = None
+
+
+def is_better_eval(candidate, current_best):
+    if current_best is None:
+        return True
+    candidate_key = (
+        candidate["success_rate"],
+        -candidate["collision_rate"],
+        candidate["avg_reward"],
+        -candidate["avg_final_distance"],
+    )
+    best_key = (
+        current_best["success_rate"],
+        -current_best["collision_rate"],
+        current_best["avg_reward"],
+        -current_best["avg_final_distance"],
+    )
+    return candidate_key > best_key
 
 while timestep < max_timesteps:
     if episode_done:
@@ -473,12 +531,23 @@ while timestep < max_timesteps:
                 if nearest_robot_distances
                 else float("nan")
             )
+            raw_rewards = [step_agents[name]["raw_reward"] for name in agent_names]
+            adjusted_rewards = [step_agents[name]["reward"] for name in agent_names]
+            coop_neighbor_counts = [
+                len(step_agents[name]["reward_neighbors"]) for name in agent_names
+            ]
+            coop_active_agents = sum(1 for count in coop_neighbor_counts if count > 0)
+            mean_raw_reward = float(np.mean(raw_rewards))
+            mean_adjusted_reward = float(np.mean(adjusted_rewards))
+            mean_coop_neighbors = float(np.mean(coop_neighbor_counts))
             print(
                 "Episode %i complete | agent_samples=%i | env_steps=%i | "
                 "episode_env_steps=%i | episode_agent_samples=%i | mean_reward=%.3f | "
                 "success=%i/%i | collision=%i/%i | mean_final_distance=%.3f | "
                 "mean_progress=%.4f | min_laser=%.3f | mean_lin=%.3f | mean_ang=%.3f | "
-                "mean_robot_dist=%.3f | expl_noise=%.4f | replay=%i | samples/sec=%.3f"
+                "mean_robot_dist=%.3f | raw_reward=%.3f | adjusted_reward=%.3f | "
+                "coop_agents=%i/%i | mean_coop_neighbors=%.2f | expl_noise=%.4f | "
+                "replay=%i | samples/sec=%.3f"
                 % (
                     episode_num,
                     timestep,
@@ -496,11 +565,28 @@ while timestep < max_timesteps:
                     mean_linear_action,
                     mean_angular_action,
                     mean_nearest_robot_distance,
+                    mean_raw_reward,
+                    mean_adjusted_reward,
+                    coop_active_agents,
+                    len(agent_names),
+                    mean_coop_neighbors,
                     expl_noise,
                     replay_buffer.size(),
                     steps_per_sec,
                 )
             )
+            if episode_num % status_interval_episodes == 0:
+                print(
+                    "Status | epoch=%i | next_eval_in=%i agent_samples | "
+                    "checkpoint_every=%i episodes | checkpoint=%s | model=%s"
+                    % (
+                        epoch,
+                        int(eval_freq - timesteps_since_eval),
+                        checkpoint_interval_episodes,
+                        checkpoint_path,
+                        file_name,
+                    )
+                )
             if episode_num % checkpoint_interval_episodes == 0:
                 save_training_checkpoint(
                     network,
@@ -512,6 +598,8 @@ while timestep < max_timesteps:
                     episode_num,
                     epoch,
                     expl_noise,
+                    best_eval_summary,
+                    best_epoch,
                 )
                 print("Checkpoint saved:", checkpoint_path)
 
@@ -562,9 +650,57 @@ while timestep < max_timesteps:
                 episode_num,
                 epoch,
                 expl_noise,
+                best_eval_summary,
+                best_epoch,
             )
             print("Checkpoint saved:", checkpoint_path)
+            if is_better_eval(last_eval_summary, best_eval_summary):
+                best_eval_summary = dict(last_eval_summary)
+                best_epoch = epoch
+                network.save(f"{file_name}_best", directory="./pytorch_models")
+                save_training_checkpoint(
+                    network,
+                    replay_buffer,
+                    evaluations,
+                    timestep,
+                    env_step_count,
+                    timesteps_since_eval,
+                    episode_num,
+                    epoch,
+                    expl_noise,
+                    best_eval_summary,
+                    best_epoch,
+                    best_checkpoint_path,
+                )
+                save_training_checkpoint(
+                    network,
+                    replay_buffer,
+                    evaluations,
+                    timestep,
+                    env_step_count,
+                    timesteps_since_eval,
+                    episode_num,
+                    epoch,
+                    expl_noise,
+                    best_eval_summary,
+                    best_epoch,
+                )
+                print(
+                    "Best checkpoint updated | epoch=%i | success_rate=%.3f | "
+                    "collision_rate=%.3f | avg_reward=%.3f | path=%s"
+                    % (
+                        best_epoch,
+                        best_eval_summary["success_rate"],
+                        best_eval_summary["collision_rate"],
+                        best_eval_summary["avg_reward"],
+                        best_checkpoint_path,
+                    )
+                )
             epoch += 1
+            print(
+                "Next epoch will start from %i. Resume keeps this counter in %s"
+                % (epoch, checkpoint_path)
+            )
 
         states = env.reset()
         skip_episode_summary_once = False
@@ -699,4 +835,37 @@ save_training_checkpoint(
     episode_num,
     epoch,
     expl_noise,
+    best_eval_summary,
+    best_epoch,
 )
+if is_better_eval(last_eval_summary, best_eval_summary):
+    best_eval_summary = dict(last_eval_summary)
+    best_epoch = epoch
+    network.save(f"{file_name}_best", directory="./pytorch_models")
+    save_training_checkpoint(
+        network,
+        replay_buffer,
+        evaluations,
+        timestep,
+        env_step_count,
+        timesteps_since_eval,
+        episode_num,
+        epoch,
+        expl_noise,
+        best_eval_summary,
+        best_epoch,
+        best_checkpoint_path,
+    )
+    save_training_checkpoint(
+        network,
+        replay_buffer,
+        evaluations,
+        timestep,
+        env_step_count,
+        timesteps_since_eval,
+        episode_num,
+        epoch,
+        expl_noise,
+        best_eval_summary,
+        best_epoch,
+    )

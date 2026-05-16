@@ -29,6 +29,7 @@ class MultiAgentGazeboEnv:
         environment_dim,
         agent_names=None,
         cooperative_reward=False,
+        cooperative_reward_self_weight=None,
         reward_neighbor_radius=10.0,
         reward_neighbor_fov=np.pi / 2 + 0.03,
         robot_safe_distance=1.0,
@@ -38,6 +39,7 @@ class MultiAgentGazeboEnv:
         self.agent_names = agent_names or ["r1", "r2", "r3"]
         self.num_agents = len(self.agent_names)
         self.cooperative_reward = cooperative_reward
+        self.cooperative_reward_self_weight = cooperative_reward_self_weight
         self.reward_neighbor_radius = reward_neighbor_radius
         self.reward_neighbor_fov = reward_neighbor_fov
         self.robot_safe_distance = robot_safe_distance
@@ -58,6 +60,7 @@ class MultiAgentGazeboEnv:
         self.robot_positions = {name: np.array([0.0, 0.0]) for name in self.agent_names}
         self.set_self_states = {name: self._create_model_state(name) for name in self.agent_names}
         self.last_step_info = self._empty_last_step_info()
+        self.last_reward_neighbors = {name: [] for name in self.agent_names}
 
         self.gaps = [[-np.pi / 2 - 0.03, -np.pi / 2 + np.pi / self.environment_dim]]
         for m in range(self.environment_dim - 1):
@@ -255,11 +258,29 @@ class MultiAgentGazeboEnv:
 
     def _apply_cooperative_reward(self, rewards, active_mask):
         adjusted = rewards.copy()
+        self.last_reward_neighbors = {name: [] for name in self.agent_names}
         for idx, name in enumerate(self.agent_names):
             if not active_mask[idx]:
                 continue
             visible = [name] + self._compute_visible_neighbors(name)
-            adjusted[idx] = float(np.mean([rewards[self.agent_names.index(n)] for n in visible]))
+            self.last_reward_neighbors[name] = [n for n in visible if n != name]
+            if (
+                self.cooperative_reward_self_weight is not None
+                and self.last_reward_neighbors[name]
+            ):
+                self_weight = float(self.cooperative_reward_self_weight)
+                neighbor_rewards = [
+                    rewards[self.agent_names.index(n)]
+                    for n in self.last_reward_neighbors[name]
+                ]
+                adjusted[idx] = float(
+                    self_weight * rewards[idx]
+                    + (1.0 - self_weight) * np.mean(neighbor_rewards)
+                )
+            else:
+                adjusted[idx] = float(
+                    np.mean([rewards[self.agent_names.index(n)] for n in visible])
+                )
         return adjusted
 
     def _nearest_robot_distance(self, name):
@@ -392,12 +413,17 @@ class MultiAgentGazeboEnv:
                 "min_laser": min_laser,
                 "nearest_robot_distance": nearest_robot_distance,
                 "reward": reward,
+                "raw_reward": reward,
+                "reward_neighbors": [],
             }
 
         if self.cooperative_reward:
             rewards = self._apply_cooperative_reward(rewards, active_mask)
             for idx, name in enumerate(self.agent_names):
                 step_agents_info[name]["reward"] = rewards[idx]
+                step_agents_info[name]["reward_neighbors"] = self.last_reward_neighbors[
+                    name
+                ]
 
         self.last_step_info = {
             "agents": step_agents_info,

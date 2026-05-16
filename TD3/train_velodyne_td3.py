@@ -416,18 +416,6 @@ while timestep < max_timesteps:
                     steps_per_sec,
                 )
             )
-            if last_eval_summary is not None:
-                print(
-                    "Latest eval summary | reward=%.3f | success_rate=%.3f | collision_rate=%.3f | "
-                    "avg_steps=%.1f | avg_final_distance=%.3f"
-                    % (
-                        last_eval_summary["avg_reward"],
-                        last_eval_summary["success_rate"],
-                        last_eval_summary["collision_rate"],
-                        last_eval_summary["avg_episode_steps"],
-                        last_eval_summary["avg_final_distance"],
-                    )
-                )
             if episode_num % checkpoint_interval_episodes == 0:
                 save_training_checkpoint(
                     network,
