@@ -1,0 +1,230 @@
+Activated DRL robot navigation Python environment.
+Python: Python 3.8.10
+Venv: /home/jiutian/venvs/drl-robot-nav
+Roscore launched!
+Unable to register with master node [http://localhost:11321]: master may not be running yet. Will keep trying.
+Gazebo launched!
+[INFO] [1778767807.537082, 0.000000]: Loading model XML from ros parameter robot_description_r1
+[INFO] [1778767807.539410, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1778767807.842355, 0.283000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1778767808.645596, 0.374000]: Spawn status: SpawnModel: Successfully spawned entity
+[33m[WARN] [1778767808.762333803, 0.374000000]: DiffDrive(ns = r1/): missing <publishOdomTF> default is true[0m
+[33m[WARN] [1778767808.762661740, 0.374000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1[0m
+[0m[INFO] [1778767807.635490448]: Finished loading Gazebo ROS API Plugin.[0m
+[0m[INFO] [1778767807.635883944]: waitForService: Service [/gazebo/set_physics_properties] has not been advertised, waiting...[0m
+[0m[INFO] [1778767807.757492031, 0.202000000]: waitForService: Service [/gazebo/set_physics_properties] is now available.[0m
+[0m[INFO] [1778767807.765277795, 0.209000000]: Physics dynamic reconfigure ready.[0m
+[0m[INFO] [1778767808.037788136, 0.374000000]: Laser Plugin: The 'robotNamespace' param was empty[0m
+[0m[INFO] [1778767808.037806204, 0.374000000]: Starting Laser Plugin (ns = r1)[0m
+[0m[INFO] [1778767808.038153942, 0.374000000]: Laser Plugin (ns = r1)  <tf_prefix_>, set to ""[0m
+[0m[INFO] [1778767808.645657296, 0.374000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping[0m
+[0m[INFO] [1778767808.646555837, 0.374000000]: Velodyne laser plugin ready, 16 lasers[0m
+[0m[INFO] [1778767808.761270225, 0.374000000]: Starting plugin DiffDrive(ns = r1/)[0m
+[0m[INFO] [1778767808.761398175, 0.374000000]: DiffDrive(ns = r1/): <rosDebugLevel> = Debug[0m
+[0m[INFO] [1778767808.762159514, 0.374000000]: DiffDrive(ns = r1/): <tf_prefix> = [0m
+[32m[DEBUG] [1778767808.762222849, 0.374000000]: DiffDrive(ns = r1/): <commandTopic> = cmd_vel[0m
+[32m[DEBUG] [1778767808.762238727, 0.374000000]: DiffDrive(ns = r1/): <odometryTopic> = odom[0m
+[32m[DEBUG] [1778767808.762255219, 0.374000000]: DiffDrive(ns = r1/): <odometryFrame> = odom[0m
+[32m[DEBUG] [1778767808.762271203, 0.374000000]: DiffDrive(ns = r1/): <robotBaseFrame> = base_link[0m
+[32m[DEBUG] [1778767808.762317327, 0.374000000]: DiffDrive(ns = r1/): <publishWheelTF> = false[0m
+[32m[DEBUG] [1778767808.762380165, 0.374000000]: DiffDrive(ns = r1/): <publishWheelJointState> = true[0m
+[32m[DEBUG] [1778767808.762440446, 0.374000000]: DiffDrive(ns = r1/): <wheelSeparation> = 0.29999999999999999[0m
+[32m[DEBUG] [1778767808.762460483, 0.374000000]: DiffDrive(ns = r1/): <wheelDiameter> = 0.17999999999999999[0m
+[32m[DEBUG] [1778767808.762479276, 0.374000000]: DiffDrive(ns = r1/): <wheelAcceleration> = 1.8[0m
+[32m[DEBUG] [1778767808.762498833, 0.374000000]: DiffDrive(ns = r1/): <wheelTorque> = 20[0m
+[32m[DEBUG] [1778767808.762515220, 0.374000000]: DiffDrive(ns = r1/): <updateRate> = 50[0m
+[32m[DEBUG] [1778767808.762577698, 0.374000000]: DiffDrive(ns = r1/): <odometrySource> = world := 1[0m
+[32m[DEBUG] [1778767808.762614485, 0.374000000]: DiffDrive(ns = r1/): <leftJoint> = left_hub_joint[0m
+[32m[DEBUG] [1778767808.762633844, 0.374000000]: DiffDrive(ns = r1/): <rightJoint> = right_hub_joint[0m
+[0m[INFO] [1778767808.763475613, 0.374000000]: DiffDrive(ns = r1/): Advertise joint_states[0m
+[0m[INFO] [1778767808.764253880, 0.374000000]: DiffDrive(ns = r1/): Try to subscribe to cmd_vel[0m
+[0m[INFO] [1778767808.767536466, 0.374000000]: DiffDrive(ns = r1/): Subscribe to cmd_vel[0m
+[0m[INFO] [1778767808.768391346, 0.374000000]: DiffDrive(ns = r1/): Advertise odom on odom [0m
+[0m[INFO] [1778767808.776722537, 0.374000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint[0m
+[0m[INFO] [1778767808.776738823, 0.374000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint[0m
+[0m[INFO] [1778767808.776748627, 0.374000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint[0m
+[0m[INFO] [1778767808.776760164, 0.374000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint[0m
+[0m[INFO] [1778767808.776773352, 0.374000000]: Starting GazeboRosJointStatePublisher Plugin (ns = r1/)!, parent name: r1[0m
+[32m[DEBUG] [1778767808.808588700, 0.395000000]: Trying to publish message of type [nav_msgs/Odometry/cd5e73d190d741a2f92e81eda573aca7] on a publisher with type [nav_msgs/Odometry/cd5e73d190d741a2f92e81eda573aca7][0m
+[32m[DEBUG] [1778767808.808611699, 0.395000000]: Trying to publish message of type [sensor_msgs/JointState/3066dcd76a6cfaef579bd0f34173e9fd] on a publisher with type [sensor_msgs/JointState/3066dcd76a6cfaef579bd0f34173e9fd[33m[WARN] [1778767809.665378539, 0.559000000]: DiffDrive(ns = r2/): missing <publishOdomTF> default is true[0m
+[33m[WARN] [1778767809.665442439, 0.559000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1[0m
+[INFO] [1778767807.646176, 0.000000]: Loading model XML from ros parameter robot_description_r2
+[INFO] [1778767807.648511, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1778767807.950780, 0.374000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1778767809.665048, 0.559000]: Spawn status: SpawnModel: Successfully spawned entity
+test_velodyne_td3_multi.py:41: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load("%s/%s_actor.pth" % (directory, filename), map_location=device)
+==============================================
+Test version: multi-agent-eval-v1-headless
+Test process PID: 877905
+Launchfile: multi_robot_scenario_multi_2.launch
+Device: cuda
+GPU: NVIDIA GeForce RTX 4090
+Agent names: r1, r2
+TensorBoard log dir: runs/test_multi_May14_22-10-12_JiuTian-AI4090
+State path: ./checkpoints/TD3_velodyne_multi_test_state.pt
+Resume mode: True
+Starting episode: 0
+Starting env steps: 0
+Starting agent samples: 0
+==============================================
+Episode 1 complete | env_steps=59 | agent_samples=94 | episode_env_steps=59 | episode_agent_samples=94 | mean_reward=9.864 | success=1/2 | collision=1/2 | mean_final_distance=1.039 | samples/sec=13.905
+Episode 2 complete | env_steps=113 | agent_samples=181 | episode_env_steps=54 | episode_agent_samples=87 | mean_reward=130.258 | success=2/2 | collision=0/2 | mean_final_distance=0.263 | samples/sec=14.106
+Episode 3 complete | env_steps=155 | agent_samples=256 | episode_env_steps=42 | episode_agent_samples=75 | mean_reward=130.978 | success=2/2 | collision=0/2 | mean_final_distance=0.295 | samples/sec=15.747
+Episode 4 complete | env_steps=194 | agent_samples=323 | episode_env_steps=39 | episode_agent_samples=67 | mean_reward=18.587 | success=1/2 | collision=1/2 | mean_final_distance=0.982 | samples/sec=14.992
+Episode 5 complete | env_steps=239 | agent_samples=392 | episode_env_steps=45 | episode_agent_samples=69 | mean_reward=28.081 | success=1/2 | collision=1/2 | mean_final_distance=0.405 | samples/sec=13.394
+Episode 6 complete | env_steps=539 | agent_samples=722 | episode_env_steps=300 | episode_agent_samples=330 | mean_reward=23.754 | success=1/2 | collision=0/2 | mean_final_distance=0.308 | samples/sec=9.484
+Episode 7 complete | env_steps=574 | agent_samples=784 | episode_env_steps=35 | episode_agent_samples=62 | mean_reward=26.223 | success=1/2 | collision=1/2 | mean_final_distance=0.568 | samples/sec=15.482
+Episode 8 complete | env_steps=601 | agent_samples=832 | episode_env_steps=27 | episode_agent_samples=48 | mean_reward=131.182 | success=2/2 | collision=0/2 | mean_final_distance=0.295 | samples/sec=15.673
+Episode 9 complete | env_steps=644 | agent_samples=904 | episode_env_steps=43 | episode_agent_samples=72 | mean_reward=144.432 | success=2/2 | collision=0/2 | mean_final_distance=0.290 | samples/sec=14.557
+Episode 10 complete | env_steps=838 | agent_samples=1134 | episode_env_steps=194 | episode_agent_samples=230 | mean_reward=2.815 | success=1/2 | collision=1/2 | mean_final_distance=0.928 | samples/sec=10.437
+Recent 10 episodes | avg_reward=64.617 | success_rate=0.700 | collision_rate=0.250 | full_success_rate=0.400 | total_success=14 | total_collision=5 | total_full_success=4
+Episode 11 complete | env_steps=891 | agent_samples=1217 | episode_env_steps=53 | episode_agent_samples=83 | mean_reward=141.726 | success=2/2 | collision=0/2 | mean_final_distance=0.271 | samples/sec=13.853
+Episode 12 complete | env_steps=912 | agent_samples=1248 | episode_env_steps=21 | episode_agent_samples=31 | mean_reward=20.898 | success=1/2 | collision=1/2 | mean_final_distance=0.803 | samples/sec=13.090
+Episode 13 complete | env_steps=954 | agent_samples=1313 | episode_env_steps=42 | episode_agent_samples=65 | mean_reward=134.101 | success=2/2 | collision=0/2 | mean_final_distance=0.285 | samples/sec=13.450
+Episode 14 complete | env_steps=975 | agent_samples=1350 | episode_env_steps=21 | episode_agent_samples=37 | mean_reward=124.269 | success=2/2 | collision=0/2 | mean_final_distance=0.245 | samples/sec=15.249
+Episode 15 complete | env_steps=1027 | agent_samples=1433 | episode_env_steps=52 | episode_agent_samples=83 | mean_reward=132.125 | success=2/2 | collision=0/2 | mean_final_distance=0.287 | samples/sec=14.212
+Episode 16 complete | env_steps=1068 | agent_samples=1506 | episode_env_steps=41 | episode_agent_samples=73 | mean_reward=129.124 | success=2/2 | collision=0/2 | mean_final_distance=0.297 | samples/sec=15.656
+Episode 17 complete | env_steps=1099 | agent_samples=1565 | episode_env_steps=31 | episode_agent_samples=59 | mean_reward=131.114 | success=2/2 | collision=0/2 | mean_final_distance=0.265 | samples/sec=16.628
+Episode 18 complete | env_steps=1181 | agent_samples=1693 | episode_env_steps=82 | episode_agent_samples=128 | mean_reward=133.459 | success=2/2 | collision=0/2 | mean_final_distance=0.275 | samples/sec=13.741
+Episode 19 complete | env_steps=1216 | agent_samples=1746 | episode_env_steps=35 | episode_agent_samples=53 | mean_reward=138.484 | success=2/2 | collision=0/2 | mean_final_distance=0.261 | samples/sec=13.352
+Episode 20 complete | env_steps=1242 | agent_samples=1790 | episode_env_steps=26 | episode_agent_samples=44 | mean_reward=127.749 | success=2/2 | collision=0/2 | mean_final_distance=0.255 | samples/sec=15.035
+Recent 10 episodes | avg_reward=121.305 | success_rate=0.950 | collision_rate=0.050 | full_success_rate=0.900 | total_success=33 | total_collision=6 | total_full_success=13
+Episode 21 complete | env_steps=1542 | agent_samples=2131 | episode_env_steps=300 | episode_agent_samples=341 | mean_reward=58.446 | success=1/2 | collision=0/2 | mean_final_distance=0.299 | samples/sec=10.001
+Episode 22 complete | env_steps=1612 | agent_samples=2231 | episode_env_steps=70 | episode_agent_samples=100 | mean_reward=133.703 | success=2/2 | collision=0/2 | mean_final_distance=0.274 | samples/sec=12.710
+Episode 23 complete | env_steps=1656 | agent_samples=2293 | episode_env_steps=44 | episode_agent_samples=62 | mean_reward=130.625 | success=2/2 | collision=0/2 | mean_final_distance=0.294 | samples/sec=12.523
+Episode 24 complete | env_steps=1796 | agent_samples=2440 | episode_env_steps=140 | episode_agent_samples=147 | mean_reward=23.395 | success=1/2 | collision=1/2 | mean_final_distance=1.071 | samples/sec=9.260
+Episode 25 complete | env_steps=1822 | agent_samples=2490 | episode_env_steps=26 | episode_agent_samples=50 | mean_reward=127.908 | success=2/2 | collision=0/2 | mean_final_distance=0.291 | samples/sec=16.569
+Episode 26 complete | env_steps=1839 | agent_samples=2523 | episode_env_steps=17 | episode_agent_samples=33 | mean_reward=123.710 | success=2/2 | collision=0/2 | mean_final_distance=0.243 | samples/sec=17.144
+Episode 27 complete | env_steps=1876 | agent_samples=2587 | episode_env_steps=37 | episode_agent_samples=64 | mean_reward=134.453 | success=2/2 | collision=0/2 | mean_final_distance=0.287 | samples/sec=15.177
+Episode 28 complete | env_steps=1909 | agent_samples=2637 | episode_env_steps=33 | episode_agent_samples=50 | mean_reward=123.980 | success=2/2 | collision=0/2 | mean_final_distance=0.264 | samples/sec=13.132
+Episode 29 complete | env_steps=1935 | agent_samples=2684 | episode_env_steps=26 | episode_agent_samples=47 | mean_reward=132.476 | success=2/2 | collision=0/2 | mean_final_distance=0.243 | samples/sec=15.913
+Episode 30 complete | env_steps=1968 | agent_samples=2736 | episode_env_steps=33 | episode_agent_samples=52 | mean_reward=124.481 | success=2/2 | collision=0/2 | mean_final_distance=0.260 | samples/sec=13.674
+Recent 10 episodes | avg_reward=111.318 | success_rate=0.900 | collision_rate=0.050 | full_success_rate=0.800 | total_success=51 | total_collision=7 | total_full_success=21
+Episode 31 complete | env_steps=2007 | agent_samples=2796 | episode_env_steps=39 | episode_agent_samples=60 | mean_reward=21.166 | success=1/2 | collision=1/2 | mean_final_distance=0.836 | samples/sec=13.474
+Episode 32 complete | env_steps=2068 | agent_samples=2881 | episode_env_steps=61 | episode_agent_samples=85 | mean_reward=27.614 | success=1/2 | collision=1/2 | mean_final_distance=0.878 | samples/sec=12.282
+Episode 33 complete | env_steps=2097 | agent_samples=2931 | episode_env_steps=29 | episode_agent_samples=50 | mean_reward=131.394 | success=2/2 | collision=0/2 | mean_final_distance=0.266 | samples/sec=14.902
+Episode 34 complete | env_steps=2123 | agent_samples=2978 | episode_env_steps=26 | episode_agent_samples=47 | mean_reward=125.311 | success=2/2 | collision=0/2 | mean_final_distance=0.294 | samples/sec=15.750
+Episode 35 complete | env_steps=2142 | agent_samples=3015 | episode_env_steps=19 | episode_agent_samples=37 | mean_reward=124.446 | success=2/2 | collision=0/2 | mean_final_distance=0.293 | samples/sec=17.209
+Episode 36 complete | env_steps=2442 | agent_samples=3458 | episode_env_steps=300 | episode_agent_samples=443 | mean_reward=58.757 | success=1/2 | collision=0/2 | mean_final_distance=0.556 | samples/sec=12.988
+Episode 37 complete | env_steps=2468 | agent_samples=3505 | episode_env_steps=26 | episode_agent_samples=47 | mean_reward=21.500 | success=1/2 | collision=1/2 | mean_final_distance=0.643 | samples/sec=16.361
+Episode 38 complete | env_steps=2768 | agent_samples=3839 | episode_env_steps=300 | episode_agent_samples=334 | mean_reward=32.367 | success=1/2 | collision=0/2 | mean_final_distance=0.918 | samples/sec=9.804
+Episode 39 complete | env_steps=2835 | agent_samples=3966 | episode_env_steps=67 | episode_agent_samples=127 | mean_reward=23.473 | success=1/2 | collision=1/2 | mean_final_distance=0.970 | samples/sec=16.453
+Episode 40 complete | env_steps=2896 | agent_samples=4050 | episode_env_steps=61 | episode_agent_samples=84 | mean_reward=127.201 | success=2/2 | collision=0/2 | mean_final_distance=0.284 | samples/sec=11.791
+Recent 10 episodes | avg_reward=69.323 | success_rate=0.700 | collision_rate=0.200 | full_success_rate=0.400 | total_success=65 | total_collision=11 | total_full_success=25
+Episode 41 complete | env_steps=2990 | agent_samples=4161 | episode_env_steps=94 | episode_agent_samples=111 | mean_reward=129.944 | success=2/2 | collision=0/2 | mean_final_distance=0.271 | samples/sec=10.267
+Episode 42 complete | env_steps=3102 | agent_samples=4301 | episode_env_steps=112 | episode_agent_samples=140 | mean_reward=136.353 | success=2/2 | collision=0/2 | mean_final_distance=0.290 | samples/sec=11.073
+Episode 43 complete | env_steps=3135 | agent_samples=4361 | episode_env_steps=33 | episode_agent_samples=60 | mean_reward=135.290 | success=2/2 | collision=0/2 | mean_final_distance=0.278 | samples/sec=16.201
+Episode 44 complete | env_steps=3170 | agent_samples=4427 | episode_env_steps=35 | episode_agent_samples=66 | mean_reward=30.049 | success=1/2 | collision=1/2 | mean_final_distance=0.314 | samples/sec=16.611
+Episode 45 complete | env_steps=3197 | agent_samples=4477 | episode_env_steps=27 | episode_agent_samples=50 | mean_reward=135.005 | success=2/2 | collision=0/2 | mean_final_distance=0.270 | samples/sec=16.374
+Episode 46 complete | env_steps=3226 | agent_samples=4529 | episode_env_steps=29 | episode_agent_samples=52 | mean_reward=125.180 | success=2/2 | collision=0/2 | mean_final_distance=0.261 | samples/sec=15.588
+Episode 47 complete | env_steps=3526 | agent_samples=4835 | episode_env_steps=300 | episode_agent_samples=306 | mean_reward=-69.656 | success=0/2 | collision=1/2 | mean_final_distance=1.984 | samples/sec=8.984
+][0m
+[0m[INFO] [1778767809.057049315, 0.559000000]: Laser Plugin: The 'robotNamespace' param was empty[0m
+[0m[INFO] [1778767809.057063735, 0.559000000]: Starting Laser Plugin (ns = r2)[0m
+[0m[INFO] [1778767809.057559831, 0.559000000]: Laser Plugin (ns = r2)  <tf_prefix_>, set to ""[0m
+[0m[INFO] [1778767809.663903893, 0.559000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping[0m
+[0m[INFO] [1778767809.664408243, 0.559000000]: Velodyne laser plugin ready, 16 lasers[0m
+[0m[INFO] [1778767809.665092779, 0.559000000]: Starting plugin DiffDrive(ns = r2/)[0m
+[32m[DEBUG] [1778767809.665101262, 0.559000000]: DiffDrive(ns = r2/): <rosDebugLevel> = Debug[0m
+[0m[INFO] [1778767809.665111614, 0.559000000]: DiffDrive(ns = r2/): <rosDebugLevel> = Debug[0m
+[0m[INFO] [1778767809.665345811, 0.559000000]: DiffDrive(ns = r2/): <tf_prefix> = [0m
+[32m[DEBUG] [1778767809.665356292, 0.559000000]: DiffDrive(ns = r2/): <commandTopic> = cmd_vel[0m
+[32m[DEBUG] [1778767809.665360722, 0.559000000]: DiffDrive(ns = r2/): <odometryTopic> = odom[0m
+[32m[DEBUG] [1778767809.665365207, 0.559000000]: DiffDrive(ns = r2/): <odometryFrame> = odom[0m
+[32m[DEBUG] [1778767809.665369286, 0.559000000]: DiffDrive(ns = r2/): <robotBaseFrame> = base_link[0m
+[32m[DEBUG] [1778767809.665373632, 0.559000000]: DiffDrive(ns = r2/): <publishWheelTF> = false[0m
+[32m[DEBUG] [1778767809.665391711, 0.559000000]: DiffDrive(ns = r2/): <publishWheelJointState> = true[0m
+[32m[DEBUG] [1778767809.665400547, 0.559000000]: DiffDrive(ns = r2/): <wheelSeparation> = 0.29999999999999999[0m
+[32m[DEBUG] [1778767809.665405143, 0.559000000]: DiffDrive(ns = r2/): <wheelDiameter> = 0.17999999999999999[0m
+[32m[DEBUG] [1778767809.665410557, 0.559000000]: DiffDrive(ns = r2/): <wheelAcceleration> = 1.8[0m
+[32m[DEBUG] [1778767809.665415460, 0.559000000]: DiffDrive(ns = r2/): <wheelTorque> = 20[0m
+[32m[DEBUG] [1778767809.665420152, 0.559000000]: DiffDrive(ns = r2/): <updateRate> = 50[0m
+[32m[DEBUG] [1778767809.665426561, 0.559000000]: DiffDrive(ns = r2/): <odometrySource> = world := 1[0m
+[32m[DEBUG] [1778767809.665430557, 0.559000000]: DiffDrive(ns = r2/): <leftJoint> = left_hub_joint[0m
+[32m[DEBUG] [1778767809.665435197, 0.559000000]: DiffDrive(ns = r2/): <rightJoint> = right_hub_joint[0m
+[0m[INFO] [1778767809.665575261, 0.559000000]: DiffDrive(ns = r2/): Advertise joint_states[0m
+[0m[INFO] [1778767809.665586923, 0.559000000]: DiffDrive(ns = r2/): Try to subscribe to cmd_vel[0m
+[0m[INFO] [1778767809.666128376, 0.559000000]: DiffDrive(ns = r2/): Subscribe to cmd_vel[0m
+[0m[INFO] [1778767809.666325379, 0.559000000]: DiffDrive(ns = r2/): Advertise odom on odom [0m
+[0m[INFO] [1778767809.666388478, 0.559000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint[0m
+[0m[INFO] [1778767809.666392482, 0.559000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint[0m
+[0m[INFO] [1778767809.666396537, 0.559000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint[0m
+[0m[INFO] [1778767809.666400448, 0.559000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint[0m
+[0m[INFO] [1778767809.666404509, 0.559000000]: Starting GazeboRosJointStatePublisher Plugin (ns = r2/)!, parent name: r2[0m
+... logging to /home/jiutian/.ros/log/9c15162a-4f9e-11f1-9d97-772424993982/roslaunch-JiuTian-AI4090-878015.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/jiutian/DRL-robot-navigation/TD3/assets/multi_robot_scenario_multi_2.launch
+[1mstarted roslaunch server http://localhost:37769/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /robot_description_r1: <?xml version="1....
+ * /robot_description_r2: <?xml version="1....
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+ * /use_sim_time: True
+
+NODES
+  /
+    gazebo (gazebo_ros/gzserver)
+    urdf_spawner_r1 (gazebo_ros/spawn_model)
+    urdf_spawner_r2 (gazebo_ros/spawn_model)
+
+[1mROS_MASTER_URI=http://localhost:11321/[0m
+]2;/home/jiutian/DRL-robot-navigation/TD3/assets/multi_robot_scenario_multi_2.launch http://localhost:11321/
+[1mprocess[gazebo-1]: started with pid [878104][0m
+[1mprocess[urdf_spawner_r1-2]: started with pid [878107][0m
+[1mprocess[urdf_spawner_r2-3]: started with pid [878110][0m
+[1m[urdf_spawner_r1-2] process has finished cleanly
+log file: /home/jiutian/.ros/log/9c15162a-4f9e-11f1-9d97-772424993982/urdf_spawner_r1-2*.log[0m
+[1m[urdf_spawner_r2-3] process has finished cleanly
+log file: /home/jiutian/.ros/log/9c15162a-4f9e-11f1-9d97-772424993982/urdf_spawner_r2-3*.log[0m
+[gazebo-1] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
+... logging to /home/jiutian/.ros/log/9c15162a-4f9e-11f1-9d97-772424993982/roslaunch-JiuTian-AI4090-877986.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;roscore
+[1mstarted roslaunch server http://localhost:36499/[0m
+ros_comm version 1.17.4
+
+
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+
+NODES
+
+auto-starting new master
+[1mprocess[master]: started with pid [877996][0m
+[1mROS_MASTER_URI=http://localhost:11321/[0m
+]2;roscore http://localhost:11321/
+[1msetting /run_id to 9c15162a-4f9e-11f1-9d97-772424993982[0m
+[1mprocess[rosout-1]: started with pid [878006][0m
+started core service [/rosout]
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
+/gazebo/pause_physics service call failed
+Episode 48 complete | env_steps=3552 | agent_samples=4886 | episode_env_steps=26 | episode_agent_samples=51 | mean_reward=132.745 | success=2/2 | collision=0/2 | mean_final_distance=0.292 | samples/sec=13.981
+Traceback (most recent call last):
+  File "test_velodyne_td3_multi.py", line 294, in <module>
+    states = env.reset()
+  File "/home/jiutian/DRL-robot-navigation/TD3/multi_agent_velodyne_env.py", line 412, in reset
+    rospy.wait_for_service("/gazebo/reset_world")
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 166, in wait_for_service
+    raise ROSInterruptException("rospy shutdown")
+rospy.exceptions.ROSInterruptException: rospy shutdown

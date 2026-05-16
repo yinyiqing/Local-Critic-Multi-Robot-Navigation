@@ -146,3 +146,104 @@ Episode 106 complete | total_step=11578 | episode_steps=58 | reward=120.858 | ta
 Episode 107 complete | total_step=11702 | episode_steps=124 | reward=153.557 | target=1 | collision=0 | final_distance=0.271 | steps/sec=8.094
 Episode 108 complete | total_step=11771 | episode_steps=69 | reward=221.107 | target=1 | collision=0 | final_distance=0.288 | steps/sec=7.998
 Episode 109 complete | total_step=11806 | episode_steps=35 | reward=130.809 | target=1 | collision=0 | final_distance=0.296 | steps/sec=8.065
+Episode 110 complete | total_step=12306 | episode_steps=500 | reward=-140.664 | target=0 | collision=0 | final_distance=3.751 | steps/sec=8.343
+Recent 10 episodes | avg_reward=99.996 | success_rate=0.700 | collision_rate=0.100 | success_count=87 | collision_count=13
+Episode 111 complete | total_step=12373 | episode_steps=67 | reward=203.473 | target=1 | collision=0 | final_distance=0.272 | steps/sec=8.780
+Episode 112 complete | total_step=12518 | episode_steps=145 | reward=215.400 | target=1 | collision=0 | final_distance=0.249 | steps/sec=8.611
+Episode 113 complete | total_step=12567 | episode_steps=49 | reward=139.639 | target=1 | collision=0 | final_distance=0.294 | steps/sec=8.261
+Episode 114 complete | total_step=12583 | episode_steps=16 | reward=-85.226 | target=0 | collision=1 | final_distance=0.575 | steps/sec=7.954
+Episode 115 complete | total_step=12690 | episode_steps=107 | reward=89.592 | target=1 | collision=0 | final_distance=0.300 | steps/sec=8.047
+Episode 116 complete | total_step=12752 | episode_steps=62 | reward=171.617 | target=1 | collision=0 | final_distance=0.237 | steps/sec=8.028
+Episode 117 complete | total_step=13252 | episode_steps=500 | reward=-60.685 | target=0 | collision=0 | final_distance=5.781 | steps/sec=8.065
+Episode 118 complete | total_step=13752 | episode_steps=500 | reward=-121.151 | target=0 | collision=0 | final_distance=4.631 | steps/sec=7.956
+Episode 119 complete | total_step=13839 | episode_steps=87 | reward=195.923 | target=1 | collision=0 | final_distance=0.296 | steps/sec=8.008
+Episode 120 complete | total_step=13886 | episode_steps=47 | reward=158.543 | target=1 | collision=0 | final_distance=0.285 | steps/sec=8.038
+Recent 10 episodes | avg_reward=90.712 | success_rate=0.700 | collision_rate=0.100 | success_count=94 | collision_count=14
+Episode 121 complete | total_step=13934 | episode_steps=48 | reward=140.504 | target=1 | collision=0 | final_distance=0.261 | steps/sec=8.026
+Episode 122 complete | total_step=14434 | episode_steps=500 | reward=26.845 | target=0 | collision=0 | final_distance=0.822 | steps/sec=8.256
+Episode 123 complete | total_step=14506 | episode_steps=72 | reward=-9.074 | target=0 | collision=1 | final_distance=2.213 | steps/sec=8.101
+Episode 124 complete | total_step=14601 | episode_steps=95 | reward=178.951 | target=1 | collision=0 | final_distance=0.291 | steps/sec=7.996
+Episode 125 complete | total_step=14655 | episode_steps=54 | reward=129.007 | target=1 | collision=0 | final_distance=0.286 | steps/sec=8.124
+Episode 126 complete | total_step=14656 | episode_steps=1 | reward=100.000 | target=1 | collision=0 | final_distance=0.107 | steps/sec=8.218
+Episode 127 complete | total_step=15156 | episode_steps=500 | reward=24.041 | target=0 | collision=0 | final_distance=1.451 | steps/sec=8.424
+Episode 128 complete | total_step=15204 | episode_steps=48 | reward=177.922 | target=1 | collision=0 | final_distance=0.268 | steps/sec=7.944
+Episode 129 complete | total_step=15311 | episode_steps=107 | reward=211.486 | target=1 | collision=0 | final_distance=0.213 | steps/sec=8.010
+][0m
+[32m[DEBUG] [1778719979.148592097, 14.423000000]: Trying to publish message of type [sensor_msgs/LaserScan/90c7ef2dc6895d81024acba2ac42f369] on a publisher with type [sensor_msgs/LaserScan/90c7ef2dc6895d81024acba2ac42f369][0m
+... logging to /home/jiutian/.ros/log/35774182-4f2f-11f1-9d97-772424993982/roslaunch-JiuTian-AI4090-2922417.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;roscore
+[1mstarted roslaunch server http://localhost:33799/[0m
+ros_comm version 1.17.4
+
+
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+
+NODES
+
+auto-starting new master
+[1mprocess[master]: started with pid [2922427][0m
+[1mROS_MASTER_URI=http://localhost:11311/[0m
+]2;roscore http://localhost:11311/
+[1msetting /run_id to 35774182-4f2f-11f1-9d97-772424993982[0m
+[1mprocess[rosout-1]: started with pid [2922441][0m
+started core service [/rosout]
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
+Traceback (most recent call last):
+  File "test_velodyne_td3.py", line 134, in <module>
+    next_state, reward, done, target = env.step(a_in)
+  File "/home/jiutian/my_reproduction/DRL-robot-navigation-main/TD3/velodyne_env.py", line 191, in step
+    rospy.wait_for_service("/gazebo/pause_physics")
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 166, in wait_for_service
+    raise ROSInterruptException("rospy shutdown")
+rospy.exceptions.ROSInterruptException: rospy shutdown
+... logging to /home/jiutian/.ros/log/35774182-4f2f-11f1-9d97-772424993982/roslaunch-JiuTian-AI4090-2922450.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/jiutian/my_reproduction/DRL-robot-navigation-main/TD3/assets/multi_robot_scenario_headless.launch
+[1mstarted roslaunch server http://localhost:40797/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /joint_state_publisher/publish_frequency: 30.0
+ * /robot_description: <?xml version="1....
+ * /robot_state_publisher/publish_frequency: 30.0
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+ * /use_sim_time: True
+
+NODES
+  /
+    gazebo (gazebo_ros/gzserver)
+    joint_state_publisher (joint_state_publisher/joint_state_publisher)
+    robot_state_publisher (robot_state_publisher/robot_state_publisher)
+    urdf_spawner (gazebo_ros/spawn_model)
+
+[1mROS_MASTER_URI=http://localhost:11311/[0m
+]2;/home/jiutian/my_reproduction/DRL-robot-navigation-main/TD3/assets/multi_robot_scenario_headless.launch http://localhost:11311/
+[1mprocess[gazebo-1]: started with pid [2922505][0m
+[1mprocess[urdf_spawner-2]: started with pid [2922509][0m
+[1mprocess[robot_state_publisher-3]: started with pid [2922511][0m
+[1mprocess[joint_state_publisher-4]: started with pid [2922512][0m
+[1m[urdf_spawner-2] process has finished cleanly
+log file: /home/jiutian/.ros/log/35774182-4f2f-11f1-9d97-772424993982/urdf_spawner-2*.log[0m
+[joint_state_publisher-4] killing on exit
+[robot_state_publisher-3] killing on exit
+[gazebo-1] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m

@@ -3908,3 +3908,227 @@ Episode 1777 complete | global_step=222615 | episode_steps=9 | reward=-91.014 | 
 Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
 Episode 1778 complete | global_step=222759 | episode_steps=144 | reward=171.008 | target=1 | collision=0 | final_distance=0.290 | progress=0.0176 | min_laser=0.946 | expl_noise=0.5990 | replay=222759 | steps/sec=5.718
 Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1779 complete | global_step=222893 | episode_steps=134 | reward=286.209 | target=1 | collision=0 | final_distance=0.296 | progress=0.0047 | min_laser=0.674 | expl_noise=0.5988 | replay=222893 | steps/sec=5.719
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1780 complete | global_step=222932 | episode_steps=39 | reward=165.405 | target=1 | collision=0 | final_distance=0.268 | progress=0.0505 | min_laser=2.125 | expl_noise=0.5987 | replay=222932 | steps/sec=5.719
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Checkpoint saved: ./checkpoints/TD3_velodyne_latest.pt
+Episode 1781 complete | global_step=222989 | episode_steps=57 | reward=126.946 | target=1 | collision=0 | final_distance=0.299 | progress=0.0030 | min_laser=2.266 | expl_noise=0.5986 | replay=222989 | steps/sec=5.719
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1782 complete | global_step=223066 | episode_steps=77 | reward=196.527 | target=1 | collision=0 | final_distance=0.255 | progress=0.1060 | min_laser=1.756 | expl_noise=0.5985 | replay=223066 | steps/sec=5.719
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1783 complete | global_step=223106 | episode_steps=40 | reward=174.332 | target=1 | collision=0 | final_distance=0.277 | progress=0.0552 | min_laser=1.504 | expl_noise=0.5984 | replay=223106 | steps/sec=5.720
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1784 complete | global_step=223414 | episode_steps=308 | reward=193.689 | target=1 | collision=0 | final_distance=0.294 | progress=0.0108 | min_laser=1.548 | expl_noise=0.5979 | replay=223414 | steps/sec=5.722
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1785 complete | global_step=223415 | episode_steps=1 | reward=-100.000 | target=0 | collision=1 | final_distance=11.277 | progress=-0.0673 | min_laser=0.301 | expl_noise=0.5979 | replay=223415 | steps/sec=5.722
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1786 complete | global_step=223441 | episode_steps=26 | reward=121.283 | target=1 | collision=0 | final_distance=0.297 | progress=0.0863 | min_laser=0.805 | expl_noise=0.5978 | replay=223441 | steps/sec=5.722
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1787 complete | global_step=223575 | episode_steps=134 | reward=-10.112 | target=0 | collision=1 | final_distance=0.584 | progress=0.0067 | min_laser=0.301 | expl_noise=0.5976 | replay=223575 | steps/sec=5.723
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1788 complete | global_step=223653 | episode_steps=78 | reward=136.227 | target=1 | collision=0 | final_distance=0.294 | progress=0.0177 | min_laser=2.024 | expl_noise=0.5974 | replay=223653 | steps/sec=5.724
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1789 complete | global_step=223813 | episode_steps=160 | reward=-129.488 | target=0 | collision=1 | final_distance=2.370 | progress=0.0003 | min_laser=0.348 | expl_noise=0.5971 | replay=223813 | steps/sec=5.725
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1790 complete | global_step=223899 | episode_steps=86 | reward=145.926 | target=1 | collision=0 | final_distance=0.285 | progress=0.0772 | min_laser=1.277 | expl_noise=0.5970 | replay=223899 | steps/sec=5.725
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Checkpoint saved: ./checkpoints/TD3_velodyne_latest.pt
+Episode 1791 complete | global_step=223930 | episode_steps=31 | reward=110.187 | target=1 | collision=0 | final_distance=0.292 | progress=0.0251 | min_laser=0.721 | expl_noise=0.5969 | replay=223930 | steps/sec=5.725
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1792 complete | global_step=224003 | episode_steps=73 | reward=-44.917 | target=0 | collision=1 | final_distance=3.332 | progress=0.0278 | min_laser=0.350 | expl_noise=0.5968 | replay=224003 | steps/sec=5.726
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1793 complete | global_step=224148 | episode_steps=145 | reward=183.162 | target=1 | collision=0 | final_distance=0.280 | progress=0.0445 | min_laser=0.927 | expl_noise=0.5965 | replay=224148 | steps/sec=5.727
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1794 complete | global_step=224213 | episode_steps=65 | reward=160.450 | target=1 | collision=0 | final_distance=0.281 | progress=0.0664 | min_laser=1.193 | expl_noise=0.5964 | replay=224213 | steps/sec=5.727
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1795 complete | global_step=224284 | episode_steps=71 | reward=100.605 | target=1 | collision=0 | final_distance=0.263 | progress=0.0423 | min_laser=0.647 | expl_noise=0.5963 | replay=224284 | steps/sec=5.728
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1796 complete | global_step=224464 | episode_steps=180 | reward=-137.030 | target=0 | collision=1 | final_distance=2.150 | progress=0.0035 | min_laser=0.341 | expl_noise=0.5960 | replay=224464 | steps/sec=5.729
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1797 complete | global_step=224751 | episode_steps=287 | reward=122.707 | target=1 | collision=0 | final_distance=0.289 | progress=0.0126 | min_laser=1.723 | expl_noise=0.5954 | replay=224751 | steps/sec=5.731
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1798 complete | global_step=224815 | episode_steps=64 | reward=190.713 | target=1 | collision=0 | final_distance=0.249 | progress=0.0803 | min_laser=0.975 | expl_noise=0.5953 | replay=224815 | steps/sec=5.732
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1799 complete | global_step=224889 | episode_steps=74 | reward=152.206 | target=1 | collision=0 | final_distance=0.299 | progress=0.0463 | min_laser=2.010 | expl_noise=0.5952 | replay=224889 | steps/sec=5.732
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Episode 1800 complete | global_step=225161 | episode_steps=272 | reward=161.048 | target=1 | collision=0 | final_distance=0.258 | progress=0.0649 | min_laser=1.627 | expl_noise=0.5947 | replay=225161 | steps/sec=5.734
+Latest eval summary | reward=5.376 | success_rate=0.300 | collision_rate=0.300 | avg_steps=247.6 | avg_final_distance=4.282
+Checkpoint saved: ./checkpoints/TD3_velodyne_latest.pt
+Validating at global_step=225161
+..............................................
+Eval Epoch 45 | avg_reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+..............................................
+Checkpoint saved: ./checkpoints/TD3_velodyne_latest.pt
+Episode 1801 complete | global_step=225232 | episode_steps=71 | reward=141.145 | target=1 | collision=0 | final_distance=0.291 | progress=0.0633 | min_laser=2.389 | expl_noise=0.5946 | replay=225232 | steps/sec=5.699
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1802 complete | global_step=225348 | episode_steps=116 | reward=232.631 | target=1 | collision=0 | final_distance=0.263 | progress=0.0558 | min_laser=0.841 | expl_noise=0.5944 | replay=225348 | steps/sec=5.700
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1803 complete | global_step=225476 | episode_steps=128 | reward=186.212 | target=1 | collision=0 | final_distance=0.299 | progress=0.0122 | min_laser=2.264 | expl_noise=0.5941 | replay=225476 | steps/sec=5.701
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1804 complete | global_step=225490 | episode_steps=14 | reward=121.152 | target=1 | collision=0 | final_distance=0.213 | progress=0.0894 | min_laser=1.632 | expl_noise=0.5941 | replay=225490 | steps/sec=5.701
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1805 complete | global_step=225774 | episode_steps=284 | reward=-11.650 | target=0 | collision=1 | final_distance=2.628 | progress=0.0000 | min_laser=0.349 | expl_noise=0.5936 | replay=225774 | steps/sec=5.703
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1806 complete | global_step=225823 | episode_steps=49 | reward=136.756 | target=1 | collision=0 | final_distance=0.226 | progress=0.0813 | min_laser=1.659 | expl_noise=0.5935 | replay=225823 | steps/sec=5.703
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1807 complete | global_step=225981 | episode_steps=158 | reward=-146.533 | target=0 | collision=1 | final_distance=1.164 | progress=0.0282 | min_laser=0.349 | expl_noise=0.5932 | replay=225981 | steps/sec=5.704
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1808 complete | global_step=225997 | episode_steps=16 | reward=105.186 | target=1 | collision=0 | final_distance=0.249 | progress=0.0661 | min_laser=1.225 | expl_noise=0.5932 | replay=225997 | steps/sec=5.704
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1809 complete | global_step=226055 | episode_steps=58 | reward=-123.260 | target=0 | collision=1 | final_distance=9.519 | progress=0.0004 | min_laser=0.344 | expl_noise=0.5931 | replay=226055 | steps/sec=5.705
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1810 complete | global_step=226091 | episode_steps=36 | reward=103.120 | target=1 | collision=0 | final_distance=0.299 | progress=0.0085 | min_laser=1.588 | expl_noise=0.5930 | replay=226091 | steps/sec=5.705
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Checkpoint saved: ./checkpoints/TD3_velodyne_latest.pt
+Episode 1811 complete | global_step=226146 | episode_steps=55 | reward=-38.858 | target=0 | collision=1 | final_distance=1.217 | progress=0.0088 | min_laser=0.345 | expl_noise=0.5929 | replay=226146 | steps/sec=5.705
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1812 complete | global_step=226248 | episode_steps=102 | reward=-35.825 | target=0 | collision=1 | final_distance=2.025 | progress=0.0182 | min_laser=0.348 | expl_noise=0.5928 | replay=226248 | steps/sec=5.706
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1813 complete | global_step=226249 | episode_steps=1 | reward=100.000 | target=1 | collision=0 | final_distance=0.214 | progress=0.0097 | min_laser=1.845 | expl_noise=0.5928 | replay=226249 | steps/sec=5.706
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1814 complete | global_step=226357 | episode_steps=108 | reward=136.193 | target=1 | collision=0 | final_distance=0.285 | progress=0.0405 | min_laser=1.007 | expl_noise=0.5926 | replay=226357 | steps/sec=5.707
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1815 complete | global_step=226428 | episode_steps=71 | reward=111.727 | target=1 | collision=0 | final_distance=0.282 | progress=0.0868 | min_laser=0.929 | expl_noise=0.5924 | replay=226428 | steps/sec=5.707
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1816 complete | global_step=226473 | episode_steps=45 | reward=104.612 | target=1 | collision=0 | final_distance=0.282 | progress=0.0516 | min_laser=1.771 | expl_noise=0.5923 | replay=226473 | steps/sec=5.708
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1817 complete | global_step=226831 | episode_steps=358 | reward=256.707 | target=1 | collision=0 | final_distance=0.288 | progress=0.0219 | min_laser=1.011 | expl_noise=0.5917 | replay=226831 | steps/sec=5.710
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1818 complete | global_step=226989 | episode_steps=158 | reward=-89.410 | target=0 | collision=1 | final_distance=3.165 | progress=0.0178 | min_laser=0.337 | expl_noise=0.5914 | replay=226989 | steps/sec=5.711
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1819 complete | global_step=227308 | episode_steps=319 | reward=-98.445 | target=0 | collision=1 | final_distance=3.857 | progress=0.0118 | min_laser=0.327 | expl_noise=0.5908 | replay=227308 | steps/sec=5.714
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1820 complete | global_step=227506 | episode_steps=198 | reward=218.133 | target=1 | collision=0 | final_distance=0.286 | progress=0.0383 | min_laser=1.316 | expl_noise=0.5905 | replay=227506 | steps/sec=5.715
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Checkpoint saved: ./checkpoints/TD3_velodyne_latest.pt
+Episode 1821 complete | global_step=227781 | episode_steps=275 | reward=-68.869 | target=0 | collision=1 | final_distance=1.017 | progress=0.0000 | min_laser=0.349 | expl_noise=0.5900 | replay=227781 | steps/sec=5.717
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1822 complete | global_step=227924 | episode_steps=143 | reward=197.215 | target=1 | collision=0 | final_distance=0.296 | progress=0.0106 | min_laser=1.683 | expl_noise=0.5897 | replay=227924 | steps/sec=5.718
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1823 complete | global_step=227952 | episode_steps=28 | reward=133.691 | target=1 | collision=0 | final_distance=0.216 | progress=0.0840 | min_laser=1.539 | expl_noise=0.5897 | replay=227952 | steps/sec=5.718
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1824 complete | global_step=228101 | episode_steps=149 | reward=223.054 | target=1 | collision=0 | final_distance=0.244 | progress=0.0604 | min_laser=1.148 | expl_noise=0.5894 | replay=228101 | steps/sec=5.719
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1825 complete | global_step=228270 | episode_steps=169 | reward=172.792 | target=1 | collision=0 | final_distance=0.298 | progress=0.0196 | min_laser=1.556 | expl_noise=0.5891 | replay=228270 | steps/sec=5.720
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1826 complete | global_step=228355 | episode_steps=85 | reward=-111.361 | target=0 | collision=1 | final_distance=5.069 | progress=0.0453 | min_laser=0.330 | expl_noise=0.5890 | replay=228355 | steps/sec=5.721
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1827 complete | global_step=228651 | episode_steps=296 | reward=112.034 | target=1 | collision=0 | final_distance=0.287 | progress=0.0634 | min_laser=0.857 | expl_noise=0.5884 | replay=228651 | steps/sec=5.723
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1828 complete | global_step=228680 | episode_steps=29 | reward=-118.029 | target=0 | collision=1 | final_distance=3.597 | progress=-0.0036 | min_laser=0.330 | expl_noise=0.5884 | replay=228680 | steps/sec=5.723
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1829 complete | global_step=229180 | episode_steps=500 | reward=-49.341 | target=0 | collision=0 | final_distance=8.784 | progress=0.0000 | min_laser=0.486 | expl_noise=0.5875 | replay=229180 | steps/sec=5.727
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1830 complete | global_step=229251 | episode_steps=71 | reward=196.147 | target=1 | collision=0 | final_distance=0.297 | progress=0.0359 | min_laser=1.229 | expl_noise=0.5873 | replay=229251 | steps/sec=5.727
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Checkpoint saved: ./checkpoints/TD3_velodyne_latest.pt
+Episode 1831 complete | global_step=229280 | episode_steps=29 | reward=-93.504 | target=0 | collision=1 | final_distance=6.583 | progress=0.0088 | min_laser=0.329 | expl_noise=0.5873 | replay=229280 | steps/sec=5.727
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1832 complete | global_step=229422 | episode_steps=142 | reward=217.805 | target=1 | collision=0 | final_distance=0.262 | progress=0.0893 | min_laser=1.206 | expl_noise=0.5870 | replay=229422 | steps/sec=5.728
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1833 complete | global_step=229500 | episode_steps=78 | reward=128.308 | target=1 | collision=0 | final_distance=0.277 | progress=0.0326 | min_laser=0.890 | expl_noise=0.5869 | replay=229500 | steps/sec=5.729
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1834 complete | global_step=229627 | episode_steps=127 | reward=116.471 | target=1 | collision=0 | final_distance=0.287 | progress=0.0183 | min_laser=2.297 | expl_noise=0.5867 | replay=229627 | steps/sec=5.730
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1835 complete | global_step=229935 | episode_steps=308 | reward=316.162 | target=1 | collision=0 | final_distance=0.280 | progress=0.0898 | min_laser=1.275 | expl_noise=0.5861 | replay=229935 | steps/sec=5.732
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1836 complete | global_step=229991 | episode_steps=56 | reward=-59.713 | target=0 | collision=1 | final_distance=2.163 | progress=-0.0021 | min_laser=0.334 | expl_noise=0.5860 | replay=229991 | steps/sec=5.732
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Episode 1837 complete | global_step=230055 | episode_steps=64 | reward=136.333 | target=1 | collision=0 | final_distance=0.267 | progress=0.0931 | min_laser=1.610 | expl_noise=0.5859 | replay=230055 | steps/sec=5.733
+Latest eval summary | reward=81.274 | success_rate=0.600 | collision_rate=0.100 | avg_steps=199.5 | avg_final_distance=1.369
+Validating at global_step=230055
+..............................................
+Eval Epoch 46 | avg_reward=69.217 | success_rate=0.600 | collision_rate=0.100 | avg_steps=213.1 | avg_final_distance=1.126
+..............................................
+Checkpoint saved: ./checkpoints/TD3_velodyne_latest.pt
+][0m
+[32m[DEBUG] [1778678680.416016383, 241.403000000]: Trying to publish message of type [sensor_msgs/LaserScan/90c7ef2dc6895d81024acba2ac42f369] on a publisher with type [sensor_msgs/LaserScan/90c7ef2dc6895d81024acba2ac42f369][0m
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+... logging to /home/jiutian/.ros/log/6083b06a-4ece-11f1-9d97-772424993982/roslaunch-JiuTian-AI4090-1356819.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;roscore
+[1mstarted roslaunch server http://localhost:46663/[0m
+ros_comm version 1.17.4
+
+
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+
+NODES
+
+auto-starting new master
+[1mprocess[master]: started with pid [1356829][0m
+[1mROS_MASTER_URI=http://localhost:11311/[0m
+]2;roscore http://localhost:11311/
+[1msetting /run_id to 6083b06a-4ece-11f1-9d97-772424993982[0m
+[1mprocess[rosout-1]: started with pid [1356845][0m
+started core service [/rosout]
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
+/gazebo/pause_physics service call failed
+Traceback (most recent call last):
+  File "train_velodyne_td3.py", line 501, in <module>
+    next_state, reward, done, target = env.step(a_in)
+  File "/home/jiutian/my_reproduction/DRL-robot-navigation-main/TD3/velodyne_env.py", line 182, in step
+    rospy.wait_for_service("/gazebo/unpause_physics")
+  File "/opt/ros/noetic/lib/python3/dist-packages/rospy/impl/tcpros_service.py", line 166, in wait_for_service
+    raise ROSInterruptException("rospy shutdown")
+rospy.exceptions.ROSInterruptException: rospy shutdown
+... logging to /home/jiutian/.ros/log/6083b06a-4ece-11f1-9d97-772424993982/roslaunch-JiuTian-AI4090-1356854.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/jiutian/my_reproduction/DRL-robot-navigation-main/TD3/assets/multi_robot_scenario_headless.launch
+[1mstarted roslaunch server http://localhost:35899/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /joint_state_publisher/publish_frequency: 30.0
+ * /robot_description: <?xml version="1....
+ * /robot_state_publisher/publish_frequency: 30.0
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+ * /use_sim_time: True
+
+NODES
+  /
+    gazebo (gazebo_ros/gzserver)
+    joint_state_publisher (joint_state_publisher/joint_state_publisher)
+    robot_state_publisher (robot_state_publisher/robot_state_publisher)
+    urdf_spawner (gazebo_ros/spawn_model)
+
+[1mROS_MASTER_URI=http://localhost:11311/[0m
+]2;/home/jiutian/my_reproduction/DRL-robot-navigation-main/TD3/assets/multi_robot_scenario_headless.launch http://localhost:11311/
+[1mprocess[gazebo-1]: started with pid [1356907][0m
+[1mprocess[urdf_spawner-2]: started with pid [1356910][0m
+[1mprocess[robot_state_publisher-3]: started with pid [1356913][0m
+[1mprocess[joint_state_publisher-4]: started with pid [1356914][0m
+[1m[urdf_spawner-2] process has finished cleanly
+log file: /home/jiutian/.ros/log/6083b06a-4ece-11f1-9d97-772424993982/urdf_spawner-2*.log[0m
+[joint_state_publisher-4] killing on exit
+[robot_state_publisher-3] killing on exit
+[gazebo-1] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
