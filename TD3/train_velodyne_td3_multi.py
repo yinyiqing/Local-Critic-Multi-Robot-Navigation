@@ -139,14 +139,16 @@ class Critic(nn.Module):
 
 
 class TD3(object):
-    def __init__(self, state_dim, action_dim, max_action, log_dir=None):
+    def __init__(self, state_dim, action_dim, max_action, log_dir=None, critic_state_dim=None):
+        self.state_dim = state_dim
+        self.critic_state_dim = critic_state_dim or state_dim
         self.actor = Actor(state_dim, action_dim).to(device)
         self.actor_target = Actor(state_dim, action_dim).to(device)
         self.actor_target.load_state_dict(self.actor.state_dict())
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters())
 
-        self.critic = Critic(state_dim, action_dim).to(device)
-        self.critic_target = Critic(state_dim, action_dim).to(device)
+        self.critic = Critic(self.critic_state_dim, action_dim).to(device)
+        self.critic_target = Critic(self.critic_state_dim, action_dim).to(device)
         self.critic_target.load_state_dict(self.critic.state_dict())
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters())
 
@@ -232,6 +234,85 @@ class TD3(object):
         self.writer.add_scalar("Av. Q", av_Q / iterations, self.iter_count)
         self.writer.add_scalar("Max. Q", max_Q, self.iter_count)
 
+    def train_local_critic(
+        self,
+        replay_buffer,
+        iterations,
+        batch_size=100,
+        discount=1,
+        tau=0.005,
+        policy_noise=0.2,
+        noise_clip=0.5,
+        policy_freq=2,
+    ):
+        av_Q = 0
+        max_Q = -inf
+        av_loss = 0
+        for it in range(iterations):
+            (
+                batch_states,
+                batch_critic_states,
+                batch_actions,
+                batch_rewards,
+                batch_dones,
+                batch_next_states,
+                batch_next_critic_states,
+            ) = replay_buffer.sample_local_critic_batch(batch_size)
+            state = torch.Tensor(batch_states).to(device)
+            critic_state = torch.Tensor(batch_critic_states).to(device)
+            next_state = torch.Tensor(batch_next_states).to(device)
+            next_critic_state = torch.Tensor(batch_next_critic_states).to(device)
+            action = torch.Tensor(batch_actions).to(device)
+            reward = torch.Tensor(batch_rewards).to(device)
+            done = torch.Tensor(batch_dones).to(device)
+
+            next_action = self.actor_target(next_state)
+            noise = torch.Tensor(batch_actions).data.normal_(0, policy_noise).to(device)
+            noise = noise.clamp(-noise_clip, noise_clip)
+            next_action = (next_action + noise).clamp(-self.max_action, self.max_action)
+
+            target_Q1, target_Q2 = self.critic_target(next_critic_state, next_action)
+            target_Q = torch.min(target_Q1, target_Q2)
+            av_Q += torch.mean(target_Q)
+            max_Q = max(max_Q, torch.max(target_Q))
+            target_Q = reward + ((1 - done) * discount * target_Q).detach()
+
+            current_Q1, current_Q2 = self.critic(critic_state, action)
+            loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
+
+            self.critic_optimizer.zero_grad()
+            loss.backward()
+            self.critic_optimizer.step()
+
+            if it % policy_freq == 0:
+                actor_action = self.actor(state)
+                actor_grad, _ = self.critic(critic_state, actor_action)
+                actor_grad = -actor_grad.mean()
+                self.actor_optimizer.zero_grad()
+                actor_grad.backward()
+                self.actor_optimizer.step()
+
+                for param, target_param in zip(
+                    self.actor.parameters(), self.actor_target.parameters()
+                ):
+                    target_param.data.copy_(
+                        tau * param.data + (1 - tau) * target_param.data
+                    )
+
+                for param, target_param in zip(
+                    self.critic.parameters(), self.critic_target.parameters()
+                ):
+                    target_param.data.copy_(
+                        tau * param.data + (1 - tau) * target_param.data
+                    )
+
+            av_loss += loss
+
+        self.iter_count += 1
+        self.writer.add_scalar("loss", av_loss / iterations, self.iter_count)
+        self.writer.add_scalar("Av. Q", av_Q / iterations, self.iter_count)
+        self.writer.add_scalar("Max. Q", max_Q, self.iter_count)
+
     def save(self, filename, directory):
         torch.save(self.actor.state_dict(), "%s/%s_actor.pth" % (directory, filename))
         torch.save(self.critic.state_dict(), "%s/%s_critic.pth" % (directory, filename))
@@ -244,6 +325,13 @@ class TD3(object):
             torch.load("%s/%s_critic.pth" % (directory, filename), map_location=device)
         )
 
+    def load_actor(self, filename, directory):
+        actor_state = torch.load(
+            "%s/%s_actor.pth" % (directory, filename), map_location=device
+        )
+        self.actor.load_state_dict(actor_state)
+        self.actor_target.load_state_dict(actor_state)
+
     def state_dict(self):
         return {
             "actor": self.actor.state_dict(),
@@ -255,6 +343,8 @@ class TD3(object):
             "iter_count": self.iter_count,
             "log_dir": self.writer.log_dir,
             "max_action": self.max_action,
+            "state_dim": self.state_dim,
+            "critic_state_dim": self.critic_state_dim,
         }
 
     def load_state_dict(self, state):
@@ -284,6 +374,13 @@ def env_float(name, default=None):
     return float(value)
 
 
+def env_int(name, default):
+    value = os.environ.get(name)
+    if value is None or value.strip() == "":
+        return default
+    return int(value)
+
+
 seed = 0
 eval_freq = 5e3
 max_ep = 300
@@ -302,6 +399,14 @@ buffer_size = 1e6
 agent_names = ["r1", "r2"]
 use_dynamic_reward = env_flag("DRL_MULTI_USE_DYNAMIC_REWARD", False)
 cooperative_reward_self_weight = env_float("DRL_MULTI_REWARD_SELF_WEIGHT", None)
+use_local_critic = env_flag("DRL_MULTI_USE_LOCAL_CRITIC", False)
+local_critic_max_agents = env_int("DRL_MULTI_LOCAL_CRITIC_MAX_AGENTS", 10)
+local_critic_max_neighbors = max(local_critic_max_agents - 1, 1)
+local_critic_feature_dim = 7
+use_distance_weighted_reward = env_flag(
+    "DRL_MULTI_USE_DISTANCE_WEIGHTED_REWARD", False
+)
+cooperative_reward_sigma = env_float("DRL_MULTI_REWARD_SIGMA", 2.0)
 base_file_name = "TD3_velodyne_multi_v4"
 file_name = os.environ.get(
     "DRL_MULTI_TRAIN_FILE_NAME",
@@ -389,6 +494,8 @@ env = MultiAgentGazeboEnv(
     agent_names=agent_names,
     cooperative_reward=use_dynamic_reward,
     cooperative_reward_self_weight=cooperative_reward_self_weight,
+    cooperative_reward_distance_weighted=use_distance_weighted_reward,
+    cooperative_reward_sigma=cooperative_reward_sigma,
     robot_safe_distance=0.0,
     weak_coupling_layout=True,
 )
@@ -398,11 +505,19 @@ np.random.seed(seed)
 state_dim = environment_dim + robot_dim
 action_dim = 2
 max_action = 1
+critic_context_dim = local_critic_max_neighbors * local_critic_feature_dim
+critic_state_dim = state_dim + critic_context_dim if use_local_critic else state_dim
 
 checkpoint = load_training_checkpoint()
 log_dir = checkpoint["network"]["log_dir"] if checkpoint else make_run_log_dir()
 
-network = TD3(state_dim, action_dim, max_action, log_dir=log_dir)
+network = TD3(
+    state_dim,
+    action_dim,
+    max_action,
+    log_dir=log_dir,
+    critic_state_dim=critic_state_dim,
+)
 replay_buffer = ReplayBuffer(buffer_size, seed)
 
 if checkpoint:
@@ -411,8 +526,13 @@ if checkpoint:
     print("Resumed multi-agent training from checkpoint:", checkpoint_path)
 elif load_model:
     try:
-        network.load(load_model_name, "./pytorch_models")
-        print("Loaded initial model parameters from:", load_model_name)
+        if use_local_critic:
+            network.load_actor(load_model_name, "./pytorch_models")
+            print("Loaded initial actor parameters from:", load_model_name)
+            print("Local critic is newly initialized because critic input dim changed.")
+        else:
+            network.load(load_model_name, "./pytorch_models")
+            print("Loaded initial model parameters from:", load_model_name)
     except Exception:
         print("Could not load the stored model parameters, initializing randomly")
 
@@ -441,6 +561,13 @@ if torch.cuda.is_available():
 print("Agent names:", ", ".join(agent_names))
 print("Cooperative reward:", use_dynamic_reward)
 print("Cooperative reward self weight:", cooperative_reward_self_weight)
+print("Distance-weighted reward:", use_distance_weighted_reward)
+print("Distance reward sigma:", cooperative_reward_sigma)
+print("Local critic enabled:", use_local_critic)
+print("Actor state dim:", state_dim)
+print("Critic state dim:", critic_state_dim)
+print("Local critic max neighbors:", local_critic_max_neighbors)
+print("Local critic context dim:", critic_context_dim)
 print("Eval episodes:", eval_ep)
 print("TensorBoard log dir:", log_dir)
 print("Checkpoint path:", checkpoint_path)
@@ -454,6 +581,20 @@ print("Starting epoch:", epoch)
 print("==============================================")
 
 last_eval_summary = None
+
+
+def combine_critic_state(state, context):
+    return np.concatenate(
+        [np.array(state, dtype=np.float32), np.array(context, dtype=np.float32)]
+    )
+
+
+def context_stats(contexts):
+    if not contexts:
+        return 0.0, 0.0
+    masks = [np.array(context, dtype=np.float32)[6::local_critic_feature_dim] for context in contexts]
+    counts = [float(np.sum(mask)) for mask in masks]
+    return float(np.mean(counts)), float(np.max(counts))
 
 
 def is_better_eval(candidate, current_best):
@@ -477,16 +618,28 @@ while timestep < max_timesteps:
     if episode_done:
         if timestep != 0 and not skip_episode_summary_once:
             train_iterations = max(episode_timesteps, 1)
-            network.train(
-                replay_buffer,
-                train_iterations,
-                batch_size,
-                discount,
-                tau,
-                policy_noise,
-                noise_clip,
-                policy_freq,
-            )
+            if use_local_critic:
+                network.train_local_critic(
+                    replay_buffer,
+                    train_iterations,
+                    batch_size,
+                    discount,
+                    tau,
+                    policy_noise,
+                    noise_clip,
+                    policy_freq,
+                )
+            else:
+                network.train(
+                    replay_buffer,
+                    train_iterations,
+                    batch_size,
+                    discount,
+                    tau,
+                    policy_noise,
+                    noise_clip,
+                    policy_freq,
+                )
             elapsed = time.time() - train_start_time
             steps_per_sec = timestep / elapsed if elapsed > 0 else 0.0
             step_agents = env.last_step_info["agents"]
@@ -536,6 +689,9 @@ while timestep < max_timesteps:
             coop_neighbor_counts = [
                 len(step_agents[name]["reward_neighbors"]) for name in agent_names
             ]
+            mean_context_neighbors, max_context_neighbors = context_stats(
+                episode_last_neighbor_contexts
+            )
             coop_active_agents = sum(1 for count in coop_neighbor_counts if count > 0)
             mean_raw_reward = float(np.mean(raw_rewards))
             mean_adjusted_reward = float(np.mean(adjusted_rewards))
@@ -546,7 +702,9 @@ while timestep < max_timesteps:
                 "success=%i/%i | collision=%i/%i | mean_final_distance=%.3f | "
                 "mean_progress=%.4f | min_laser=%.3f | mean_lin=%.3f | mean_ang=%.3f | "
                 "mean_robot_dist=%.3f | raw_reward=%.3f | adjusted_reward=%.3f | "
-                "coop_agents=%i/%i | mean_coop_neighbors=%.2f | expl_noise=%.4f | "
+                "coop_agents=%i/%i | mean_coop_neighbors=%.2f | "
+                "context_neighbors_mean=%.2f | context_neighbors_max=%.0f | "
+                "expl_noise=%.4f | "
                 "replay=%i | samples/sec=%.3f"
                 % (
                     episode_num,
@@ -570,6 +728,8 @@ while timestep < max_timesteps:
                     coop_active_agents,
                     len(agent_names),
                     mean_coop_neighbors,
+                    mean_context_neighbors,
+                    max_context_neighbors,
                     expl_noise,
                     replay_buffer.size(),
                     steps_per_sec,
@@ -703,6 +863,14 @@ while timestep < max_timesteps:
             )
 
         states = env.reset()
+        zero_env_actions = [[0.0, 0.0] for _ in agent_names]
+        neighbor_contexts = (
+            env.build_neighbor_context(
+                zero_env_actions, max_neighbors=local_critic_max_neighbors
+            )
+            if use_local_critic
+            else None
+        )
         skip_episode_summary_once = False
         active_mask = [True] * len(agent_names)
         episode_done = False
@@ -716,6 +884,11 @@ while timestep < max_timesteps:
         episode_last_env_actions = {
             name: np.zeros(action_dim, dtype=np.float32) for name in agent_names
         }
+        episode_last_neighbor_contexts = (
+            neighbor_contexts
+            if use_local_critic
+            else [np.zeros(critic_context_dim, dtype=np.float32) for _ in agent_names]
+        )
         episode_num += 1
 
     if expl_noise > expl_min:
@@ -758,6 +931,13 @@ while timestep < max_timesteps:
     next_states, rewards, dones, targets, collisions = env.step(
         env_actions, active_mask
     )
+    next_neighbor_contexts = (
+        env.build_neighbor_context(
+            env_actions, max_neighbors=local_critic_max_neighbors
+        )
+        if use_local_critic
+        else None
+    )
     env_step_count += 1
     step_agents = env.last_step_info["agents"]
 
@@ -766,9 +946,20 @@ while timestep < max_timesteps:
         if not active_mask[idx]:
             continue
         done_bool = 0 if truncated else int(dones[idx])
-        replay_buffer.add(
-            states[idx], raw_actions[idx], rewards[idx], done_bool, next_states[idx]
-        )
+        if use_local_critic:
+            replay_buffer.add_local_critic(
+                states[idx],
+                combine_critic_state(states[idx], neighbor_contexts[idx]),
+                raw_actions[idx],
+                rewards[idx],
+                done_bool,
+                next_states[idx],
+                combine_critic_state(next_states[idx], next_neighbor_contexts[idx]),
+            )
+        else:
+            replay_buffer.add(
+                states[idx], raw_actions[idx], rewards[idx], done_bool, next_states[idx]
+            )
         episode_rewards[idx] += rewards[idx]
         episode_sample_count += 1
         episode_success_flags[idx] = max(episode_success_flags[idx], int(targets[idx]))
@@ -794,6 +985,9 @@ while timestep < max_timesteps:
             active_mask[idx] = False
 
     states = next_states
+    if use_local_critic:
+        neighbor_contexts = next_neighbor_contexts
+        episode_last_neighbor_contexts = next_neighbor_contexts
     episode_timesteps += 1
 
     if truncated or not any(active_mask):

@@ -30,6 +30,8 @@ class MultiAgentGazeboEnv:
         agent_names=None,
         cooperative_reward=False,
         cooperative_reward_self_weight=None,
+        cooperative_reward_distance_weighted=False,
+        cooperative_reward_sigma=2.0,
         reward_neighbor_radius=10.0,
         reward_neighbor_fov=np.pi / 2 + 0.03,
         robot_safe_distance=1.0,
@@ -40,6 +42,8 @@ class MultiAgentGazeboEnv:
         self.num_agents = len(self.agent_names)
         self.cooperative_reward = cooperative_reward
         self.cooperative_reward_self_weight = cooperative_reward_self_weight
+        self.cooperative_reward_distance_weighted = cooperative_reward_distance_weighted
+        self.cooperative_reward_sigma = cooperative_reward_sigma
         self.reward_neighbor_radius = reward_neighbor_radius
         self.reward_neighbor_fov = reward_neighbor_fov
         self.robot_safe_distance = robot_safe_distance
@@ -254,7 +258,48 @@ class MultiAgentGazeboEnv:
             relative_angle = math.acos(dot)
             if relative_angle <= self.reward_neighbor_fov:
                 neighbors.append(other_name)
+        neighbors.sort(
+            key=lambda other: np.linalg.norm(self.robot_positions[other] - origin)
+        )
         return neighbors
+
+    def build_neighbor_context(self, actions, max_neighbors=9):
+        contexts = []
+        action_by_name = {
+            name: np.array(actions[idx], dtype=np.float32)
+            for idx, name in enumerate(self.agent_names)
+        }
+
+        for name in self.agent_names:
+            origin = self.robot_positions[name]
+            yaw = self._get_robot_yaw(name)
+            context = []
+            for other_name in self._compute_visible_neighbors(name)[:max_neighbors]:
+                offset = self.robot_positions[other_name] - origin
+                distance = float(np.linalg.norm(offset))
+                bearing = math.atan2(offset[1], offset[0]) - yaw
+                while bearing > np.pi:
+                    bearing -= 2 * np.pi
+                while bearing < -np.pi:
+                    bearing += 2 * np.pi
+                other_action = action_by_name.get(other_name, np.zeros(2))
+                context.extend(
+                    [
+                        float(offset[0]),
+                        float(offset[1]),
+                        distance,
+                        float(bearing),
+                        float(other_action[0]),
+                        float(other_action[1]),
+                        1.0,
+                    ]
+                )
+
+            missing = max_neighbors - len(context) // 7
+            if missing > 0:
+                context.extend([0.0] * missing * 7)
+            contexts.append(np.array(context, dtype=np.float32))
+        return contexts
 
     def _apply_cooperative_reward(self, rewards, active_mask):
         adjusted = rewards.copy()
@@ -269,13 +314,31 @@ class MultiAgentGazeboEnv:
                 and self.last_reward_neighbors[name]
             ):
                 self_weight = float(self.cooperative_reward_self_weight)
-                neighbor_rewards = [
-                    rewards[self.agent_names.index(n)]
-                    for n in self.last_reward_neighbors[name]
-                ]
+                neighbor_rewards = np.array(
+                    [
+                        rewards[self.agent_names.index(n)]
+                        for n in self.last_reward_neighbors[name]
+                    ],
+                    dtype=np.float32,
+                )
+                if self.cooperative_reward_distance_weighted:
+                    distances = np.array(
+                        [
+                            np.linalg.norm(
+                                self.robot_positions[n] - self.robot_positions[name]
+                            )
+                            for n in self.last_reward_neighbors[name]
+                        ],
+                        dtype=np.float32,
+                    )
+                    sigma = max(float(self.cooperative_reward_sigma), 1e-6)
+                    weights = np.exp(-distances / sigma)
+                    neighbor_reward = float(np.sum(weights * neighbor_rewards) / np.sum(weights))
+                else:
+                    neighbor_reward = float(np.mean(neighbor_rewards))
                 adjusted[idx] = float(
                     self_weight * rewards[idx]
-                    + (1.0 - self_weight) * np.mean(neighbor_rewards)
+                    + (1.0 - self_weight) * neighbor_reward
                 )
             else:
                 adjusted[idx] = float(
@@ -295,15 +358,21 @@ class MultiAgentGazeboEnv:
         return float(min(distances))
 
     def _sample_position(self, x_range, y_range):
-        while True:
+        for _ in range(500):
             candidate = np.array(
                 [np.random.uniform(*x_range), np.random.uniform(*y_range)]
             )
             if check_pos(candidate[0], candidate[1]):
                 return candidate
+        raise RuntimeError(
+            "Could not sample a valid position in range "
+            f"x={x_range}, y={y_range}. Check map capacity and obstacles."
+        )
 
     def _agent_side_ranges(self, name):
         if not self.weak_coupling_layout:
+            return (-4.5, 4.5), (-4.5, 4.5)
+        if self.num_agents > 2:
             return (-4.5, 4.5), (-4.5, 4.5)
         if name == self.agent_names[0]:
             return (-4.2, -1.0), (-4.2, 4.2)
@@ -497,11 +566,14 @@ class MultiAgentGazeboEnv:
 
     def _sample_robot_positions(self, min_clearance=1.2):
         if self.weak_coupling_layout:
-            min_clearance = max(min_clearance, 3.0)
+            if self.num_agents <= 2:
+                min_clearance = max(min_clearance, 3.0)
+            else:
+                min_clearance = max(min_clearance, 1.2)
         positions = {}
         for name in self.agent_names:
             placed = False
-            while not placed:
+            for _ in range(1000):
                 x_range, y_range = self._agent_side_ranges(name)
                 candidate = self._sample_position(x_range, y_range)
                 if any(
@@ -511,15 +583,25 @@ class MultiAgentGazeboEnv:
                     continue
                 positions[name] = candidate
                 placed = True
+                break
+            if not placed:
+                raise RuntimeError(
+                    f"Could not place robot {name} with clearance {min_clearance}. "
+                    f"Placed {len(positions)}/{self.num_agents} robots. "
+                    "The map may be too crowded for this robot count."
+                )
         return positions
 
     def _sample_goal_positions(self, min_clearance=1.2):
         if self.weak_coupling_layout:
-            min_clearance = max(min_clearance, 1.8)
+            if self.num_agents <= 2:
+                min_clearance = max(min_clearance, 1.8)
+            else:
+                min_clearance = max(min_clearance, 1.0)
         goals = {}
         for name in self.agent_names:
             placed = False
-            while not placed:
+            for _ in range(1000):
                 candidate = self._sample_goal_candidate_for_agent(name)
                 if not check_pos(candidate[0], candidate[1]):
                     continue
@@ -541,6 +623,13 @@ class MultiAgentGazeboEnv:
                     continue
                 goals[name] = candidate
                 placed = True
+                break
+            if not placed:
+                raise RuntimeError(
+                    f"Could not place goal for {name} with clearance {min_clearance}. "
+                    f"Placed {len(goals)}/{self.num_agents} goals. "
+                    "The map may be too crowded for this robot count."
+                )
         return goals
 
     def random_box(self):
