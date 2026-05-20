@@ -1,0 +1,287 @@
+Panels:
+  - Class: rviz/Displays
+    Name: Displays
+  - Class: rviz/Views
+    Name: Views
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.35
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.03
+        Value: Lines
+      Name: Grid
+      Plane: XY
+      Plane Cell Count: 20
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Class: rviz/TF
+      Enabled: false
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Scale: 0.35
+      Name: TF
+      Show Arrows: true
+      Show Axes: true
+      Show Names: false
+      Tree:
+        {}
+      Update Interval: 0
+      Value: false
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+      Name: r1 RobotModel
+      Robot Description: /r1/robot_description
+      TF Prefix: r1
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Angle Tolerance: 20
+      Class: rviz/Odometry
+      Enabled: false
+      Keep: 1
+      Name: r1 Odom
+      Position Tolerance: 0.1
+      Queue Size: 10
+      Shape:
+        Alpha: 1
+        Axes Length: 0.45
+        Axes Radius: 0.05
+        Color: 255; 70; 50
+        Head Length: 0.14
+        Head Radius: 0.09
+        Shaft Length: 0.28
+        Shaft Radius: 0.035
+        Value: Arrow
+      Topic: /r1/odom
+      Unreliable: false
+      Value: false
+    - Alpha: 0.45
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 70; 50
+      Color Transformer: FlatColor
+      Decay Time: 0.15
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: r1 Velodyne
+      Position Transformer: XYZ
+      Queue Size: 3
+      Selectable: true
+      Size (Pixels): 1
+      Size (m): 0.015
+      Style: Flat Squares
+      Topic: /r1/velodyne_points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: false
+      Value: true
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+      Name: r2 RobotModel
+      Robot Description: /r2/robot_description
+      TF Prefix: r2
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Angle Tolerance: 20
+      Class: rviz/Odometry
+      Enabled: false
+      Keep: 1
+      Name: r2 Odom
+      Position Tolerance: 0.1
+      Queue Size: 10
+      Shape:
+        Alpha: 1
+        Axes Length: 0.45
+        Axes Radius: 0.05
+        Color: 70; 160; 255
+        Head Length: 0.14
+        Head Radius: 0.09
+        Shaft Length: 0.28
+        Shaft Radius: 0.035
+        Value: Arrow
+      Topic: /r2/odom
+      Unreliable: false
+      Value: false
+    - Alpha: 0.45
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 70; 160; 255
+      Color Transformer: FlatColor
+      Decay Time: 0.15
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: r2 Velodyne
+      Position Transformer: XYZ
+      Queue Size: 3
+      Selectable: true
+      Size (Pixels): 1
+      Size (m): 0.015
+      Style: Flat Squares
+      Topic: /r2/velodyne_points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: false
+      Value: false
+    - Alpha: 1
+      Class: rviz/RobotModel
+      Collision Enabled: false
+      Enabled: true
+      Links:
+        All Links Enabled: true
+        Expand Joint Details: false
+        Expand Link Details: false
+        Expand Tree: false
+        Link Tree Style: Links in Alphabetic Order
+      Name: r3 RobotModel
+      Robot Description: /r3/robot_description
+      TF Prefix: r3
+      Update Interval: 0
+      Value: true
+      Visual Enabled: true
+    - Angle Tolerance: 20
+      Class: rviz/Odometry
+      Enabled: false
+      Keep: 1
+      Name: r3 Odom
+      Position Tolerance: 0.1
+      Queue Size: 10
+      Shape:
+        Alpha: 1
+        Axes Length: 0.45
+        Axes Radius: 0.05
+        Color: 80; 220; 120
+        Head Length: 0.14
+        Head Radius: 0.09
+        Shaft Length: 0.28
+        Shaft Radius: 0.035
+        Value: Arrow
+      Topic: /r3/odom
+      Unreliable: false
+      Value: false
+    - Alpha: 0.45
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 80; 220; 120
+      Color Transformer: FlatColor
+      Decay Time: 0.15
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: r3 Velodyne
+      Position Transformer: XYZ
+      Queue Size: 3
+      Selectable: true
+      Size (Pixels): 1
+      Size (m): 0.015
+      Style: Flat Squares
+      Topic: /r3/velodyne_points
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: false
+      Value: false
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /goal_points
+      Name: Goal Points
+      Namespaces:
+        goal_points: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /multi_agent_overlay
+      Name: Multi-Agent Overlay
+      Namespaces:
+        robot_labels: true
+        robot_trails: true
+        robots: true
+        static_obstacles: true
+      Queue Size: 10
+      Value: true
+  Enabled: true
+  Global Options:
+    Background Color: 28; 30; 32
+    Default Light: true
+    Fixed Frame: odom
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+  Value: true
+  Views:
+    Current:
+      Angle: 0
+      Class: rviz/TopDownOrtho
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.06
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.01
+      Scale: 16
+      Target Frame: <Fixed Frame>
+      X: 0
+      Y: 0
+    Saved: ~
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 900
+  Hide Left Dock: false
+  Hide Right Dock: true
+  Width: 1400
+  X: 80
+  Y: 40

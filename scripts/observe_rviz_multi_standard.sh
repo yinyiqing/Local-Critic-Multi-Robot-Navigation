@@ -41,10 +41,11 @@ python3 "$PROJECT_ROOT/scripts/rviz_multi_agent_overlay.py" \
 overlay_pid="$!"
 
 declare -a robot_state_pids=()
+python3 "$PROJECT_ROOT/scripts/publish_multi_robot_descriptions.py" \
+  --agents "$overlay_agents"
+
 for idx in $(seq 1 "$NUM_AGENTS"); do
   name="r${idx}"
-  rosparam get "/robot_description_${name}" >"/tmp/${name}_robot_description.xml"
-  rosparam set "/${name}/robot_description" --textfile "/tmp/${name}_robot_description.xml"
   ROS_NAMESPACE="/${name}" rosrun robot_state_publisher robot_state_publisher \
     __name:="${name}_robot_state_publisher" \
     _tf_prefix:="${name}" \
