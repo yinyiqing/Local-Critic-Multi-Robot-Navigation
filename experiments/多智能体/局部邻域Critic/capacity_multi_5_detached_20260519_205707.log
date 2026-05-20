@@ -1,0 +1,618 @@
+Activated DRL robot navigation Python environment.
+Python: Python 3.8.10
+Venv: /home/jiutian/venvs/drl-robot-nav
+==============================================
+Multi-agent capacity check
+PID: 540419
+Launchfile: multi_robot_scenario_capacity_5.launch
+Agent names: r1, r2, r3, r4, r5
+Episodes: 5
+Steps per episode: 80
+Weak coupling layout: True
+==============================================
+Roscore launched!
+Gazebo launched!
+[31m[gazebo-1] process has died [pid 541178, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 541526, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 541710, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 541890, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 542066, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 542242, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 542419, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 542599, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 542776, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 542955, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 543135, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 543312, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 543493, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 543671, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 543853, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 544031, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 544211, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 544392, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 544569, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 544741, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 544911, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 545090, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 545273, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 545446, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 545624, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 545802, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 545980, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 546160, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 546338, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 546512, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 546693, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 546870, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 547071, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 547252, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 547428, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 547607, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 547791, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 547972, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 548150, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 548329, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 548509, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 548674, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 548851, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 549029, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 549205, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 549382, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 549559, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 549737, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 549916, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 550092, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 550271, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 550450, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[INFO] [1779195428.544535, 0.000000]: Loading model XML from ros parameter robot_description_r5
+[INFO] [1779195428.547519, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1779195452.309394, 0.244000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1779195453.150431, 0.372000]: Spawn status: SpawnModel: Successfully spawned entity
+[WARN] [1779195453.261203089, 0.372000000]: DiffDrive(ns = /r5/): missing <publishOdomTF> default is true
+[WARN] [1779195453.261366238, 0.372000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1
+[INFO] [1779195452.144599935]: Finished loading Gazebo ROS API Plugin.
+[INFO] [1779195452.145148074]: waitForService: Service [/gazebo/set_physics_properties] has not been advertised, waiting...
+[INFO] [1779195452.268118292, 0.204000000]: waitForService: Service [/gazebo/set_physics_properties] is now available.
+[INFO] [1779195452.273955320, 0.210000000]: Physics dynamic reconfigure ready.
+[INFO] [1779195452.535808710, 0.372000000]: Laser Plugin: The 'robotNamespace' param was empty
+[INFO] [1779195452.535829116, 0.372000000]: Starting Laser Plugin (ns = r5)
+[INFO] [1779195452.536191396, 0.372000000]: Laser Plugin (ns = r5)  <tf_prefix_>, set to ""
+[INFO] [1779195453.152912453, 0.372000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping
+[INFO] [1779195453.153668135, 0.372000000]: Velodyne laser plugin ready, 16 lasers
+[INFO] [1779195453.260489892, 0.372000000]: Starting plugin DiffDrive(ns = /r5/)
+[INFO] [1779195453.260559928, 0.372000000]: DiffDrive(ns = /r5/): <rosDebugLevel> = Debug
+[INFO] [1779195453.261079279, 0.372000000]: DiffDrive(ns = /r5/): <tf_prefix> = 
+[DEBUG] [1779195453.261135166, 0.372000000]: DiffDrive(ns = /r5/): <commandTopic> = cmd_vel
+[DEBUG] [1779195453.261144433, 0.372000000]: DiffDrive(ns = /r5/): <odometryTopic> = odom
+[DEBUG] [1779195453.261154220, 0.372000000]: DiffDrive(ns = /r5/): <odometryFrame> = odom
+[DEBUG] [1779195453.261161692, 0.372000000]: DiffDrive(ns = /r5/): <robotBaseFrame> = base_link
+[DEBUG] [1779195453.261194740, 0.372000000]: DiffDrive(ns = /r5/): <publishWheelTF> = false
+[DEBUG] [1779195453.261224649, 0.372000000]: DiffDrive(ns = /r5/): <publishWheelJointState> = true
+[DEBUG] [1779195453.261255645, 0.372000000]: DiffDrive(ns = /r5/): <wheelSeparation> = 0.29999999999999999
+[DEBUG] [1779195453.261264378, 0.372000000]: DiffDrive(ns = /r5/): <wheelDiameter> = 0.17999999999999999
+[DEBUG] [1779195453.261273258, 0.372000000]: DiffDrive(ns = /r5/): <wheelAcceleration> = 1.8
+[DEBUG] [1779195453.261283081, 0.372000000]: DiffDrive(ns = /r5/): <wheelTorque> = 20
+[DEBUG] [1779195453.261290768, 0.372000000]: DiffDrive(ns = /r5/): <updateRate> = 50
+[DEBUG] [1779195453.261324095, 0.372000000]: DiffDrive(ns = /r5/): <odometrySource> = world := 1
+[DEBUG] [1779195453.261342926, 0.372000000]: DiffDrive(ns = /r5/): <leftJoint> = left_hub_joint
+[DEBUG] [1779195453.261351780, 0.372000000]: DiffDrive(ns = /r5/): <rightJoint> = right_hub_joint
+[INFO] [1779195453.261817974, 0.372000000]: DiffDrive(ns = /r5/): Advertise joint_states
+[INFO] [1779195453.262224732, 0.372000000]: DiffDrive(ns = /r5/): Try to subscribe to cmd_vel
+[INFO] [1779195453.263268371, 0.372000000]: DiffDrive(ns = /r5/): Subscribe to cmd_vel
+[INFO] [1779195453.263439028, 0.372000000]: DiffDrive(ns = /r5/): Advertise odom on odom 
+[INFO] [1779195453.267313976, 0.372000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint
+[INFO] [1779195453.267327918, 0.372000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint
+[INFO] [1779195453.267337277, 0.372000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint
+[INFO] [1779195453.267344841, 0.372000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint
+[INFO] [1779195453.267354051, 0.372000000]: Starting GazeboRosJointStatePublisher Plugin (ns = /r5/)!, parent name: r5
+[DEBUG] [1779195453.287965443, 0.393000000]: Trying to publish message of type [nav_msgs/Odometry/cd5e73d190d741a2f92e81eda573aca7] on a publisher with type [nav_msgs/Odometry/cd5e73d190d741a2f92e81eda573aca7]
+[DEBUG] [1779195453.288029884, 0.393000000]: Trying to publish message of type [sensor_msgs/JointState/3066dcd76a6cfaef579bd0f34173e9fd] on a publisher with type [sensor_msgs/JointState/3066dcd76a6cfaef579bd0f34173e9fd]
+[INFO] [1779195453.547668948, 0.572000000]: Laser Plugin: The 'robotNamespace' param was empty
+[INFO] [1779195453.547691687, 0.572000000]: Starting Laser Plugin (ns = r1)
+[INFO] [1779195453.548105359, 0.572000000]: Laser Plugin (ns = r1)  <tf_prefix_>, set to ""
+[INFO] [1779195454.15[WARN] [1779195454.155566834, 0.572000000]: DiffDrive(ns = /r1/): missing <publishOdomTF> default is true
+[WARN] [1779195454.155626306, 0.572000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1
+[INFO] [1779195428.542325, 0.000000]: Loading model XML from ros parameter robot_description_r1
+[INFO] [1779195428.544895, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1779195452.309115, 0.243000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1779195454.155186, 0.572000]: Spawn status: SpawnModel: Successfully spawned entity
+... logging to /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/roslaunch-JiuTian-AI4090-540612.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/jiutian/DRL-robot-navigation/TD3/assets/multi_robot_scenario_capacity_5.launch
+[1mstarted roslaunch server http://localhost:41731/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /robot_description_r1: <?xml version="1....
+ * /robot_description_r2: <?xml version="1....
+ * /robot_description_r3: <?xml version="1....
+ * /robot_description_r4: <?xml version="1....
+ * /robot_description_r5: <?xml version="1....
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+ * /use_sim_time: True
+
+NODES
+  /
+    gazebo (gazebo_ros/gzserver)
+    urdf_spawner_r1 (gazebo_ros/spawn_model)
+    urdf_spawner_r2 (gazebo_ros/spawn_model)
+    urdf_spawner_r3 (gazebo_ros/spawn_model)
+    urdf_spawner_r4 (gazebo_ros/spawn_model)
+    urdf_spawner_r5 (gazebo_ros/spawn_model)
+
+[1mROS_MASTER_URI=http://localhost:11341/[0m
+]2;/home/jiutian/DRL-robot-navigation/TD3/assets/multi_robot_scenario_capacity_5.launch http://localhost:11341/
+[1mprocess[gazebo-1]: started with pid [541178][0m
+[1mprocess[urdf_spawner_r1-2]: started with pid [541183][0m
+[1mprocess[urdf_spawner_r2-3]: started with pid [541186][0m
+[1mprocess[urdf_spawner_r3-4]: started with pid [541188][0m
+[1mprocess[urdf_spawner_r4-5]: started with pid [541190][0m
+[1mprocess[urdf_spawner_r5-6]: started with pid [541191][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [541526][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [541710][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [541890][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [542066][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [542242][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [542419][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [542599][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [542776][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [542955][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [543135][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [543312][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [543493][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [543671][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [543853][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [544031][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [544211][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [544392][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [544569][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [544741][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [544911][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [545090][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [545273][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [545446][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [545624][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [545802][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [545980][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [546160][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [546338][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [546512][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [546693][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [546870][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [547071][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [547252][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [547428][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [547607][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [547791][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [547972][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [548150][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [548329][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [548509][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [548674][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [548851][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [549029][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [549205][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [549382][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [549559][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [549737][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [549916][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [550092][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [550271][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [550450][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [550629][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [550808][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [550984][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [551161][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [551339][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [551516][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [551695][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [551875][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [552055][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [552234][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [552430][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [552606][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [552781][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [552957][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [553134][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [553310][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [553488][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [553663][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [553840][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [554016][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [554190][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [554366][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [554545][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [554719][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [554897][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [555074][0m
+[gazebo-1] restarting process
+[1mprocess[gazebo-1]: started with pid [555233][0m
+[1m[urdf_spawner_r5-6] process has finished cleanly
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/urdf_spawner_r5-6*.log[0m
+[WARN] [1779195455.062630000, 0.773000000]: DiffDrive(ns = /r4/): missing <publishOdomTF> default is true
+3524156, 0.572000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping
+[INFO] [1779195454.154102792, 0.572000000]: Velodyne laser plugin ready, 16 lasers
+[INFO] [1779195454.155323654, 0.572000000]: Starting plugin DiffDrive(ns = /r1/)
+[DEBUG] [1779195454.155332704, 0.572000000]: DiffDrive(ns = /r1/): <rosDebugLevel> = Debug
+[INFO] [1779195454.155342788, 0.572000000]: DiffDrive(ns = /r1/): <rosDebugLevel> = Debug
+[INFO] [1779195454.155539208, 0.572000000]: DiffDrive(ns = /r1/): <tf_prefix> = 
+[DEBUG] [1779195454.155543476, 0.572000000]: DiffDrive(ns = /r1/): <commandTopic> = cmd_vel
+[DEBUG] [1779195454.155547489, 0.572000000]: DiffDrive(ns = /r1/): <odometryTopic> = odom
+[DEBUG] [1779195454.155551760, 0.572000000]: DiffDrive(ns = /r1/): <odometryFrame> = odom
+[DEBUG] [1779195454.155556006, 0.572000000]: DiffDrive(ns = /r1/): <robotBaseFrame> = base_link
+[DEBUG] [1779195454.155561649, 0.572000000]: DiffDrive(ns = /r1/): <publishWheelTF> = false
+[DEBUG] [1779195454.155577733, 0.572000000]: DiffDrive(ns = /r1/): <publishWheelJointState> = true
+[DEBUG] [1779195454.155585954, 0.572000000]: DiffDrive(ns = /r1/): <wheelSeparation> = 0.29999999999999999
+[DEBUG] [1779195454.155590700, 0.572000000]: DiffDrive(ns = /r1/): <wheelDiameter> = 0.17999999999999999
+[DEBUG] [1779195454.155597152, 0.572000000]: DiffDrive(ns = /r1/): <wheelAcceleration> = 1.8
+[DEBUG] [1779195454.155601382, 0.572000000]: DiffDrive(ns = /r1/): <wheelTorque> = 20
+[DEBUG] [1779195454.155605961, 0.572000000]: DiffDrive(ns = /r1/): <updateRate> = 50
+[DEBUG] [1779195454.155611968, 0.572000000]: DiffDrive(ns = /r1/): <odometrySource> = world := 1
+[DEBUG] [1779195454.155616073, 0.572000000]: DiffDrive(ns = /r1/): <leftJoint> = left_hub_joint
+[DEBUG] [1779195454.155620491, 0.572000000]: DiffDrive(ns = /r1/): <rightJoint> = right_hub_joint
+[INFO] [1779195454.155782896, 0.572000000]: DiffDrive(ns = /r1/): Advertise joint_states
+[INFO] [1779195454.155793810, 0.572000000]: DiffDrive(ns = /r1/): Try to subscribe to cmd_vel
+[INFO] [1779195454.156236831, 0.572000000]: DiffDrive(ns = /r1/): Subscribe to cmd_vel
+[INFO] [1779195454.156385974, 0.572000000]: DiffDrive(ns = /r1/): Advertise odom on odom 
+[INFO] [1779195454.156442605, 0.572000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint
+[INFO] [1779195454.156446935, 0.572000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint
+[INFO] [1779195454.156451959, 0.572000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint
+[INFO] [1779195454.156457191, 0.572000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint
+[INFO] [1779195454.156460489, 0.572000000]: Starting GazeboRosJointStatePublisher Plugin (ns = /r1/)!, parent name: r1
+[INFO] [1779195454.438898733, 0.773000000]: Laser Plugin: The 'robotNamespace' param was empty
+[INFO] [1779195454.438924159, 0.773000000]: Starting Laser Plugin (ns = r4)
+[INFO] [1779195454.439534671, 0.773000000]: Laser Plugin (ns = r4)  <tf_prefix_>, set to ""
+[INFO] [1779195455.060942576, 0.773000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping
+[INFO] [1779195455.061695056, 0.773000000]: Velodyne laser plugin ready, 16 lasers
+[INFO] [1779195455.062335601, 0.773000000]: Starting plugin DiffDrive(ns = /r4/)
+[DEBUG] [1779195455.062345698, 0.773000000]: DiffDrive(ns = /r4/): <rosDebugLevel> = Debug
+[INFO] [1779195455.062355240, 0.773000000]: DiffDrive(ns = /r4/): <rosDebugLevel> = Debug
+[INFO] [1779195455.062596751, 0.773000000]: DiffDrive(ns = /r4/): <tf_prefix> = 
+[DEBUG] [1779195455.062607348, 0.773000000]: DiffDrive(ns = /r4/): <commandTopic> = cmd_vel
+[DEBUG] [1779195455.062611344, 0.773000000]: DiffDrive(ns = /r4/): <odometryTopic> = odom
+[DEBUG] [1779195455.062616219, 0.773000000]: DiffDrive(ns = /r4/): <odometryFrame> = odom
+[DEBUG] [1779195455.062621264, 0.773000000]: DiffDrive(ns = /r4/): <robotBaseFrame> = base_link
+[DEBUG] [1779195455.062625909, 0.773000000]: DiffDrive(ns = /r4/): <publishWheelTF> = false
+[DEBUG] [1779195455.062643845, 0.773[WARN] [1779195455.062704092, 0.773000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1
+[INFO] [1779195428.545312, 0.000000]: Loading model XML from ros parameter robot_description_r4
+[INFO] [1779195428.548100, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1779195452.309954, 0.244000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1779195455.062314, 0.773000]: Spawn status: SpawnModel: Successfully spawned entity
+[WARN] [1779195455.969205448, 0.974000000]: DiffDrive(ns = /r2/): missing <publishOdomTF> default is true
+[WARN] [1779195455.969329285, 0.974000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1
+[INFO] [1779195428.529867, 0.000000]: Loading model XML from ros parameter robot_description_r2
+[INFO] [1779195428.533456, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1779195452.309807, 0.244000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1779195455.968935, 0.974000]: Spawn status: SpawnModel: Successfully spawned entity
+000000]: DiffDrive(ns = /r4/): <publishWheelJointState> = true
+[DEBUG] [1779195455.062658393, 0.773000000]: DiffDrive(ns = /r4/): <wheelSeparation> = 0.29999999999999999
+[DEBUG] [1779195455.062663960, 0.773000000]: DiffDrive(ns = /r4/): <wheelDiameter> = 0.17999999999999999
+[DEBUG] [1779195455.062670813, 0.773000000]: DiffDrive(ns = /r4/): <wheelAcceleration> = 1.8
+[DEBUG] [1779195455.062676497, 0.773000000]: DiffDrive(ns = /r4/): <wheelTorque> = 20
+[DEBUG] [1779195455.062681966, 0.773000000]: DiffDrive(ns = /r4/): <updateRate> = 50
+[DEBUG] [1779195455.062688393, 0.773000000]: DiffDrive(ns = /r4/): <odometrySource> = world := 1
+[DEBUG] [1779195455.062693675, 0.773000000]: DiffDrive(ns = /r4/): <leftJoint> = left_hub_joint
+[DEBUG] [1779195455.062698357, 0.773000000]: DiffDrive(ns = /r4/): <rightJoint> = right_hub_joint
+[INFO] [1779195455.063023845, 0.773000000]: DiffDrive(ns = /r4/): Advertise joint_states
+[INFO] [1779195455.063038535, 0.773000000]: DiffDrive(ns = /r4/): Try to subscribe to cmd_vel
+[INFO] [1779195455.064392735, 0.773000000]: DiffDrive(ns = /r4/): Subscribe to cmd_vel
+[INFO] [1779195455.064582229, 0.773000000]: DiffDrive(ns = /r4/): Advertise odom on odom 
+[INFO] [1779195455.064644204, 0.773000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint
+[INFO] [1779195455.064648786, 0.773000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint
+[INFO] [1779195455.064652613, 0.773000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint
+[INFO] [1779195455.064657775, 0.773000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint
+[INFO] [1779195455.064662249, 0.773000000]: Starting GazeboRosJointStatePublisher Plugin (ns = /r4/)!, parent name: r4
+[INFO] [1779195455.351960606, 0.974000000]: Laser Plugin: The 'robotNamespace' param was empty
+[INFO] [1779195455.351984895, 0.974000000]: Starting Laser Plugin (ns = r2)
+[INFO] [1779195455.352416088, 0.974000000]: Laser Plugin (ns = r2)  <tf_prefix_>, set to ""
+[INFO] [1779195455.967213917, 0.974000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping
+[INFO] [1779195455.967771675, 0.974000000]: Velodyne laser plugin ready, 16 lasers
+[INFO] [1779195455.969000378, 0.974000000]: Starting plugin DiffDrive(ns = /r2/)
+[DEBUG] [1779195455.969010369, 0.974000000]: DiffDrive(ns = /r2/): <rosDebugLevel> = Debug
+[INFO] [1779195455.969019619, 0.974000000]: DiffDrive(ns = /r2/): <rosDebugLevel> = Debug
+[INFO] [1779195455.969145866, 0.974000000]: DiffDrive(ns = /r2/): <tf_prefix> = 
+[DEBUG] [1779195455.969158910, 0.974000000]: DiffDrive(ns = /r2/): <commandTopic> = cmd_vel
+[DEBUG] [1779195455.969168687, 0.974000000]: DiffDrive(ns = /r2/): <odometryTopic> = odom
+[DEBUG] [1779195455.969178186, 0.974000000]: DiffDrive(ns = /r2/): <odometryFrame> = odom
+[DEBUG] [1779195455.969186887, 0.974000000]: DiffDrive(ns = /r2/): <robotBaseFrame> = base_link
+[DEBUG] [1779195455.969197058, 0.974000000]: DiffDrive(ns = /r2/): <publishWheelTF> = false
+[DEBUG] [1779195455.969227176, 0.974000000]: DiffDrive(ns = /r2/): <publishWheelJointState> = true
+[DEBUG] [1779195455.969242022, 0.974000000]: DiffDrive(ns = /r2/): <wheelSeparation> = 0.29999999999999999
+[DEBUG] [1779195455.969253384, 0.974000000]: DiffDrive(ns = /r2/): <wheelDiameter> = 0.17999999999999999
+[DEBUG] [1779195455.969264320, 0.974000000]: DiffDrive(ns = /r2/): <wheelAcceleration> = 1.8
+[DEBUG] [1779195455.969275475, 0.974000000]: DiffDrive(ns = /r2/): <wheelTorque> = 20
+[DEBUG] [1779195455.969285880, 0.974000000]: DiffDrive(ns = /r2/): <updateRate> = 50
+[DEBUG] [1779195455.969298481, 0.974000000]: DiffDrive(ns = /r2/): <odometrySource> = world := 1
+[DEBUG] [1779195455.969307548, 0.974000000]: DiffDrive(ns = /r2/): <leftJoint> = left_hub_joint
+[DEBUG] [1779195455.969317425, 0.974000000]: DiffDrive(ns = /r2/): <rightJoint> = right_hub_joint
+[INFO] [1779195455.969488397, 0.974000000]: DiffDrive(ns = /r2/): Advertise joint_states
+[INFO] [1779195455.969505427, 0.974000000]: DiffDrive(ns = /r2/): Try to subscribe to cmd_vel
+[IN[WARN] [1779195456.871533923, 1.175000000]: DiffDrive(ns = /r3/): missing <publishOdomTF> default is true
+[WARN] [1779195456.871584279, 1.175000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1
+[INFO] [1779195428.553851, 0.000000]: Loading model XML from ros parameter robot_description_r3
+[INFO] [1779195428.557631, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1779195452.319634, 0.254000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1779195456.871170, 1.175000]: Spawn status: SpawnModel: Successfully spawned entity
+Episode 1 reset failed: Could not place goal for r3 with clearance 1.2. Placed 2/5 goals. The map may be too crowded for this robot count.
+Episode 2 reset failed: Could not place goal for r4 with clearance 1.2. Placed 3/5 goals. The map may be too crowded for this robot count.
+Episode 3 reset failed: Timed out waiting for /r1/odom after 60.0 seconds
+Episode 4 reset failed: Timed out waiting for /r1/odom after 60.0 seconds
+FO] [1779195455.970016004, 0.974000000]: DiffDrive(ns = /r2/): Subscribe to cmd_vel
+[INFO] [1779195455.970287305, 0.974000000]: DiffDrive(ns = /r2/): Advertise odom on odom 
+[INFO] [1779195455.970387894, 0.974000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint
+[INFO] [1779195455.970399211, 0.974000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint
+[INFO] [1779195455.970408642, 0.974000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint
+[INFO] [1779195455.970417570, 0.974000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint
+[INFO] [1779195455.970426283, 0.974000000]: Starting GazeboRosJointStatePublisher Plugin (ns = /r2/)!, parent name: r2
+[INFO] [1779195456.258845469, 1.175000000]: Laser Plugin: The 'robotNamespace' param was empty
+[INFO] [1779195456.258866416, 1.175000000]: Starting Laser Plugin (ns = r3)
+[INFO] [1779195456.259373284, 1.175000000]: Laser Plugin (ns = r3)  <tf_prefix_>, set to ""
+[INFO] [1779195456.869901148, 1.175000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping
+[INFO] [1779195456.870470039, 1.175000000]: Velodyne laser plugin ready, 16 lasers
+[INFO] [1779195456.871234791, 1.175000000]: Starting plugin DiffDrive(ns = /r3/)
+[DEBUG] [1779195456.871244510, 1.175000000]: DiffDrive(ns = /r3/): <rosDebugLevel> = Debug
+[INFO] [1779195456.871253493, 1.175000000]: DiffDrive(ns = /r3/): <rosDebugLevel> = Debug
+[INFO] [1779195456.871512485, 1.175000000]: DiffDrive(ns = /r3/): <tf_prefix> = 
+[DEBUG] [1779195456.871516828, 1.175000000]: DiffDrive(ns = /r3/): <commandTopic> = cmd_vel
+[DEBUG] [1779195456.871520054, 1.175000000]: DiffDrive(ns = /r3/): <odometryTopic> = odom
+[DEBUG] [1779195456.871523399, 1.175000000]: DiffDrive(ns = /r3/): <odometryFrame> = odom
+[DEBUG] [1779195456.871526740, 1.175000000]: DiffDrive(ns = /r3/): <robotBaseFrame> = base_link
+[DEBUG] [1779195456.871530650, 1.175000000]: DiffDrive(ns = /r3/): <publishWheelTF> = false
+[DEBUG] [1779195456.871545990, 1.175000000]: DiffDrive(ns = /r3/): <publishWheelJointState> = true
+[DEBUG] [1779195456.871552014, 1.175000000]: DiffDrive(ns = /r3/): <wheelSeparation> = 0.29999999999999999
+[DEBUG] [1779195456.871556197, 1.175000000]: DiffDrive(ns = /r3/): <wheelDiameter> = 0.17999999999999999
+[DEBUG] [1779195456.871560726, 1.175000000]: DiffDrive(ns = /r3/): <wheelAcceleration> = 1.8
+[DEBUG] [1779195456.871564633, 1.175000000]: DiffDrive(ns = /r3/): <wheelTorque> = 20
+[DEBUG] [1779195456.871568264, 1.175000000]: DiffDrive(ns = /r3/): <updateRate> = 50
+[DEBUG] [1779195456.871573241, 1.175000000]: DiffDrive(ns = /r3/): <odometrySource> = world := 1
+[DEBUG] [1779195456.871576561, 1.175000000]: DiffDrive(ns = /r3/): <leftJoint> = left_hub_joint
+[DEBUG] [1779195456.871579927, 1.175000000]: DiffDrive(ns = /r3/): <rightJoint> = right_hub_joint
+[INFO] [1779195456.871830201, 1.175000000]: DiffDrive(ns = /r3/): Advertise joint_states
+[INFO] [1779195456.871842009, 1.175000000]: DiffDrive(ns = /r3/): Try to subscribe to cmd_vel
+[INFO] [1779195456.872515125, 1.175000000]: DiffDrive(ns = /r3/): Subscribe to cmd_vel
+[INFO] [1779195456.872627620, 1.175000000]: DiffDrive(ns = /r3/): Advertise odom on odom 
+[INFO] [1779195456.872687656, 1.175000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint
+[INFO] [1779195456.872691972, 1.175000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint
+[INFO] [1779195456.872695447, 1.175000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint
+[INFO] [1779195456.872698828, 1.175000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint
+[INFO] [1779195456.872701957, 1.175000000]: Starting GazeboRosJointStatePublisher Plugin (ns = /r3/)!, parent name: r3
+[31m[gazebo-1] process has died [pid 550629, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 550808, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 550984, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 551161, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 551339, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 551516, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 551695, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 551875, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 552055, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 552234, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 552430, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 552606, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 552781, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 552957, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 553134, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 553310, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 553488, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 553663, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 553840, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 554016, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 554190, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 554366, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 554545, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 554719, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 554897, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[31m[gazebo-1] process has died [pid 555074, exit code 255, cmd /opt/ros/noetic/lib/gazebo_ros/gzserver -e ode TD3.world __name:=gazebo __log:=/home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1.log].
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/gazebo-1*.log[0m
+[1m[urdf_spawner_r1-2] process has finished cleanly
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/urdf_spawner_r1-2*.log[0m
+[1m[urdf_spawner_r4-5] process has finished cleanly
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/urdf_spawner_r4-5*.log[0m
+[1m[urdf_spawner_r2-3] process has finished cleanly
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/urdf_spawner_r2-3*.log[0m
+[1m[urdf_spawner_r3-4] process has finished cleanly
+log file: /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/urdf_spawner_r3-4*.log[0m
+[gazebo-1] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
+... logging to /home/jiutian/.ros/log/0d85cc32-5382-11f1-836a-bd1fee3d6233/roslaunch-JiuTian-AI4090-540602.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;roscore
+[1mstarted roslaunch server http://localhost:43111/[0m
+ros_comm version 1.17.4
+
+
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+
+NODES
+
+auto-starting new master
+[1mprocess[master]: started with pid [540688][0m
+[1mROS_MASTER_URI=http://localhost:11341/[0m
+]2;roscore http://localhost:11341/
+[1msetting /run_id to 0d85cc32-5382-11f1-836a-bd1fee3d6233[0m
+[1mprocess[rosout-1]: started with pid [540817][0m
+started core service [/rosout]
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
+Episode 5 reset failed: Timed out waiting for /r1/odom after 60.0 seconds
+==============================================
+Capacity check summary
+num_agents: 5
+successful_resets: 0
+reset_failures: 5
+env_steps: 0
+env_steps_per_sec: 0.000
+success_rate: 0.000
+collision_rate: 0.000
+timeout_rate: 0.000
+==============================================
