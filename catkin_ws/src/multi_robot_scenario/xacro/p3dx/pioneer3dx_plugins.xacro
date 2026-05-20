@@ -21,7 +21,7 @@
             <tf_prefix>${tf_prefix}</tf_prefix>
             <publishOdomTF>false</publishOdomTF>
             <publishWheelTF>false</publishWheelTF>
-            <publishWheelJointState>true</publishWheelJointState>
+            <publishWheelJointState>false</publishWheelJointState>
             <alwaysOn>true</alwaysOn>
             <leftJoint>left_hub_joint</leftJoint>
             <rightJoint>right_hub_joint</rightJoint>

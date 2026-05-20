@@ -20,6 +20,20 @@ from visualization_msgs.msg import MarkerArray
 from velodyne_env import COLLISION_DIST, GOAL_REACHED_DIST, TIME_DELTA, check_pos
 
 
+AGENT_COLORS = [
+    (1.0, 0.20, 0.12),
+    (0.15, 0.55, 1.0),
+    (0.10, 0.95, 0.35),
+    (1.0, 0.75, 0.10),
+    (0.85, 0.35, 1.0),
+    (0.10, 0.95, 0.95),
+    (1.0, 0.45, 0.55),
+    (0.55, 0.85, 0.10),
+    (0.70, 0.70, 1.0),
+    (1.0, 0.55, 0.10),
+]
+
+
 class MultiAgentGazeboEnv:
     """Gazebo environment with multiple robots sharing the same policy."""
 
@@ -711,9 +725,10 @@ class MultiAgentGazeboEnv:
             marker.scale.y = 0.15
             marker.scale.z = 0.02
             marker.color.a = 1.0
-            marker.color.r = 0.0
-            marker.color.g = 1.0
-            marker.color.b = 0.0
+            color = AGENT_COLORS[idx % len(AGENT_COLORS)]
+            marker.color.r = color[0]
+            marker.color.g = color[1]
+            marker.color.b = color[2]
             marker.pose.orientation.w = 1.0
             marker.pose.position.x = self.goal_positions[name][0]
             marker.pose.position.y = self.goal_positions[name][1]
