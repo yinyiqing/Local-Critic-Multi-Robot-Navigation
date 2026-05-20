@@ -28,12 +28,6 @@
   - 目标是在不改变执行阶段观测条件的前提下，提高训练阶段对多机交互的价值估计能力。
   - 已加入环境容量验证流程，用于正式训练前检查 2、3、5、10 车是否可稳定运行。
 
-- `局部感知ActorCritic/`
-  - 下一阶段论文级方法计划。
-  - actor 和 critic 都使用雷达范围内按距离排序的邻居信息。
-  - 输入长度按 10 车上限固定，不可见邻居用 0 和 mask 补齐。
-  - 目标是解决 critic-only 版本 timeout 偏高的问题，提高 full success。
-
 ## 正式产物位置
 
 普通多智能体 baseline：
@@ -74,14 +68,3 @@
 - `TD3/checkpoints/TD3_velodyne_multi_v4_local_critic_best.pt`
 - `TD3/results/TD3_velodyne_multi_v4_local_critic.npy`
 - `TD3/results/TD3_velodyne_multi_v4_local_critic_best_test.npy`
-
-局部感知 actor-critic 预期产物命名：
-
-- `TD3/pytorch_models/TD3_velodyne_multi_v4_local_actor_critic_actor.pth`
-- `TD3/pytorch_models/TD3_velodyne_multi_v4_local_actor_critic_critic.pth`
-- `TD3/pytorch_models/TD3_velodyne_multi_v4_local_actor_critic_best_actor.pth`
-- `TD3/pytorch_models/TD3_velodyne_multi_v4_local_actor_critic_best_critic.pth`
-- `TD3/checkpoints/TD3_velodyne_multi_v4_local_actor_critic_latest.pt`
-- `TD3/checkpoints/TD3_velodyne_multi_v4_local_actor_critic_best.pt`
-- `TD3/results/TD3_velodyne_multi_v4_local_actor_critic.npy`
-- `TD3/results/TD3_velodyne_multi_v4_local_actor_critic_best_test.npy`
