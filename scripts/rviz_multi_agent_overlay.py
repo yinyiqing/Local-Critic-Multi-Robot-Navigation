@@ -41,9 +41,10 @@ OBSTACLES = [
 
 
 class MultiAgentOverlay:
-    def __init__(self, agent_names, frame_id, trail_length):
+    def __init__(self, agent_names, frame_id, trail_length, tf_style):
         self.agent_names = agent_names
         self.frame_id = frame_id
+        self.tf_style = tf_style
         self.trails = {name: deque(maxlen=trail_length) for name in agent_names}
         self.poses = {}
         self.publisher = rospy.Publisher(
@@ -163,11 +164,21 @@ class MultiAgentOverlay:
         marker.points = [Point(x=x, y=y, z=0.04) for x, y in self.trails[name]]
         return marker
 
+    def _base_frame(self, name):
+        if self.tf_style == "slash":
+            return f"{name}/base_link"
+        return f"{name}_base_link"
+
+    def _velodyne_frame(self, name):
+        if self.tf_style == "slash":
+            return f"{name}_velodyne"
+        return f"{name}_velodyne"
+
     def _broadcast_visual_tf(self, name, pose):
         odom_to_base = TransformStamped()
         odom_to_base.header.stamp = rospy.Time.now()
         odom_to_base.header.frame_id = self.frame_id
-        odom_to_base.child_frame_id = f"{name}_base_link"
+        odom_to_base.child_frame_id = self._base_frame(name)
         odom_to_base.transform.translation.x = pose.position.x
         odom_to_base.transform.translation.y = pose.position.y
         odom_to_base.transform.translation.z = 0.0
@@ -175,8 +186,8 @@ class MultiAgentOverlay:
 
         base_to_velodyne = TransformStamped()
         base_to_velodyne.header.stamp = odom_to_base.header.stamp
-        base_to_velodyne.header.frame_id = f"{name}_base_link"
-        base_to_velodyne.child_frame_id = f"{name}_velodyne"
+        base_to_velodyne.header.frame_id = self._base_frame(name)
+        base_to_velodyne.child_frame_id = self._velodyne_frame(name)
         base_to_velodyne.transform.translation.x = 0.125
         base_to_velodyne.transform.translation.y = 0.0
         base_to_velodyne.transform.translation.z = 0.25
@@ -207,11 +218,12 @@ def main():
     parser.add_argument("--frame", default="odom")
     parser.add_argument("--trail-length", type=int, default=80)
     parser.add_argument("--rate", type=float, default=8.0)
+    parser.add_argument("--tf-style", choices=["underscore", "slash"], default="underscore")
     args = parser.parse_args(rospy.myargv()[1:])
 
     rospy.init_node("multi_agent_overlay", anonymous=True)
     agent_names = [name.strip() for name in args.agents.split(",") if name.strip()]
-    overlay = MultiAgentOverlay(agent_names, args.frame, args.trail_length)
+    overlay = MultiAgentOverlay(agent_names, args.frame, args.trail_length, args.tf_style)
     rate = rospy.Rate(args.rate)
     while not rospy.is_shutdown():
         overlay.publish()
