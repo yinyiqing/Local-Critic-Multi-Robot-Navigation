@@ -63,9 +63,9 @@ def odom_block(name, color):
       Value: false"""
 
 
-def pointcloud_block(name, color, enabled):
+def pointcloud_block(name, enabled):
     value = "true" if enabled else "false"
-    return f"""    - Alpha: 0.45
+    return f"""    - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
         Max Value: 10
@@ -74,8 +74,8 @@ def pointcloud_block(name, color, enabled):
       Axis: Z
       Channel Name: intensity
       Class: rviz/PointCloud2
-      Color: {color_text(color)}
-      Color Transformer: Intensity
+      Color: 255; 255; 255
+      Color Transformer: AxisColor
       Decay Time: 0
       Enabled: {value}
       Invert Rainbow: false
@@ -83,7 +83,7 @@ def pointcloud_block(name, color, enabled):
       Min Color: 0; 0; 0
       Name: {name} Velodyne
       Position Transformer: XYZ
-      Queue Size: 3
+      Queue Size: 10
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.01
@@ -161,8 +161,8 @@ def render_rviz(num_agents):
     for idx, name in enumerate(agent_names):
         displays.append(robot_model_block(name))
         displays.append(odom_block(name, COLORS[idx % len(COLORS)]))
-        displays.append(laserscan_block(name, idx == 0))
-        displays.append(pointcloud_block(name, COLORS[idx % len(COLORS)], idx == 0))
+        displays.append(laserscan_block(name, False))
+        displays.append(pointcloud_block(name, True))
 
     displays.extend(
         [
@@ -181,8 +181,6 @@ def render_rviz(num_agents):
       Namespaces:
         robot_labels: true
         robot_trails: true
-        robots: true
-        static_obstacles: true
       Queue Size: 10
       Value: true""",
         ]
@@ -200,7 +198,7 @@ Visualization Manager:
 {display_text}
   Enabled: true
   Global Options:
-    Background Color: 28; 30; 32
+    Background Color: 48; 48; 48
     Default Light: true
     Fixed Frame: odom
     Frame Rate: 30
@@ -225,25 +223,20 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Class: rviz/Orbit
-      Distance: 14
+      Angle: 0.005
+      Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
-      Focal Point:
-        X: 0
-        Y: 0
-        Z: 0
-      Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.05
+      Scale: 73.6252212524414
       Target Frame: <Fixed Frame>
-      Yaw: 3.95
+      X: 0.048065461218357086
+      Y: 0.11967461556196213
     Saved: ~
 Window Geometry:
   Displays:

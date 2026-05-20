@@ -26,20 +26,6 @@ COLORS = [
 ]
 
 
-OBSTACLES = [
-    (-6.2, -3.8, 3.8, 6.2),
-    (-2.7, -1.3, -0.2, 4.7),
-    (-4.2, -0.3, 1.3, 2.7),
-    (-4.2, -0.8, -4.2, -2.3),
-    (-3.7, -1.3, -2.7, -0.8),
-    (0.8, 4.2, -3.2, -1.8),
-    (2.5, 4.0, -3.2, 0.7),
-    (3.8, 6.2, -4.2, -3.3),
-    (1.3, 4.2, 1.5, 3.7),
-    (-7.2, -3.0, -1.5, 0.5),
-]
-
-
 class MultiAgentOverlay:
     def __init__(self, agent_names, frame_id, trail_length, tf_style):
         self.agent_names = agent_names
@@ -64,6 +50,14 @@ class MultiAgentOverlay:
     def _make_odom_callback(self, name):
         def callback(msg):
             pose = msg.pose.pose
+            last_pose = self.poses.get(name)
+            if last_pose is not None:
+                jump = math.hypot(
+                    pose.position.x - last_pose.position.x,
+                    pose.position.y - last_pose.position.y,
+                )
+                if jump > 1.0:
+                    self.trails[name].clear()
             self.poses[name] = pose
             self.trails[name].append((pose.position.x, pose.position.y))
 
@@ -86,49 +80,6 @@ class MultiAgentOverlay:
     def _delete_all_marker(self):
         marker = Marker()
         marker.action = Marker.DELETEALL
-        return marker
-
-    def _obstacle_markers(self):
-        markers = []
-        for idx, (xmin, xmax, ymin, ymax) in enumerate(OBSTACLES):
-            marker = Marker()
-            marker.header.frame_id = self.frame_id
-            marker.header.stamp = rospy.Time.now()
-            marker.ns = "static_obstacles"
-            marker.id = idx
-            marker.type = Marker.CUBE
-            marker.action = Marker.ADD
-            marker.pose.position.x = (xmin + xmax) / 2.0
-            marker.pose.position.y = (ymin + ymax) / 2.0
-            marker.pose.position.z = -0.02
-            marker.pose.orientation.w = 1.0
-            marker.scale.x = abs(xmax - xmin)
-            marker.scale.y = abs(ymax - ymin)
-            marker.scale.z = 0.04
-            self._set_color(marker, (0.55, 0.55, 0.55), 0.35)
-            markers.append(marker)
-        return markers
-
-    def _robot_marker(self, idx, name, pose):
-        color = COLORS[idx % len(COLORS)]
-        yaw = self._yaw_from_pose(pose)
-
-        marker = Marker()
-        marker.header.frame_id = self.frame_id
-        marker.header.stamp = rospy.Time.now()
-        marker.ns = "robots"
-        marker.id = idx
-        marker.type = Marker.ARROW
-        marker.action = Marker.ADD
-        marker.pose.position.x = pose.position.x
-        marker.pose.position.y = pose.position.y
-        marker.pose.position.z = 0.08
-        marker.pose.orientation.z = math.sin(yaw / 2.0)
-        marker.pose.orientation.w = math.cos(yaw / 2.0)
-        marker.scale.x = 0.55
-        marker.scale.y = 0.12
-        marker.scale.z = 0.12
-        self._set_color(marker, color, 1.0)
         return marker
 
     def _label_marker(self, idx, name, pose):
@@ -198,7 +149,6 @@ class MultiAgentOverlay:
     def publish(self):
         marker_array = MarkerArray()
         marker_array.markers.append(self._delete_all_marker())
-        marker_array.markers.extend(self._obstacle_markers())
 
         for idx, name in enumerate(self.agent_names):
             pose = self.poses.get(name)
@@ -206,7 +156,6 @@ class MultiAgentOverlay:
                 continue
             self._broadcast_visual_tf(name, pose)
             marker_array.markers.append(self._trail_marker(idx, name))
-            marker_array.markers.append(self._robot_marker(idx, name, pose))
             marker_array.markers.append(self._label_marker(idx, name, pose))
 
         self.publisher.publish(marker_array)
