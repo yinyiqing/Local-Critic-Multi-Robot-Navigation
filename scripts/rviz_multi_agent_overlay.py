@@ -5,7 +5,9 @@ from collections import deque
 
 import rospy
 from geometry_msgs.msg import Point
+from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import Odometry
+from tf2_ros import TransformBroadcaster
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 
@@ -47,6 +49,7 @@ class MultiAgentOverlay:
         self.publisher = rospy.Publisher(
             "/multi_agent_overlay", MarkerArray, queue_size=1
         )
+        self.tf_broadcaster = TransformBroadcaster()
         self.subscribers = [
             rospy.Subscriber(
                 f"/{name}/odom",
@@ -160,6 +163,27 @@ class MultiAgentOverlay:
         marker.points = [Point(x=x, y=y, z=0.04) for x, y in self.trails[name]]
         return marker
 
+    def _broadcast_visual_tf(self, name, pose):
+        odom_to_base = TransformStamped()
+        odom_to_base.header.stamp = rospy.Time.now()
+        odom_to_base.header.frame_id = self.frame_id
+        odom_to_base.child_frame_id = f"{name}_base_link"
+        odom_to_base.transform.translation.x = pose.position.x
+        odom_to_base.transform.translation.y = pose.position.y
+        odom_to_base.transform.translation.z = 0.0
+        odom_to_base.transform.rotation = pose.orientation
+
+        base_to_velodyne = TransformStamped()
+        base_to_velodyne.header.stamp = odom_to_base.header.stamp
+        base_to_velodyne.header.frame_id = f"{name}_base_link"
+        base_to_velodyne.child_frame_id = f"{name}_velodyne"
+        base_to_velodyne.transform.translation.x = 0.125
+        base_to_velodyne.transform.translation.y = 0.0
+        base_to_velodyne.transform.translation.z = 0.25
+        base_to_velodyne.transform.rotation.w = 1.0
+
+        self.tf_broadcaster.sendTransform([odom_to_base, base_to_velodyne])
+
     def publish(self):
         marker_array = MarkerArray()
         marker_array.markers.append(self._delete_all_marker())
@@ -169,6 +193,7 @@ class MultiAgentOverlay:
             pose = self.poses.get(name)
             if pose is None:
                 continue
+            self._broadcast_visual_tf(name, pose)
             marker_array.markers.append(self._trail_marker(idx, name))
             marker_array.markers.append(self._robot_marker(idx, name, pose))
             marker_array.markers.append(self._label_marker(idx, name, pose))
