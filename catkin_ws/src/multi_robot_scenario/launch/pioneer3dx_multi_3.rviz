@@ -35,7 +35,7 @@ Visualization Manager:
       Value: false
     - Angle Tolerance: 20
       Class: rviz/Odometry
-      Enabled: true
+      Enabled: false
       Keep: 1
       Name: r1 Odom
       Position Tolerance: 0.1
@@ -52,10 +52,10 @@ Visualization Manager:
         Value: Arrow
       Topic: /r1/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 20
       Class: rviz/Odometry
-      Enabled: true
+      Enabled: false
       Keep: 1
       Name: r2 Odom
       Position Tolerance: 0.1
@@ -72,10 +72,10 @@ Visualization Manager:
         Value: Arrow
       Topic: /r2/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Angle Tolerance: 20
       Class: rviz/Odometry
-      Enabled: true
+      Enabled: false
       Keep: 1
       Name: r3 Odom
       Position Tolerance: 0.1
@@ -92,7 +92,7 @@ Visualization Manager:
         Value: Arrow
       Topic: /r3/odom
       Unreliable: false
-      Value: true
+      Value: false
     - Alpha: 0.75
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -185,11 +185,22 @@ Visualization Manager:
         goal_points: true
       Queue Size: 100
       Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /multi_agent_overlay
+      Name: Multi-Agent Overlay
+      Namespaces:
+        robot_labels: true
+        robot_trails: true
+        robots: true
+        static_obstacles: true
+      Queue Size: 10
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 28; 30; 32
     Default Light: true
-    Fixed Frame: odom
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:

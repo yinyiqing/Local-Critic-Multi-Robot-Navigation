@@ -22,4 +22,14 @@ if ! rosnode list >/dev/null 2>&1; then
   exit 1
 fi
 
+rosrun tf static_transform_publisher 0 0 0 0 0 0 map odom 100 >/tmp/rviz_multi_local_critic_3_static_tf.log 2>&1 &
+static_tf_pid="$!"
+
+python3 "$PROJECT_ROOT/scripts/rviz_multi_agent_overlay.py" \
+  --agents r1,r2,r3 \
+  --frame odom \
+  >/tmp/rviz_multi_local_critic_3_overlay.log 2>&1 &
+overlay_pid="$!"
+trap 'kill "$static_tf_pid" "$overlay_pid" 2>/dev/null || true' EXIT
+
 rviz -d "$PROJECT_ROOT/catkin_ws/src/multi_robot_scenario/launch/pioneer3dx_multi_3.rviz"
