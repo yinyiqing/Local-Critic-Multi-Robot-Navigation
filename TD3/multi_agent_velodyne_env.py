@@ -519,10 +519,25 @@ class MultiAgentGazeboEnv:
         self.previous_distances = {name: None for name in self.agent_names}
         self.last_step_info = self._empty_last_step_info()
 
-        spawn_positions = self._sample_robot_positions()
-        for name, position in spawn_positions.items():
-            self.robot_positions[name] = np.array(position)
-        self.goal_positions = self._sample_goal_positions()
+        last_error = None
+        for reset_attempt in range(20):
+            try:
+                spawn_positions = self._sample_robot_positions()
+                for name, position in spawn_positions.items():
+                    self.robot_positions[name] = np.array(position)
+                self.goal_positions = self._sample_goal_positions()
+                break
+            except RuntimeError as exc:
+                last_error = exc
+                print(
+                    "Reset placement retry %i/20 failed: %s"
+                    % (reset_attempt + 1, exc)
+                )
+        else:
+            raise RuntimeError(
+                "Could not sample a valid multi-agent reset after 20 attempts. "
+                f"Last error: {last_error}"
+            )
 
         for name, position in spawn_positions.items():
             angle = self._sample_start_heading(name)
@@ -593,44 +608,60 @@ class MultiAgentGazeboEnv:
         return positions
 
     def _sample_goal_positions(self, min_clearance=1.2):
+        clearance_schedule = [min_clearance]
         if self.weak_coupling_layout:
             if self.num_agents <= 2:
-                min_clearance = max(min_clearance, 1.8)
+                clearance_schedule = [max(min_clearance, 1.8), min_clearance]
             else:
-                min_clearance = max(min_clearance, 1.0)
-        goals = {}
-        for name in self.agent_names:
-            placed = False
-            for _ in range(1000):
-                candidate = self._sample_goal_candidate_for_agent(name)
-                if not check_pos(candidate[0], candidate[1]):
-                    continue
-                goal_distance = np.linalg.norm(candidate - self.robot_positions[name])
-                if (
-                    goal_distance < self.goal_min_distance
-                    or goal_distance > self.goal_max_distance
-                ):
-                    continue
-                if any(
-                    np.linalg.norm(candidate - other_robot) < self.goal_clearance
-                    for other_robot in self.robot_positions.values()
-                ):
-                    continue
-                if any(
-                    np.linalg.norm(candidate - existing_goal) < min_clearance
-                    for existing_goal in goals.values()
-                ):
-                    continue
-                goals[name] = candidate
-                placed = True
-                break
-            if not placed:
-                raise RuntimeError(
-                    f"Could not place goal for {name} with clearance {min_clearance}. "
-                    f"Placed {len(goals)}/{self.num_agents} goals. "
-                    "The map may be too crowded for this robot count."
-                )
-        return goals
+                clearance_schedule = [min_clearance, 1.0, 0.8]
+
+        last_error = None
+        for clearance in clearance_schedule:
+            goals = {}
+            for name in self.agent_names:
+                placed = False
+                for _ in range(2000):
+                    candidate = self._sample_goal_candidate_for_agent(name)
+                    if not check_pos(candidate[0], candidate[1]):
+                        continue
+                    goal_distance = np.linalg.norm(
+                        candidate - self.robot_positions[name]
+                    )
+                    if (
+                        goal_distance < self.goal_min_distance
+                        or goal_distance > self.goal_max_distance
+                    ):
+                        continue
+                    if any(
+                        np.linalg.norm(candidate - other_robot) < self.goal_clearance
+                        for other_robot in self.robot_positions.values()
+                    ):
+                        continue
+                    if any(
+                        np.linalg.norm(candidate - existing_goal) < clearance
+                        for existing_goal in goals.values()
+                    ):
+                        continue
+                    goals[name] = candidate
+                    placed = True
+                    break
+                if not placed:
+                    last_error = (
+                        f"Could not place goal for {name} with clearance {clearance}. "
+                        f"Placed {len(goals)}/{self.num_agents} goals."
+                    )
+                    break
+            if len(goals) == self.num_agents:
+                if clearance < min_clearance:
+                    print(
+                        "Goal placement used relaxed clearance %.2f for %i agents"
+                        % (clearance, self.num_agents)
+                    )
+                return goals
+
+        raise RuntimeError(
+            f"{last_error} The map may be too crowded for this robot count."
+        )
 
     def random_box(self):
         for i in range(4):
