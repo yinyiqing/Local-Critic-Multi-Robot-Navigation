@@ -18,10 +18,19 @@ RewardOnly 的训练 reward 使用可见邻居 cooperative reward。测试阶段
 
 三车主线均从统一 warm-start 基准 `TD3_velodyne_multi_v4` 初始化，actor 执行阶段保持本车 24 维 observation，不引入通信输入。
 
+## 三车 RewardOnly 状态
+
+三车 RewardOnly 已完成 300 episodes best checkpoint 测试，并从 10 epoch `latest` checkpoint 继续扩展到 20 epoch。扩展训练没有更新 best checkpoint，因此正式测试指标仍使用 epoch 6 best 模型。
+
+关键文件：
+
+- `三车RewardOnly/train_multi_reward_only_3_detached_20260520_194136.log`
+- `三车RewardOnly/train_multi_reward_only_3_detached_20260521_170949_extended20.log`
+- `三车RewardOnly/test_multi_reward_only_3_best_300episodes_summary.md`
+
 ## 三车主线位置
 
 - 三车共享 Policy Baseline：`experiments/多智能体/共享PolicyBaseline/三车共享PolicyBaseline/`
 - 三车 RewardOnly：`experiments/多智能体/动态Reward/三车RewardOnly/`
 - 三车 Weighted08：`experiments/多智能体/动态RewardWeighted08/`
 - 三车局部邻域 Critic + Weighted08：`experiments/多智能体/局部邻域Critic/三车多邻居验证/`
-

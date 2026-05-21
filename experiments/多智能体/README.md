@@ -20,7 +20,7 @@
 | 目录 | 内容 | 当前状态 |
 | --- | --- | --- |
 | `共享PolicyBaseline/` | 多机器人共享 actor/critic baseline | 三车主线完成，20 epoch 扩展未更新 best |
-| `动态Reward/` | RewardOnly 对照，只改变训练 reward | 三车 10 epoch 完成，20 epoch 扩展训练进行中 |
+| `动态Reward/` | RewardOnly 对照，只改变训练 reward | 三车主线完成，20 epoch 扩展未更新 best |
 | `动态RewardWeighted08/` | Weighted08 reward 对照 | 三车主线完成，20 epoch 扩展未更新 best |
 | `局部邻域Critic/` | 局部 critic、几何 critic、容量验证 | D 与 D2 均完成，D2 当前最有论文价值 |
 

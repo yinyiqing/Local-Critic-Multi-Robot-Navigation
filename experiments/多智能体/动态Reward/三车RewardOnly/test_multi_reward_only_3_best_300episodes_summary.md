@@ -13,7 +13,7 @@
 
 ## 训练过程
 
-RewardOnly 对照训练到第 10 个 epoch 后停止。训练阶段 best checkpoint 出现在 epoch 6：
+RewardOnly 对照先训练到第 10 个 epoch 后停止。训练阶段 best checkpoint 出现在 epoch 6：
 
 | Epoch | `success_rate` | `collision_rate` | `avg_reward` |
 | ---: | ---: | ---: | ---: |
@@ -27,6 +27,25 @@ RewardOnly 对照训练到第 10 个 epoch 后停止。训练阶段 best checkpo
 | 8 | `0.833` | `0.133` | `100.549` |
 | 9 | `0.867` | `0.017` | `114.997` |
 | 10 | `0.867` | `0.050` | `111.503` |
+
+为与几何邻域 Critic 的 20 epoch 扩展验证保持训练预算一致，RewardOnly 从原 10 epoch `latest` checkpoint 继续训练至 20 epoch。继续训练从 `Starting epoch: 11` 开始，未重新初始化模型，也未重复 epoch 10。
+
+扩展训练结果如下：
+
+| Epoch | `success_rate` | `collision_rate` | `avg_reward` |
+| ---: | ---: | ---: | ---: |
+| 11 | `0.733` | `0.083` | `86.546` |
+| 12 | `0.733` | `0.050` | `86.496` |
+| 13 | `0.850` | `0.033` | `105.846` |
+| 14 | `0.483` | `0.067` | `50.171` |
+| 15 | `0.633` | `0.083` | `69.099` |
+| 16 | `0.883` | `0.000` | `114.428` |
+| 17 | `0.717` | `0.083` | `84.214` |
+| 18 | `0.717` | `0.100` | `79.191` |
+| 19 | `0.700` | `0.033` | `83.169` |
+| 20 | `0.833` | `0.067` | `101.185` |
+
+扩展到 20 epoch 后没有更新 best checkpoint，最高评估仍然是 10 epoch 内的 epoch 6。因此无需重新运行 300 episodes 测试，下面正式测试指标仍对应 epoch 6 best 模型。
 
 ## 最终指标
 
@@ -65,4 +84,3 @@ RewardOnly 对照训练到第 10 个 epoch 后停止。训练阶段 best checkpo
 | 三车局部邻域 Critic + Weighted08 | `0.913` | `0.052` | `0.747` |
 
 因此，RewardOnly 不是一个足够强的改进方向，但它作为对照组是必要的：它表明直接引入邻居 cooperative reward 可能带来更高碰撞风险，后续需要继续测试 Weighted08，以判断距离加权 reward 是否能缓解粗糙 cooperative reward 的信用分配问题。
-
