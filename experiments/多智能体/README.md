@@ -22,7 +22,9 @@
 | `A_共享Policy基线/` | 多机器人共享 actor/critic baseline | 三车主线完成，20 epoch 扩展未更新 best |
 | `B_RewardOnly动态奖励对照/` | RewardOnly 对照，只改变训练 reward | 三车主线完成，20 epoch 扩展未更新 best |
 | `C_Weighted08距离加权奖励对照/` | Weighted08 reward 对照 | 三车主线完成，20 epoch 扩展未更新 best |
-| `D_局部邻域Critic方法与消融/` | 局部 critic、几何 critic、容量验证 | D 与 D2 均完成，D2 当前最有论文价值 |
+| `D_局部邻域Critic加Weighted08/` | 局部邻域 critic + Weighted08 | 三车主线完成，20 epoch 扩展未更新 best |
+| `D2_几何邻域Critic加Weighted08/` | 几何邻域 critic + Weighted08 | 三车主线完成，20 epoch 扩展更新 best |
+| `方法预研_局部邻域Critic与容量验证/` | 早期两车机制验证、容量验证、历史设计记录 | 非正式主线对照 |
 
 ## 三车主线结果
 

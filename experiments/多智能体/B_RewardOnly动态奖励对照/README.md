@@ -33,4 +33,5 @@ RewardOnly 的训练 reward 使用可见邻居 cooperative reward。测试阶段
 - 三车共享 Policy Baseline：`experiments/多智能体/A_共享Policy基线/三车共享PolicyBaseline/`
 - 三车 RewardOnly：`experiments/多智能体/B_RewardOnly动态奖励对照/三车RewardOnly/`
 - 三车 Weighted08：`experiments/多智能体/C_Weighted08距离加权奖励对照/`
-- 三车局部邻域 Critic + Weighted08：`experiments/多智能体/D_局部邻域Critic方法与消融/三车多邻居验证/`
+- 三车局部邻域 Critic + Weighted08：`experiments/多智能体/D_局部邻域Critic加Weighted08/三车局部邻域Critic加Weighted08/`
+- 三车几何邻域 Critic + Weighted08：`experiments/多智能体/D2_几何邻域Critic加Weighted08/三车几何邻域Critic加Weighted08/`
