@@ -277,7 +277,7 @@ class MultiAgentGazeboEnv:
         )
         return neighbors
 
-    def build_neighbor_context(self, actions, max_neighbors=9):
+    def build_neighbor_context(self, actions, max_neighbors=9, include_actions=True):
         contexts = []
         action_by_name = {
             name: np.array(actions[idx], dtype=np.float32)
@@ -296,22 +296,24 @@ class MultiAgentGazeboEnv:
                     bearing -= 2 * np.pi
                 while bearing < -np.pi:
                     bearing += 2 * np.pi
-                other_action = action_by_name.get(other_name, np.zeros(2))
-                context.extend(
-                    [
-                        float(offset[0]),
-                        float(offset[1]),
-                        distance,
-                        float(bearing),
-                        float(other_action[0]),
-                        float(other_action[1]),
-                        1.0,
-                    ]
-                )
+                neighbor_features = [
+                    float(offset[0]),
+                    float(offset[1]),
+                    distance,
+                    float(bearing),
+                ]
+                if include_actions:
+                    other_action = action_by_name.get(other_name, np.zeros(2))
+                    neighbor_features.extend(
+                        [float(other_action[0]), float(other_action[1])]
+                    )
+                neighbor_features.append(1.0)
+                context.extend(neighbor_features)
 
-            missing = max_neighbors - len(context) // 7
+            feature_dim = 7 if include_actions else 5
+            missing = max_neighbors - len(context) // feature_dim
             if missing > 0:
-                context.extend([0.0] * missing * 7)
+                context.extend([0.0] * missing * feature_dim)
             contexts.append(np.array(context, dtype=np.float32))
         return contexts
 

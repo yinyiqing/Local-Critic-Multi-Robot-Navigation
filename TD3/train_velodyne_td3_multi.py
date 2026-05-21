@@ -416,9 +416,12 @@ agent_names = make_agent_names()
 use_dynamic_reward = env_flag("DRL_MULTI_USE_DYNAMIC_REWARD", False)
 cooperative_reward_self_weight = env_float("DRL_MULTI_REWARD_SELF_WEIGHT", None)
 use_local_critic = env_flag("DRL_MULTI_USE_LOCAL_CRITIC", False)
+local_critic_geometry_only = env_flag(
+    "DRL_MULTI_LOCAL_CRITIC_GEOMETRY_ONLY", False
+)
 local_critic_max_agents = env_int("DRL_MULTI_LOCAL_CRITIC_MAX_AGENTS", 10)
 local_critic_max_neighbors = max(local_critic_max_agents - 1, 1)
-local_critic_feature_dim = 7
+local_critic_feature_dim = 5 if local_critic_geometry_only else 7
 use_distance_weighted_reward = env_flag(
     "DRL_MULTI_USE_DISTANCE_WEIGHTED_REWARD", False
 )
@@ -580,6 +583,7 @@ print("Cooperative reward self weight:", cooperative_reward_self_weight)
 print("Distance-weighted reward:", use_distance_weighted_reward)
 print("Distance reward sigma:", cooperative_reward_sigma)
 print("Local critic enabled:", use_local_critic)
+print("Local critic geometry only:", local_critic_geometry_only)
 print("Actor state dim:", state_dim)
 print("Critic state dim:", critic_state_dim)
 print("Local critic max neighbors:", local_critic_max_neighbors)
@@ -609,7 +613,11 @@ def combine_critic_state(state, context):
 def context_stats(contexts):
     if not contexts:
         return 0.0, 0.0
-    masks = [np.array(context, dtype=np.float32)[6::local_critic_feature_dim] for context in contexts]
+    mask_offset = local_critic_feature_dim - 1
+    masks = [
+        np.array(context, dtype=np.float32)[mask_offset::local_critic_feature_dim]
+        for context in contexts
+    ]
     counts = [float(np.sum(mask)) for mask in masks]
     return float(np.mean(counts)), float(np.max(counts))
 
@@ -889,7 +897,9 @@ while timestep < max_timesteps:
         zero_env_actions = [[0.0, 0.0] for _ in agent_names]
         neighbor_contexts = (
             env.build_neighbor_context(
-                zero_env_actions, max_neighbors=local_critic_max_neighbors
+                zero_env_actions,
+                max_neighbors=local_critic_max_neighbors,
+                include_actions=not local_critic_geometry_only,
             )
             if use_local_critic
             else None
@@ -956,7 +966,9 @@ while timestep < max_timesteps:
     )
     next_neighbor_contexts = (
         env.build_neighbor_context(
-            env_actions, max_neighbors=local_critic_max_neighbors
+            env_actions,
+            max_neighbors=local_critic_max_neighbors,
+            include_actions=not local_critic_geometry_only,
         )
         if use_local_critic
         else None
