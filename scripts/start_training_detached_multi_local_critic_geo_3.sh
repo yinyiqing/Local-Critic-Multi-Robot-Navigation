@@ -59,7 +59,7 @@ setsid bash -lc "
   export DRL_MULTI_LOCAL_CRITIC_GEOMETRY_ONLY=1
   export DRL_MULTI_LOCAL_CRITIC_MAX_AGENTS=10
   export DRL_MULTI_EVAL_EPISODES=20
-  export DRL_MULTI_MAX_EPOCHS=10
+  export DRL_MULTI_MAX_EPOCHS=\"\${DRL_MULTI_MAX_EPOCHS:-10}\"
   export DRL_MULTI_TRAINING_VERSION='multi-agent-local-neighborhood-critic-geo-3-v1'
   export DRL_MULTI_TRAIN_FILE_NAME='$MODEL_NAME'
   export DRL_MULTI_LOAD_MODEL=1
@@ -79,5 +79,5 @@ echo "Launch: $LAUNCH_PATH"
 echo "Actor warm start: TD3_velodyne_multi_v4"
 echo "Critic: local neighborhood geometry context, newly initialized"
 echo "Reward: distance-weighted 0.8 own + 0.2 visible-neighbor"
-echo "Max epochs: 10"
+echo "Max epochs: ${DRL_MULTI_MAX_EPOCHS:-10}"
 echo "Log: $log_file"

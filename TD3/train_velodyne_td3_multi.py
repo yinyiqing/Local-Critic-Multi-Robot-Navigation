@@ -561,7 +561,10 @@ env_step_count = checkpoint["env_step_count"] if checkpoint else 0
 timesteps_since_eval = checkpoint["timesteps_since_eval"] if checkpoint else 0
 episode_num = checkpoint["episode_num"] if checkpoint else 0
 episode_done = True
-epoch = checkpoint["epoch"] if checkpoint else 1
+if checkpoint:
+    epoch = max(checkpoint["epoch"], len(evaluations) + 1)
+else:
+    epoch = 1
 count_rand_actions = [0 for _ in agent_names]
 random_actions = [np.zeros(2) for _ in agent_names]
 expl_noise = checkpoint["expl_noise"] if checkpoint else expl_noise
@@ -833,7 +836,7 @@ while timestep < max_timesteps:
                 env_step_count,
                 timesteps_since_eval,
                 episode_num,
-                epoch,
+                epoch + 1,
                 expl_noise,
                 best_eval_summary,
                 best_epoch,
@@ -865,7 +868,7 @@ while timestep < max_timesteps:
                     env_step_count,
                     timesteps_since_eval,
                     episode_num,
-                    epoch,
+                    epoch + 1,
                     expl_noise,
                     best_eval_summary,
                     best_epoch,
