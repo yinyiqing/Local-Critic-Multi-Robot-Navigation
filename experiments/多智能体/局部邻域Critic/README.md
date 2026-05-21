@@ -40,6 +40,7 @@ D2 更符合“局部几何邻域 critic”的论文叙事：critic 学习相对
 ```text
 三车多邻居验证/test_multi_local_critic_3_best_300episodes_summary.md
 三车几何邻域Critic扩展验证/test_multi_local_critic_geo_3_best_300episodes_summary.md
+三车多邻居验证/train_multi_local_critic_3_detached_20260521_193351_extended20.log
 三车几何邻域Critic扩展验证/train_multi_local_critic_geo_3_extended20.raw.log
 环境容量验证.md
 ```
@@ -48,5 +49,5 @@ D2 更符合“局部几何邻域 critic”的论文叙事：critic 学习相对
 
 - D 不建议删除。它是必要消融，用来说明“critic 看到邻居动作并不一定更好”。
 - D2 更适合作为论文主方法候选。
-- 若正式采用 20 epoch 预算，应补齐 D 的 20 epoch 扩展检查。
+- D 的 20 epoch 扩展检查已完成，未更新 best checkpoint，正式测试仍使用 epoch 8 best。
 - 若三车差距仍不够强，应优先扩展到 5 车和 10 车。
