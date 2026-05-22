@@ -9,11 +9,9 @@
 - 单智能体 TD3 导航复现。
 - 多机器人共享 actor/critic policy。
 - RewardOnly 与 Weighted08 动态 reward 对照。
-- CTDE 风格局部邻域 critic。
-- 几何邻域 critic：actor 执行时仍只看自身观测，邻居几何信息只进入训练期 critic。
-- detached 训练/测试脚本、断点续跑、best checkpoint 和实验归档。
+- 局部邻域 critic：actor 执行时仍只看自身观测，邻居几何信息只进入训练期 critic。
 
-## 当前论文主线
+## 当前主线
 
 当前主线是三车对照实验：
 
