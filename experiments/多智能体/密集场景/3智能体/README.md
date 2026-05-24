@@ -1,6 +1,6 @@
 # 3 智能体密集场景
 
-本目录用于归档三车 dense case 测试结果。
+本目录用于归档三车密集场景测试结果。
 
 ## 场景口径
 
@@ -15,6 +15,6 @@
 
 | 编号 | 方法 | 状态 |
 | --- | --- | --- |
-| A | 共享 Policy Baseline | 待测 |
+| A | 共享 Policy Baseline | 已完成 |
 | C | Weighted08 | 待测 |
-| D2 | 几何邻域 Critic + Weighted08 | 待测 |
+| D2 | 几何邻域 Critic + Weighted08 | 测试中 |
