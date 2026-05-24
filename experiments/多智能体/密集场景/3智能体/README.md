@@ -17,4 +17,11 @@
 | --- | --- | --- |
 | A | 共享 Policy Baseline | 已完成 |
 | C | Weighted08 | 待测 |
-| D2 | 几何邻域 Critic + Weighted08 | 测试中 |
+| D2 | 几何邻域 Critic + Weighted08 | 已完成 |
+
+## 当前结果
+
+| 方法 | success_rate | collision_rate | full_success_rate |
+| --- | ---: | ---: | ---: |
+| A 共享 Policy Baseline | 0.993 | 0.004 | 0.983 |
+| D2 几何邻域 Critic + Weighted08 | 0.996 | 0.001 | 0.987 |

@@ -1,0 +1,345 @@
+Test version: multi-agent-eval-v1-headless
+Test process PID: 1910167
+Launchfile: multi_robot_scenario_dense_local_critic_geo_3.launch
+Model file: TD3_velodyne_multi_v4_local_critic_geo_3_best
+Scenario mode: dense
+Device: cuda
+GPU: NVIDIA GeForce RTX 4090
+Agent names: r1, r2, r3
+State path: ./checkpoints/TD3_velodyne_multi_v4_local_critic_geo_3_best_dense_test_state.pt
+Resume mode: True
+Starting episode: 0
+Starting env steps: 0
+Starting agent samples: 0
+Target test episodes: 300
+Episode 1 complete | env_steps=24 | agent_samples=57 | episode_env_steps=24 | episode_agent_samples=57 | mean_reward=119.554 | success=3/3 | collision=0/3 | mean_final_distance=0.284 | samples/sec=21.915
+Episode 2 complete | env_steps=42 | agent_samples=102 | episode_env_steps=18 | episode_agent_samples=45 | mean_reward=118.521 | success=3/3 | collision=0/3 | mean_final_distance=0.282 | samples/sec=22.516
+Episode 3 complete | env_steps=58 | agent_samples=143 | episode_env_steps=16 | episode_agent_samples=41 | mean_reward=117.706 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=23.020
+Episode 4 complete | env_steps=79 | agent_samples=188 | episode_env_steps=21 | episode_agent_samples=45 | mean_reward=120.017 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=19.895
+Episode 5 complete | env_steps=96 | agent_samples=235 | episode_env_steps=17 | episode_agent_samples=47 | mean_reward=119.577 | success=3/3 | collision=0/3 | mean_final_distance=0.283 | samples/sec=25.106
+Episode 6 complete | env_steps=115 | agent_samples=286 | episode_env_steps=19 | episode_agent_samples=51 | mean_reward=113.256 | success=3/3 | collision=0/3 | mean_final_distance=0.272 | samples/sec=24.935
+Episode 7 complete | env_steps=178 | agent_samples=378 | episode_env_steps=63 | episode_agent_samples=92 | mean_reward=116.292 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=13.427
+Episode 8 complete | env_steps=478 | agent_samples=713 | episode_env_steps=300 | episode_agent_samples=335 | mean_reward=60.610 | success=2/3 | collision=0/3 | mean_final_distance=0.312 | samples/sec=10.195
+Episode 9 complete | env_steps=506 | agent_samples=769 | episode_env_steps=28 | episode_agent_samples=56 | mean_reward=116.432 | success=3/3 | collision=0/3 | mean_final_distance=0.269 | samples/sec=18.118
+Episode 10 complete | env_steps=523 | agent_samples=814 | episode_env_steps=17 | episode_agent_samples=45 | mean_reward=115.805 | success=3/3 | collision=0/3 | mean_final_distance=0.278 | samples/sec=24.000
+Recent 10 episodes | avg_reward=111.777 | success_rate=0.967 | collision_rate=0.000 | full_success_rate=0.900 | total_success=29 | total_collision=0 | total_full_success=9
+Episode 11 complete | env_steps=541 | agent_samples=856 | episode_env_steps=18 | episode_agent_samples=42 | mean_reward=118.503 | success=3/3 | collision=0/3 | mean_final_distance=0.255 | samples/sec=21.474
+Episode 12 complete | env_steps=565 | agent_samples=917 | episode_env_steps=24 | episode_agent_samples=61 | mean_reward=116.031 | success=3/3 | collision=0/3 | mean_final_distance=0.266 | samples/sec=22.935
+Episode 13 complete | env_steps=595 | agent_samples=985 | episode_env_steps=30 | episode_agent_samples=68 | mean_reward=119.948 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=20.939
+Episode 14 complete | env_steps=614 | agent_samples=1032 | episode_env_steps=19 | episode_agent_samples=47 | mean_reward=117.246 | success=3/3 | collision=0/3 | mean_final_distance=0.284 | samples/sec=22.589
+Episode 15 complete | env_steps=635 | agent_samples=1084 | episode_env_steps=21 | episode_agent_samples=52 | mean_reward=120.199 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=21.793
+Episode 16 complete | env_steps=652 | agent_samples=1126 | episode_env_steps=17 | episode_agent_samples=42 | mean_reward=118.274 | success=3/3 | collision=0/3 | mean_final_distance=0.263 | samples/sec=22.708
+Episode 17 complete | env_steps=665 | agent_samples=1160 | episode_env_steps=13 | episode_agent_samples=34 | mean_reward=114.152 | success=3/3 | collision=0/3 | mean_final_distance=0.280 | samples/sec=23.927
+Episode 18 complete | env_steps=682 | agent_samples=1201 | episode_env_steps=17 | episode_agent_samples=41 | mean_reward=119.982 | success=3/3 | collision=0/3 | mean_final_distance=0.259 | samples/sec=22.333
+Episode 19 complete | env_steps=701 | agent_samples=1253 | episode_env_steps=19 | episode_agent_samples=52 | mean_reward=116.158 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=24.703
+Episode 20 complete | env_steps=724 | agent_samples=1307 | episode_env_steps=23 | episode_agent_samples=54 | mean_reward=115.546 | success=3/3 | collision=0/3 | mean_final_distance=0.287 | samples/sec=21.295
+Recent 10 episodes | avg_reward=117.604 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=59 | total_collision=0 | total_full_success=19
+Episode 21 complete | env_steps=742 | agent_samples=1356 | episode_env_steps=18 | episode_agent_samples=49 | mean_reward=121.860 | success=3/3 | collision=0/3 | mean_final_distance=0.266 | samples/sec=24.858
+Episode 22 complete | env_steps=767 | agent_samples=1399 | episode_env_steps=25 | episode_agent_samples=43 | mean_reward=114.554 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=15.814
+Episode 23 complete | env_steps=808 | agent_samples=1458 | episode_env_steps=41 | episode_agent_samples=59 | mean_reward=45.570 | success=2/3 | collision=1/3 | mean_final_distance=0.526 | samples/sec=13.342
+Episode 24 complete | env_steps=839 | agent_samples=1521 | episode_env_steps=31 | episode_agent_samples=63 | mean_reward=119.877 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=18.566
+Episode 25 complete | env_steps=860 | agent_samples=1570 | episode_env_steps=21 | episode_agent_samples=49 | mean_reward=119.830 | success=3/3 | collision=0/3 | mean_final_distance=0.263 | samples/sec=21.334
+Episode 26 complete | env_steps=878 | agent_samples=1622 | episode_env_steps=18 | episode_agent_samples=52 | mean_reward=120.387 | success=3/3 | collision=0/3 | mean_final_distance=0.285 | samples/sec=26.795
+Episode 27 complete | env_steps=897 | agent_samples=1675 | episode_env_steps=19 | episode_agent_samples=53 | mean_reward=122.713 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=25.848
+Episode 28 complete | env_steps=911 | agent_samples=1710 | episode_env_steps=14 | episode_agent_samples=35 | mean_reward=112.738 | success=3/3 | collision=0/3 | mean_final_distance=0.284 | samples/sec=22.825
+Episode 29 complete | env_steps=934 | agent_samples=1759 | episode_env_steps=23 | episode_agent_samples=49 | mean_reward=118.318 | success=3/3 | collision=0/3 | mean_final_distance=0.261 | samples/sec=19.380
+Episode 30 complete | env_steps=960 | agent_samples=1807 | episode_env_steps=26 | episode_agent_samples=48 | mean_reward=114.317 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=16.952
+Recent 10 episodes | avg_reward=111.016 | success_rate=0.967 | collision_rate=0.033 | full_success_rate=0.900 | total_success=88 | total_collision=1 | total_full_success=28
+Episode 31 complete | env_steps=981 | agent_samples=1853 | episode_env_steps=21 | episode_agent_samples=46 | mean_reward=116.271 | success=3/3 | collision=0/3 | mean_final_distance=0.256 | samples/sec=20.285
+Episode 32 complete | env_steps=1001 | agent_samples=1894 | episode_env_steps=20 | episode_agent_samples=41 | mean_reward=117.780 | success=3/3 | collision=0/3 | mean_final_distance=0.264 | samples/sec=18.609
+Episode 33 complete | env_steps=1019 | agent_samples=1939 | episode_env_steps=18 | episode_agent_samples=45 | mean_reward=118.751 | success=3/3 | collision=0/3 | mean_final_distance=0.263 | samples/sec=22.952
+Episode 34 complete | env_steps=1034 | agent_samples=1980 | episode_env_steps=15 | episode_agent_samples=41 | mean_reward=116.734 | success=3/3 | collision=0/3 | mean_final_distance=0.277 | samples/sec=25.368
+Episode 35 complete | env_steps=1064 | agent_samples=2045 | episode_env_steps=30 | episode_agent_samples=65 | mean_reward=121.957 | success=3/3 | collision=0/3 | mean_final_distance=0.287 | samples/sec=20.233
+Episode 36 complete | env_steps=1122 | agent_samples=2140 | episode_env_steps=58 | episode_agent_samples=95 | mean_reward=119.896 | success=3/3 | collision=0/3 | mean_final_distance=0.269 | samples/sec=15.177
+Episode 37 complete | env_steps=1149 | agent_samples=2200 | episode_env_steps=27 | episode_agent_samples=60 | mean_reward=115.194 | success=3/3 | collision=0/3 | mean_final_distance=0.277 | samples/sec=20.435
+Episode 38 complete | env_steps=1165 | agent_samples=2246 | episode_env_steps=16 | episode_agent_samples=46 | mean_reward=117.116 | success=3/3 | collision=0/3 | mean_final_distance=0.258 | samples/sec=25.843
+Episode 39 complete | env_steps=1179 | agent_samples=2281 | episode_env_steps=14 | episode_agent_samples=35 | mean_reward=116.547 | success=3/3 | collision=0/3 | mean_final_distance=0.282 | samples/sec=23.166
+Episode 40 complete | env_steps=1200 | agent_samples=2329 | episode_env_steps=21 | episode_agent_samples=48 | mean_reward=115.921 | success=3/3 | collision=0/3 | mean_final_distance=0.278 | samples/sec=20.714
+Recent 10 episodes | avg_reward=117.617 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=118 | total_collision=1 | total_full_success=38
+Episode 41 complete | env_steps=1234 | agent_samples=2398 | episode_env_steps=34 | episode_agent_samples=69 | mean_reward=115.568 | success=3/3 | collision=0/3 | mean_final_distance=0.287 | samples/sec=18.649
+Episode 42 complete | env_steps=1251 | agent_samples=2440 | episode_env_steps=17 | episode_agent_samples=42 | mean_reward=118.422 | success=3/3 | collision=0/3 | mean_final_distance=0.263 | samples/sec=22.608
+Episode 43 complete | env_steps=1275 | agent_samples=2497 | episode_env_steps=24 | episode_agent_samples=57 | mean_reward=118.316 | success=3/3 | collision=0/3 | mean_final_distance=0.284 | samples/sec=21.635
+Episode 44 complete | env_steps=1289 | agent_samples=2535 | episode_env_steps=14 | episode_agent_samples=38 | mean_reward=115.880 | success=3/3 | collision=0/3 | mean_final_distance=0.289 | samples/sec=24.259
+Episode 45 complete | env_steps=1309 | agent_samples=2574 | episode_env_steps=20 | episode_agent_samples=39 | mean_reward=112.316 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=17.813
+Episode 46 complete | env_steps=1326 | agent_samples=2618 | episode_env_steps=17 | episode_agent_samples=44 | mean_reward=117.160 | success=3/3 | collision=0/3 | mean_final_distance=0.286 | samples/sec=23.758
+Episode 47 complete | env_steps=1626 | agent_samples=2955 | episode_env_steps=300 | episode_agent_samples=337 | mean_reward=70.786 | success=2/3 | collision=0/3 | mean_final_distance=0.367 | samples/sec=10.312
+Episode 48 complete | env_steps=1651 | agent_samples=3012 | episode_env_steps=25 | episode_agent_samples=57 | mean_reward=117.991 | success=3/3 | collision=0/3 | mean_final_distance=0.269 | samples/sec=21.015
+Episode 49 complete | env_steps=1674 | agent_samples=3064 | episode_env_steps=23 | episode_agent_samples=52 | mean_reward=114.335 | success=3/3 | collision=0/3 | mean_final_distance=0.276 | samples/sec=20.639
+Episode 50 complete | env_steps=1694 | agent_samples=3116 | episode_env_steps=20 | episode_agent_samples=52 | mean_reward=120.595 | success=3/3 | collision=0/3 | mean_final_distance=0.279 | samples/sec=23.239
+Recent 10 episodes | avg_reward=112.137 | success_rate=0.967 | collision_rate=0.000 | full_success_rate=0.900 | total_success=147 | total_collision=1 | total_full_success=47
+Episode 51 complete | env_steps=1727 | agent_samples=3190 | episode_env_steps=33 | episode_agent_samples=74 | mean_reward=122.349 | success=3/3 | collision=0/3 | mean_final_distance=0.269 | samples/sec=20.507
+Episode 52 complete | env_steps=1741 | agent_samples=3226 | episode_env_steps=14 | episode_agent_samples=36 | mean_reward=114.344 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=23.863
+Episode 53 complete | env_steps=1755 | agent_samples=3263 | episode_env_steps=14 | episode_agent_samples=37 | mean_reward=115.504 | success=3/3 | collision=0/3 | mean_final_distance=0.252 | samples/sec=24.502
+Episode 54 complete | env_steps=1774 | agent_samples=3307 | episode_env_steps=19 | episode_agent_samples=44 | mean_reward=121.355 | success=3/3 | collision=0/3 | mean_final_distance=0.258 | samples/sec=20.963
+Episode 55 complete | env_steps=1791 | agent_samples=3347 | episode_env_steps=17 | episode_agent_samples=40 | mean_reward=116.698 | success=3/3 | collision=0/3 | mean_final_distance=0.260 | samples/sec=21.407
+Episode 56 complete | env_steps=1811 | agent_samples=3390 | episode_env_steps=20 | episode_agent_samples=43 | mean_reward=116.452 | success=3/3 | collision=0/3 | mean_final_distance=0.289 | samples/sec=19.757
+Episode 57 complete | env_steps=1834 | agent_samples=3449 | episode_env_steps=23 | episode_agent_samples=59 | mean_reward=121.552 | success=3/3 | collision=0/3 | mean_final_distance=0.245 | samples/sec=23.802
+Episode 58 complete | env_steps=1849 | agent_samples=3488 | episode_env_steps=15 | episode_agent_samples=39 | mean_reward=117.570 | success=3/3 | collision=0/3 | mean_final_distance=0.269 | samples/sec=23.387
+Episode 59 complete | env_steps=1874 | agent_samples=3550 | episode_env_steps=25 | episode_agent_samples=62 | mean_reward=121.369 | success=3/3 | collision=0/3 | mean_final_distance=0.258 | samples/sec=22.682
+Episode 60 complete | env_steps=1902 | agent_samples=3605 | episode_env_steps=28 | episode_agent_samples=55 | mean_reward=116.783 | success=3/3 | collision=0/3 | mean_final_distance=0.267 | samples/sec=17.939
+Recent 10 episodes | avg_reward=118.398 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=177 | total_collision=1 | total_full_success=57
+Episode 61 complete | env_steps=1918 | agent_samples=3644 | episode_env_steps=16 | episode_agent_samples=39 | mean_reward=115.491 | success=3/3 | collision=0/3 | mean_final_distance=0.265 | samples/sec=22.543
+Episode 62 complete | env_steps=1934 | agent_samples=3683 | episode_env_steps=16 | episode_agent_samples=39 | mean_reward=116.964 | success=3/3 | collision=0/3 | mean_final_distance=0.241 | samples/sec=21.921
+Episode 63 complete | env_steps=1963 | agent_samples=3750 | episode_env_steps=29 | episode_agent_samples=67 | mean_reward=127.512 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=21.442
+Episode 64 complete | env_steps=1986 | agent_samples=3801 | episode_env_steps=23 | episode_agent_samples=51 | mean_reward=123.842 | success=3/3 | collision=0/3 | mean_final_distance=0.266 | samples/sec=20.598
+Episode 65 complete | env_steps=2004 | agent_samples=3847 | episode_env_steps=18 | episode_agent_samples=46 | mean_reward=118.679 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=22.466
+Episode 66 complete | env_steps=2035 | agent_samples=3926 | episode_env_steps=31 | episode_agent_samples=79 | mean_reward=120.027 | success=3/3 | collision=0/3 | mean_final_distance=0.279 | samples/sec=23.002
+Episode 67 complete | env_steps=2054 | agent_samples=3978 | episode_env_steps=19 | episode_agent_samples=52 | mean_reward=121.265 | success=3/3 | collision=0/3 | mean_final_distance=0.262 | samples/sec=25.123
+Episode 68 complete | env_steps=2077 | agent_samples=4033 | episode_env_steps=23 | episode_agent_samples=55 | mean_reward=123.295 | success=3/3 | collision=0/3 | mean_final_distance=0.284 | samples/sec=22.178
+Episode 69 complete | env_steps=2101 | agent_samples=4087 | episode_env_steps=24 | episode_agent_samples=54 | mean_reward=118.637 | success=3/3 | collision=0/3 | mean_final_distance=0.280 | samples/sec=20.881
+Episode 70 complete | env_steps=2118 | agent_samples=4134 | episode_env_steps=17 | episode_agent_samples=47 | mean_reward=120.145 | success=3/3 | collision=0/3 | mean_final_distance=0.268 | samples/sec=25.609
+Recent 10 episodes | avg_reward=120.586 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=207 | total_collision=1 | total_full_success=67
+Episode 71 complete | env_steps=2133 | agent_samples=4174 | episode_env_steps=15 | episode_agent_samples=40 | mean_reward=118.547 | success=3/3 | collision=0/3 | mean_final_distance=0.266 | samples/sec=24.586
+Episode 72 complete | env_steps=2148 | agent_samples=4217 | episode_env_steps=15 | episode_agent_samples=43 | mean_reward=118.838 | success=3/3 | collision=0/3 | mean_final_distance=0.266 | samples/sec=25.850
+Episode 73 complete | env_steps=2168 | agent_samples=4261 | episode_env_steps=20 | episode_agent_samples=44 | mean_reward=118.379 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=20.384
+Episode 74 complete | env_steps=2185 | agent_samples=4305 | episode_env_steps=17 | episode_agent_samples=44 | mean_reward=116.796 | success=3/3 | collision=0/3 | mean_final_distance=0.256 | samples/sec=23.961
+Episode 75 complete | env_steps=2206 | agent_samples=4353 | episode_env_steps=21 | episode_agent_samples=48 | mean_reward=119.314 | success=3/3 | collision=0/3 | mean_final_distance=0.280 | samples/sec=20.676
+Episode 76 complete | env_steps=2224 | agent_samples=4395 | episode_env_steps=18 | episode_agent_samples=42 | mean_reward=117.932 | success=3/3 | collision=0/3 | mean_final_distance=0.255 | samples/sec=21.046
+Episode 77 complete | env_steps=2241 | agent_samples=4440 | episode_env_steps=17 | episode_agent_samples=45 | mean_reward=119.571 | success=3/3 | collision=0/3 | mean_final_distance=0.271 | samples/sec=24.594
+Episode 78 complete | env_steps=2256 | agent_samples=4476 | episode_env_steps=15 | episode_agent_samples=36 | mean_reward=114.324 | success=3/3 | collision=0/3 | mean_final_distance=0.263 | samples/sec=22.525
+Episode 79 complete | env_steps=2278 | agent_samples=4525 | episode_env_steps=22 | episode_agent_samples=49 | mean_reward=121.281 | success=3/3 | collision=0/3 | mean_final_distance=0.265 | samples/sec=20.407
+Episode 80 complete | env_steps=2294 | agent_samples=4569 | episode_env_steps=16 | episode_agent_samples=44 | mean_reward=118.507 | success=3/3 | collision=0/3 | mean_final_distance=0.265 | samples/sec=24.733
+Recent 10 episodes | avg_reward=118.349 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=237 | total_collision=1 | total_full_success=77
+Episode 81 complete | env_steps=2326 | agent_samples=4629 | episode_env_steps=32 | episode_agent_samples=60 | mean_reward=118.565 | success=3/3 | collision=0/3 | mean_final_distance=0.292 | samples/sec=17.177
+Episode 82 complete | env_steps=2340 | agent_samples=4667 | episode_env_steps=14 | episode_agent_samples=38 | mean_reward=113.593 | success=3/3 | collision=0/3 | mean_final_distance=0.289 | samples/sec=24.588
+Episode 83 complete | env_steps=2361 | agent_samples=4721 | episode_env_steps=21 | episode_agent_samples=54 | mean_reward=119.769 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=23.248
+Episode 84 complete | env_steps=2386 | agent_samples=4771 | episode_env_steps=25 | episode_agent_samples=50 | mean_reward=119.822 | success=3/3 | collision=0/3 | mean_final_distance=0.273 | samples/sec=18.333
+Episode 85 complete | env_steps=2405 | agent_samples=4819 | episode_env_steps=19 | episode_agent_samples=48 | mean_reward=119.884 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=22.792
+Episode 86 complete | env_steps=2423 | agent_samples=4862 | episode_env_steps=18 | episode_agent_samples=43 | mean_reward=115.082 | success=3/3 | collision=0/3 | mean_final_distance=0.276 | samples/sec=22.097
+Episode 87 complete | env_steps=2444 | agent_samples=4914 | episode_env_steps=21 | episode_agent_samples=52 | mean_reward=121.507 | success=3/3 | collision=0/3 | mean_final_distance=0.269 | samples/sec=22.609
+Episode 88 complete | env_steps=2460 | agent_samples=4957 | episode_env_steps=16 | episode_agent_samples=43 | mean_reward=118.687 | success=3/3 | collision=0/3 | mean_final_distance=0.261 | samples/sec=24.041
+Episode 89 complete | env_steps=2483 | agent_samples=5011 | episode_env_steps=23 | episode_agent_samples=54 | mean_reward=117.917 | success=3/3 | collision=0/3 | mean_final_distance=0.269 | samples/sec=21.508
+Episode 90 complete | env_steps=2527 | agent_samples=5083 | episode_env_steps=44 | episode_agent_samples=72 | mean_reward=119.323 | success=3/3 | collision=0/3 | mean_final_distance=0.261 | samples/sec=14.976
+Recent 10 episodes | avg_reward=118.415 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=267 | total_collision=1 | total_full_success=87
+Episode 91 complete | env_steps=2552 | agent_samples=5133 | episode_env_steps=25 | episode_agent_samples=50 | mean_reward=116.091 | success=3/3 | collision=0/3 | mean_final_distance=0.282 | samples/sec=18.232
+Episode 92 complete | env_steps=2570 | agent_samples=5174 | episode_env_steps=18 | episode_agent_samples=41 | mean_reward=117.269 | success=3/3 | collision=0/3 | mean_final_distance=0.265 | samples/sec=20.817
+Episode 93 complete | env_steps=2627 | agent_samples=5257 | episode_env_steps=57 | episode_agent_samples=83 | mean_reward=113.181 | success=3/3 | collision=0/3 | mean_final_distance=0.254 | samples/sec=13.309
+Episode 94 complete | env_steps=2649 | agent_samples=5317 | episode_env_steps=22 | episode_agent_samples=60 | mean_reward=127.126 | success=3/3 | collision=0/3 | mean_final_distance=0.272 | samples/sec=24.985
+Episode 95 complete | env_steps=2669 | agent_samples=5367 | episode_env_steps=20 | episode_agent_samples=50 | mean_reward=120.708 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=22.972
+Episode 96 complete | env_steps=2690 | agent_samples=5417 | episode_env_steps=21 | episode_agent_samples=50 | mean_reward=118.759 | success=3/3 | collision=0/3 | mean_final_distance=0.289 | samples/sec=21.837
+Episode 97 complete | env_steps=2710 | agent_samples=5466 | episode_env_steps=20 | episode_agent_samples=49 | mean_reward=120.324 | success=3/3 | collision=0/3 | mean_final_distance=0.262 | samples/sec=22.639
+Episode 98 complete | env_steps=2728 | agent_samples=5510 | episode_env_steps=18 | episode_agent_samples=44 | mean_reward=120.277 | success=3/3 | collision=0/3 | mean_final_distance=0.279 | samples/sec=22.206
+Episode 99 complete | env_steps=2744 | agent_samples=5548 | episode_env_steps=16 | episode_agent_samples=38 | mean_reward=114.155 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=21.764
+Episode 100 complete | env_steps=2767 | agent_samples=5611 | episode_env_steps=23 | episode_agent_samples=63 | mean_reward=119.877 | success=3/3 | collision=0/3 | mean_final_distance=0.284 | samples/sec=25.022
+Recent 10 episodes | avg_reward=118.777 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=297 | total_collision=1 | total_full_success=97
+Episode 101 complete | env_steps=2792 | agent_samples=5672 | episode_env_steps=25 | episode_agent_samples=61 | mean_reward=120.851 | success=3/3 | collision=0/3 | mean_final_distance=0.258 | samples/sec=22.342
+Episode 102 complete | env_steps=2810 | agent_samples=5714 | episode_env_steps=18 | episode_agent_samples=42 | mean_reward=117.753 | success=3/3 | collision=0/3 | mean_final_distance=0.246 | samples/sec=21.046
+Episode 103 complete | env_steps=2832 | agent_samples=5769 | episode_env_steps=22 | episode_agent_samples=55 | mean_reward=125.473 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=23.124
+Episode 104 complete | env_steps=2851 | agent_samples=5815 | episode_env_steps=19 | episode_agent_samples=46 | mean_reward=120.138 | success=3/3 | collision=0/3 | mean_final_distance=0.254 | samples/sec=21.614
+Episode 105 complete | env_steps=2872 | agent_samples=5869 | episode_env_steps=21 | episode_agent_samples=54 | mean_reward=116.023 | success=3/3 | collision=0/3 | mean_final_distance=0.268 | samples/sec=23.583
+Episode 106 complete | env_steps=2892 | agent_samples=5919 | episode_env_steps=20 | episode_agent_samples=50 | mean_reward=119.584 | success=3/3 | collision=0/3 | mean_final_distance=0.272 | samples/sec=22.774
+Episode 107 complete | env_steps=2918 | agent_samples=5980 | episode_env_steps=26 | episode_agent_samples=61 | mean_reward=116.706 | success=3/3 | collision=0/3 | mean_final_distance=0.280 | samples/sec=21.568
+Episode 108 complete | env_steps=2940 | agent_samples=6037 | episode_env_steps=22 | episode_agent_samples=57 | mean_reward=120.901 | success=3/3 | collision=0/3 | mean_final_distance=0.286 | samples/sec=23.837
+Episode 109 complete | env_steps=2975 | agent_samples=6102 | episode_env_steps=35 | episode_agent_samples=65 | mean_reward=117.371 | success=3/3 | collision=0/3 | mean_final_distance=0.269 | samples/sec=16.922
+Episode 110 complete | env_steps=2995 | agent_samples=6154 | episode_env_steps=20 | episode_agent_samples=52 | mean_reward=120.004 | success=3/3 | collision=0/3 | mean_final_distance=0.279 | samples/sec=23.653
+Recent 10 episodes | avg_reward=119.480 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=327 | total_collision=1 | total_full_success=107
+Episode 111 complete | env_steps=3014 | agent_samples=6198 | episode_env_steps=19 | episode_agent_samples=44 | mean_reward=117.876 | success=3/3 | collision=0/3 | mean_final_distance=0.288 | samples/sec=20.913
+Episode 112 complete | env_steps=3102 | agent_samples=6339 | episode_env_steps=88 | episode_agent_samples=141 | mean_reward=115.167 | success=3/3 | collision=0/3 | mean_final_distance=0.282 | samples/sec=14.597
+Episode 113 complete | env_steps=3132 | agent_samples=6399 | episode_env_steps=30 | episode_agent_samples=60 | mean_reward=118.409 | success=3/3 | collision=0/3 | mean_final_distance=0.257 | samples/sec=18.432
+Episode 114 complete | env_steps=3154 | agent_samples=6454 | episode_env_steps=22 | episode_agent_samples=55 | mean_reward=121.470 | success=3/3 | collision=0/3 | mean_final_distance=0.259 | samples/sec=22.607
+Episode 115 complete | env_steps=3176 | agent_samples=6504 | episode_env_steps=22 | episode_agent_samples=50 | mean_reward=123.046 | success=3/3 | collision=0/3 | mean_final_distance=0.283 | samples/sec=20.137
+Episode 116 complete | env_steps=3193 | agent_samples=6551 | episode_env_steps=17 | episode_agent_samples=47 | mean_reward=119.647 | success=3/3 | collision=0/3 | mean_final_distance=0.284 | samples/sec=25.365
+Episode 117 complete | env_steps=3209 | agent_samples=6593 | episode_env_steps=16 | episode_agent_samples=42 | mean_reward=115.059 | success=3/3 | collision=0/3 | mean_final_distance=0.272 | samples/sec=24.209
+Episode 118 complete | env_steps=3460 | agent_samples=6886 | episode_env_steps=251 | episode_agent_samples=293 | mean_reward=111.950 | success=3/3 | collision=0/3 | mean_final_distance=0.266 | samples/sec=10.593
+Episode 119 complete | env_steps=3482 | agent_samples=6945 | episode_env_steps=22 | episode_agent_samples=59 | mean_reward=118.924 | success=3/3 | collision=0/3 | mean_final_distance=0.289 | samples/sec=24.778
+Episode 120 complete | env_steps=3500 | agent_samples=6987 | episode_env_steps=18 | episode_agent_samples=42 | mean_reward=118.854 | success=3/3 | collision=0/3 | mean_final_distance=0.262 | samples/sec=21.229
+Recent 10 episodes | avg_reward=118.040 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=357 | total_collision=1 | total_full_success=117
+Episode 121 complete | env_steps=3518 | agent_samples=7037 | episode_env_steps=18 | episode_agent_samples=50 | mean_reward=122.274 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=26.056
+Episode 122 complete | env_steps=3537 | agent_samples=7086 | episode_env_steps=19 | episode_agent_samples=49 | mean_reward=116.747 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=23.536
+Episode 123 complete | env_steps=3557 | agent_samples=7134 | episode_env_steps=20 | episode_agent_samples=48 | mean_reward=122.003 | success=3/3 | collision=0/3 | mean_final_distance=0.266 | samples/sec=22.252
+Episode 124 complete | env_steps=3575 | agent_samples=7182 | episode_env_steps=18 | episode_agent_samples=48 | mean_reward=122.586 | success=3/3 | collision=0/3 | mean_final_distance=0.242 | samples/sec=24.032
+Episode 125 complete | env_steps=3607 | agent_samples=7243 | episode_env_steps=32 | episode_agent_samples=61 | mean_reward=117.931 | success=3/3 | collision=0/3 | mean_final_distance=0.271 | samples/sec=17.611
+Episode 126 complete | env_steps=3630 | agent_samples=7296 | episode_env_steps=23 | episode_agent_samples=53 | mean_reward=119.245 | success=3/3 | collision=0/3 | mean_final_distance=0.277 | samples/sec=21.302
+Episode 127 complete | env_steps=3667 | agent_samples=7366 | episode_env_steps=37 | episode_agent_samples=70 | mean_reward=119.598 | success=3/3 | collision=0/3 | mean_final_distance=0.277 | samples/sec=17.221
+Episode 128 complete | env_steps=3684 | agent_samples=7410 | episode_env_steps=17 | episode_agent_samples=44 | mean_reward=119.584 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=23.935
+Episode 129 complete | env_steps=3700 | agent_samples=7451 | episode_env_steps=16 | episode_agent_samples=41 | mean_reward=117.536 | success=3/3 | collision=0/3 | mean_final_distance=0.278 | samples/sec=23.233
+Episode 130 complete | env_steps=3717 | agent_samples=7490 | episode_env_steps=17 | episode_agent_samples=39 | mean_reward=115.574 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=20.393
+Recent 10 episodes | avg_reward=119.308 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=387 | total_collision=1 | total_full_success=127
+Episode 131 complete | env_steps=3732 | agent_samples=7529 | episode_env_steps=15 | episode_agent_samples=39 | mean_reward=115.328 | success=3/3 | collision=0/3 | mean_final_distance=0.279 | samples/sec=24.151
+Episode 132 complete | env_steps=3754 | agent_samples=7573 | episode_env_steps=22 | episode_agent_samples=44 | mean_reward=113.459 | success=3/3 | collision=0/3 | mean_final_distance=0.294 | samples/sec=18.291
+Episode 133 complete | env_steps=3772 | agent_samples=7618 | episode_env_steps=18 | episode_agent_samples=45 | mean_reward=116.292 | success=3/3 | collision=0/3 | mean_final_distance=0.267 | samples/sec=22.807
+Episode 134 complete | env_steps=3789 | agent_samples=7665 | episode_env_steps=17 | episode_agent_samples=47 | mean_reward=119.419 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=25.114
+Episode 135 complete | env_steps=3807 | agent_samples=7717 | episode_env_steps=18 | episode_agent_samples=52 | mean_reward=123.688 | success=3/3 | collision=0/3 | mean_final_distance=0.276 | samples/sec=26.383
+Episode 136 complete | env_steps=3822 | agent_samples=7757 | episode_env_steps=15 | episode_agent_samples=40 | mean_reward=117.613 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=23.574
+Episode 137 complete | env_steps=3845 | agent_samples=7808 | episode_env_steps=23 | episode_agent_samples=51 | mean_reward=122.773 | success=3/3 | collision=0/3 | mean_final_distance=0.263 | samples/sec=20.054
+Episode 138 complete | env_steps=3870 | agent_samples=7865 | episode_env_steps=25 | episode_agent_samples=57 | mean_reward=119.078 | success=3/3 | collision=0/3 | mean_final_distance=0.282 | samples/sec=21.254
+Episode 139 complete | env_steps=3901 | agent_samples=7921 | episode_env_steps=31 | episode_agent_samples=56 | mean_reward=119.355 | success=3/3 | collision=0/3 | mean_final_distance=0.257 | samples/sec=16.686
+Episode 140 complete | env_steps=3921 | agent_samples=7968 | episode_env_steps=20 | episode_agent_samples=47 | mean_reward=118.245 | success=3/3 | collision=0/3 | mean_final_distance=0.290 | samples/sec=22.086
+Recent 10 episodes | avg_reward=118.525 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=417 | total_collision=1 | total_full_success=137
+Episode 141 complete | env_steps=3952 | agent_samples=8022 | episode_env_steps=31 | episode_agent_samples=54 | mean_reward=115.677 | success=3/3 | collision=0/3 | mean_final_distance=0.264 | samples/sec=16.000
+Episode 142 complete | env_steps=3971 | agent_samples=8072 | episode_env_steps=19 | episode_agent_samples=50 | mean_reward=122.053 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=23.779
+Episode 143 complete | env_steps=3996 | agent_samples=8129 | episode_env_steps=25 | episode_agent_samples=57 | mean_reward=117.506 | success=3/3 | collision=0/3 | mean_final_distance=0.288 | samples/sec=20.655
+Episode 144 complete | env_steps=4014 | agent_samples=8174 | episode_env_steps=18 | episode_agent_samples=45 | mean_reward=115.879 | success=3/3 | collision=0/3 | mean_final_distance=0.262 | samples/sec=23.084
+Episode 145 complete | env_steps=4033 | agent_samples=8223 | episode_env_steps=19 | episode_agent_samples=49 | mean_reward=115.438 | success=3/3 | collision=0/3 | mean_final_distance=0.289 | samples/sec=23.484
+Episode 146 complete | env_steps=4137 | agent_samples=8353 | episode_env_steps=104 | episode_agent_samples=130 | mean_reward=111.016 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=11.433
+Episode 147 complete | env_steps=4173 | agent_samples=8417 | episode_env_steps=36 | episode_agent_samples=64 | mean_reward=114.804 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=16.213
+Episode 148 complete | env_steps=4192 | agent_samples=8466 | episode_env_steps=19 | episode_agent_samples=49 | mean_reward=121.666 | success=3/3 | collision=0/3 | mean_final_distance=0.245 | samples/sec=23.580
+Episode 149 complete | env_steps=4210 | agent_samples=8515 | episode_env_steps=18 | episode_agent_samples=49 | mean_reward=119.601 | success=3/3 | collision=0/3 | mean_final_distance=0.272 | samples/sec=24.737
+Episode 150 complete | env_steps=4226 | agent_samples=8561 | episode_env_steps=16 | episode_agent_samples=46 | mean_reward=117.632 | success=3/3 | collision=0/3 | mean_final_distance=0.257 | samples/sec=25.640
+Recent 10 episodes | avg_reward=117.127 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=447 | total_collision=1 | total_full_success=147
+Episode 151 complete | env_steps=4246 | agent_samples=8605 | episode_env_steps=20 | episode_agent_samples=44 | mean_reward=118.001 | success=3/3 | collision=0/3 | mean_final_distance=0.271 | samples/sec=20.240
+Episode 152 complete | env_steps=4258 | agent_samples=8637 | episode_env_steps=12 | episode_agent_samples=32 | mean_reward=112.776 | success=3/3 | collision=0/3 | mean_final_distance=0.276 | samples/sec=23.844
+Episode 153 complete | env_steps=4368 | agent_samples=8780 | episode_env_steps=110 | episode_agent_samples=143 | mean_reward=109.431 | success=3/3 | collision=0/3 | mean_final_distance=0.279 | samples/sec=11.867
+Episode 154 complete | env_steps=4390 | agent_samples=8824 | episode_env_steps=22 | episode_agent_samples=44 | mean_reward=116.644 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=18.746
+Episode 155 complete | env_steps=4407 | agent_samples=8868 | episode_env_steps=17 | episode_agent_samples=44 | mean_reward=119.216 | success=3/3 | collision=0/3 | mean_final_distance=0.271 | samples/sec=23.775
+Episode 156 complete | env_steps=4434 | agent_samples=8932 | episode_env_steps=27 | episode_agent_samples=64 | mean_reward=121.324 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=21.906
+Episode 157 complete | env_steps=4455 | agent_samples=8982 | episode_env_steps=21 | episode_agent_samples=50 | mean_reward=121.342 | success=3/3 | collision=0/3 | mean_final_distance=0.297 | samples/sec=21.581
+Episode 158 complete | env_steps=4471 | agent_samples=9024 | episode_env_steps=16 | episode_agent_samples=42 | mean_reward=117.463 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=24.010
+Episode 159 complete | env_steps=4484 | agent_samples=9058 | episode_env_steps=13 | episode_agent_samples=34 | mean_reward=114.660 | success=3/3 | collision=0/3 | mean_final_distance=0.261 | samples/sec=23.823
+Episode 160 complete | env_steps=4501 | agent_samples=9101 | episode_env_steps=17 | episode_agent_samples=43 | mean_reward=119.028 | success=3/3 | collision=0/3 | mean_final_distance=0.280 | samples/sec=23.555
+Recent 10 episodes | avg_reward=116.988 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=477 | total_collision=1 | total_full_success=157
+Episode 161 complete | env_steps=4526 | agent_samples=9162 | episode_env_steps=25 | episode_agent_samples=61 | mean_reward=123.158 | success=3/3 | collision=0/3 | mean_final_distance=0.248 | samples/sec=22.123
+Episode 162 complete | env_steps=4550 | agent_samples=9212 | episode_env_steps=24 | episode_agent_samples=50 | mean_reward=118.047 | success=3/3 | collision=0/3 | mean_final_distance=0.290 | samples/sec=19.026
+Episode 163 complete | env_steps=4570 | agent_samples=9260 | episode_env_steps=20 | episode_agent_samples=48 | mean_reward=118.078 | success=3/3 | collision=0/3 | mean_final_distance=0.256 | samples/sec=22.033
+Episode 164 complete | env_steps=4600 | agent_samples=9325 | episode_env_steps=30 | episode_agent_samples=65 | mean_reward=120.064 | success=3/3 | collision=0/3 | mean_final_distance=0.280 | samples/sec=19.520
+Episode 165 complete | env_steps=4620 | agent_samples=9374 | episode_env_steps=20 | episode_agent_samples=49 | mean_reward=116.561 | success=3/3 | collision=0/3 | mean_final_distance=0.260 | samples/sec=22.679
+Episode 166 complete | env_steps=4640 | agent_samples=9418 | episode_env_steps=20 | episode_agent_samples=44 | mean_reward=114.035 | success=3/3 | collision=0/3 | mean_final_distance=0.268 | samples/sec=20.461
+Episode 167 complete | env_steps=4655 | agent_samples=9458 | episode_env_steps=15 | episode_agent_samples=40 | mean_reward=117.626 | success=3/3 | collision=0/3 | mean_final_distance=0.261 | samples/sec=24.751
+Episode 168 complete | env_steps=4671 | agent_samples=9497 | episode_env_steps=16 | episode_agent_samples=39 | mean_reward=118.720 | success=3/3 | collision=0/3 | mean_final_distance=0.261 | samples/sec=22.546
+Episode 169 complete | env_steps=4693 | agent_samples=9544 | episode_env_steps=22 | episode_agent_samples=47 | mean_reward=118.444 | success=3/3 | collision=0/3 | mean_final_distance=0.276 | samples/sec=19.940
+Episode 170 complete | env_steps=4727 | agent_samples=9604 | episode_env_steps=34 | episode_agent_samples=60 | mean_reward=113.682 | success=3/3 | collision=0/3 | mean_final_distance=0.284 | samples/sec=16.270
+Recent 10 episodes | avg_reward=117.842 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=507 | total_collision=1 | total_full_success=167
+Episode 171 complete | env_steps=4754 | agent_samples=9669 | episode_env_steps=27 | episode_agent_samples=65 | mean_reward=119.753 | success=3/3 | collision=0/3 | mean_final_distance=0.284 | samples/sec=22.319
+Episode 172 complete | env_steps=4769 | agent_samples=9705 | episode_env_steps=15 | episode_agent_samples=36 | mean_reward=115.155 | success=3/3 | collision=0/3 | mean_final_distance=0.267 | samples/sec=22.293
+Episode 173 complete | env_steps=4853 | agent_samples=9820 | episode_env_steps=84 | episode_agent_samples=115 | mean_reward=119.420 | success=3/3 | collision=0/3 | mean_final_distance=0.292 | samples/sec=12.657
+Episode 174 complete | env_steps=4870 | agent_samples=9865 | episode_env_steps=17 | episode_agent_samples=45 | mean_reward=120.080 | success=3/3 | collision=0/3 | mean_final_distance=0.240 | samples/sec=24.435
+Episode 175 complete | env_steps=4887 | agent_samples=9909 | episode_env_steps=17 | episode_agent_samples=44 | mean_reward=122.226 | success=3/3 | collision=0/3 | mean_final_distance=0.288 | samples/sec=23.696
+Episode 176 complete | env_steps=4907 | agent_samples=9959 | episode_env_steps=20 | episode_agent_samples=50 | mean_reward=122.671 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=23.373
+Episode 177 complete | env_steps=4925 | agent_samples=10011 | episode_env_steps=18 | episode_agent_samples=52 | mean_reward=122.102 | success=3/3 | collision=0/3 | mean_final_distance=0.266 | samples/sec=27.000
+Episode 178 complete | env_steps=4939 | agent_samples=10049 | episode_env_steps=14 | episode_agent_samples=38 | mean_reward=114.414 | success=3/3 | collision=0/3 | mean_final_distance=0.282 | samples/sec=24.830
+Episode 179 complete | env_steps=4969 | agent_samples=10110 | episode_env_steps=30 | episode_agent_samples=61 | mean_reward=119.708 | success=3/3 | collision=0/3 | mean_final_distance=0.266 | samples/sec=18.849
+Episode 180 complete | env_steps=4994 | agent_samples=10165 | episode_env_steps=25 | episode_agent_samples=55 | mean_reward=120.925 | success=3/3 | collision=0/3 | mean_final_distance=0.260 | samples/sec=20.295
+Recent 10 episodes | avg_reward=119.645 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=537 | total_collision=1 | total_full_success=177
+Episode 181 complete | env_steps=5014 | agent_samples=10215 | episode_env_steps=20 | episode_agent_samples=50 | mean_reward=123.722 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=23.141
+Episode 182 complete | env_steps=5034 | agent_samples=10263 | episode_env_steps=20 | episode_agent_samples=48 | mean_reward=122.336 | success=3/3 | collision=0/3 | mean_final_distance=0.257 | samples/sec=22.268
+Episode 183 complete | env_steps=5060 | agent_samples=10317 | episode_env_steps=26 | episode_agent_samples=54 | mean_reward=116.680 | success=3/3 | collision=0/3 | mean_final_distance=0.285 | samples/sec=19.202
+Episode 184 complete | env_steps=5075 | agent_samples=10356 | episode_env_steps=15 | episode_agent_samples=39 | mean_reward=116.586 | success=3/3 | collision=0/3 | mean_final_distance=0.276 | samples/sec=24.429
+Episode 185 complete | env_steps=5094 | agent_samples=10410 | episode_env_steps=19 | episode_agent_samples=54 | mean_reward=116.017 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=26.292
+Episode 186 complete | env_steps=5110 | agent_samples=10449 | episode_env_steps=16 | episode_agent_samples=39 | mean_reward=117.175 | success=3/3 | collision=0/3 | mean_final_distance=0.276 | samples/sec=22.870
+Episode 187 complete | env_steps=5122 | agent_samples=10484 | episode_env_steps=12 | episode_agent_samples=35 | mean_reward=113.627 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=27.278
+Episode 188 complete | env_steps=5138 | agent_samples=10524 | episode_env_steps=16 | episode_agent_samples=40 | mean_reward=118.246 | success=3/3 | collision=0/3 | mean_final_distance=0.276 | samples/sec=23.188
+Episode 189 complete | env_steps=5169 | agent_samples=10592 | episode_env_steps=31 | episode_agent_samples=68 | mean_reward=115.359 | success=3/3 | collision=0/3 | mean_final_distance=0.286 | samples/sec=20.115
+Episode 190 complete | env_steps=5187 | agent_samples=10635 | episode_env_steps=18 | episode_agent_samples=43 | mean_reward=120.960 | success=3/3 | collision=0/3 | mean_final_distance=0.252 | samples/sec=22.112
+Recent 10 episodes | avg_reward=118.071 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=567 | total_collision=1 | total_full_success=187
+Episode 191 complete | env_steps=5223 | agent_samples=10696 | episode_env_steps=36 | episode_agent_samples=61 | mean_reward=120.070 | success=3/3 | collision=0/3 | mean_final_distance=0.259 | samples/sec=15.703
+Episode 192 complete | env_steps=5240 | agent_samples=10743 | episode_env_steps=17 | episode_agent_samples=47 | mean_reward=117.903 | success=3/3 | collision=0/3 | mean_final_distance=0.290 | samples/sec=25.613
+Episode 193 complete | env_steps=5253 | agent_samples=10780 | episode_env_steps=13 | episode_agent_samples=37 | mean_reward=115.323 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=26.499
+Episode 194 complete | env_steps=5269 | agent_samples=10827 | episode_env_steps=16 | episode_agent_samples=47 | mean_reward=121.088 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=27.336
+Episode 195 complete | env_steps=5299 | agent_samples=10888 | episode_env_steps=30 | episode_agent_samples=61 | mean_reward=120.141 | success=3/3 | collision=0/3 | mean_final_distance=0.268 | samples/sec=18.931
+Episode 196 complete | env_steps=5318 | agent_samples=10938 | episode_env_steps=19 | episode_agent_samples=50 | mean_reward=122.671 | success=3/3 | collision=0/3 | mean_final_distance=0.264 | samples/sec=24.554
+Episode 197 complete | env_steps=5339 | agent_samples=10983 | episode_env_steps=21 | episode_agent_samples=45 | mean_reward=117.713 | success=3/3 | collision=0/3 | mean_final_distance=0.287 | samples/sec=20.072
+Episode 198 complete | env_steps=5365 | agent_samples=11035 | episode_env_steps=26 | episode_agent_samples=52 | mean_reward=115.910 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=18.594
+Episode 199 complete | env_steps=5387 | agent_samples=11092 | episode_env_steps=22 | episode_agent_samples=57 | mean_reward=120.647 | success=3/3 | collision=0/3 | mean_final_distance=0.290 | samples/sec=24.145
+Episode 200 complete | env_steps=5400 | agent_samples=11128 | episode_env_steps=13 | episode_agent_samples=36 | mean_reward=113.620 | success=3/3 | collision=0/3 | mean_final_distance=0.269 | samples/sec=25.514
+Recent 10 episodes | avg_reward=118.509 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=597 | total_collision=1 | total_full_success=197
+Episode 201 complete | env_steps=5416 | agent_samples=11168 | episode_env_steps=16 | episode_agent_samples=40 | mean_reward=118.988 | success=3/3 | collision=0/3 | mean_final_distance=0.262 | samples/sec=23.132
+Episode 202 complete | env_steps=5435 | agent_samples=11216 | episode_env_steps=19 | episode_agent_samples=48 | mean_reward=121.162 | success=3/3 | collision=0/3 | mean_final_distance=0.242 | samples/sec=23.632
+Episode 203 complete | env_steps=5456 | agent_samples=11265 | episode_env_steps=21 | episode_agent_samples=49 | mean_reward=122.292 | success=3/3 | collision=0/3 | mean_final_distance=0.267 | samples/sec=21.816
+Episode 204 complete | env_steps=5474 | agent_samples=11311 | episode_env_steps=18 | episode_agent_samples=46 | mean_reward=121.326 | success=3/3 | collision=0/3 | mean_final_distance=0.268 | samples/sec=23.835
+Episode 205 complete | env_steps=5489 | agent_samples=11349 | episode_env_steps=15 | episode_agent_samples=38 | mean_reward=117.106 | success=3/3 | collision=0/3 | mean_final_distance=0.279 | samples/sec=23.574
+Episode 206 complete | env_steps=5518 | agent_samples=11410 | episode_env_steps=29 | episode_agent_samples=61 | mean_reward=120.793 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=19.544
+Episode 207 complete | env_steps=5530 | agent_samples=11443 | episode_env_steps=12 | episode_agent_samples=33 | mean_reward=114.441 | success=3/3 | collision=0/3 | mean_final_distance=0.257 | samples/sec=25.583
+Episode 208 complete | env_steps=5553 | agent_samples=11492 | episode_env_steps=23 | episode_agent_samples=49 | mean_reward=121.519 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=19.769
+Episode 209 complete | env_steps=5570 | agent_samples=11531 | episode_env_steps=17 | episode_agent_samples=39 | mean_reward=115.065 | success=3/3 | collision=0/3 | mean_final_distance=0.278 | samples/sec=20.982
+Episode 210 complete | env_steps=5584 | agent_samples=11567 | episode_env_steps=14 | episode_agent_samples=36 | mean_reward=115.422 | success=3/3 | collision=0/3 | mean_final_distance=0.254 | samples/sec=23.795
+Recent 10 episodes | avg_reward=118.812 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=627 | total_collision=1 | total_full_success=207
+Episode 211 complete | env_steps=5608 | agent_samples=11618 | episode_env_steps=24 | episode_agent_samples=51 | mean_reward=120.759 | success=3/3 | collision=0/3 | mean_final_distance=0.273 | samples/sec=19.493
+Episode 212 complete | env_steps=5633 | agent_samples=11671 | episode_env_steps=25 | episode_agent_samples=53 | mean_reward=120.842 | success=3/3 | collision=0/3 | mean_final_distance=0.286 | samples/sec=19.535
+Episode 213 complete | env_steps=5647 | agent_samples=11709 | episode_env_steps=14 | episode_agent_samples=38 | mean_reward=114.456 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=24.982
+Episode 214 complete | env_steps=5671 | agent_samples=11755 | episode_env_steps=24 | episode_agent_samples=46 | mean_reward=117.341 | success=3/3 | collision=0/3 | mean_final_distance=0.271 | samples/sec=17.706
+Episode 215 complete | env_steps=5694 | agent_samples=11804 | episode_env_steps=23 | episode_agent_samples=49 | mean_reward=116.539 | success=3/3 | collision=0/3 | mean_final_distance=0.276 | samples/sec=19.746
+Episode 216 complete | env_steps=5714 | agent_samples=11848 | episode_env_steps=20 | episode_agent_samples=44 | mean_reward=114.043 | success=3/3 | collision=0/3 | mean_final_distance=0.288 | samples/sec=20.804
+Episode 217 complete | env_steps=5735 | agent_samples=11905 | episode_env_steps=21 | episode_agent_samples=57 | mean_reward=125.012 | success=3/3 | collision=0/3 | mean_final_distance=0.260 | samples/sec=25.352
+Episode 218 complete | env_steps=5752 | agent_samples=11951 | episode_env_steps=17 | episode_agent_samples=46 | mean_reward=119.600 | success=3/3 | collision=0/3 | mean_final_distance=0.254 | samples/sec=25.159
+Episode 219 complete | env_steps=5766 | agent_samples=11984 | episode_env_steps=14 | episode_agent_samples=33 | mean_reward=115.513 | success=3/3 | collision=0/3 | mean_final_distance=0.262 | samples/sec=21.533
+Episode 220 complete | env_steps=5783 | agent_samples=12028 | episode_env_steps=17 | episode_agent_samples=44 | mean_reward=118.573 | success=3/3 | collision=0/3 | mean_final_distance=0.287 | samples/sec=24.340
+Recent 10 episodes | avg_reward=118.268 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=657 | total_collision=1 | total_full_success=217
+Episode 221 complete | env_steps=5811 | agent_samples=12094 | episode_env_steps=28 | episode_agent_samples=66 | mean_reward=121.125 | success=3/3 | collision=0/3 | mean_final_distance=0.260 | samples/sec=21.923
+Episode 222 complete | env_steps=5826 | agent_samples=12136 | episode_env_steps=15 | episode_agent_samples=42 | mean_reward=117.689 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=25.417
+Episode 223 complete | env_steps=5853 | agent_samples=12182 | episode_env_steps=27 | episode_agent_samples=46 | mean_reward=116.805 | success=3/3 | collision=0/3 | mean_final_distance=0.267 | samples/sec=15.480
+Episode 224 complete | env_steps=5870 | agent_samples=12227 | episode_env_steps=17 | episode_agent_samples=45 | mean_reward=118.292 | success=3/3 | collision=0/3 | mean_final_distance=0.254 | samples/sec=24.421
+Episode 225 complete | env_steps=5885 | agent_samples=12266 | episode_env_steps=15 | episode_agent_samples=39 | mean_reward=116.753 | success=3/3 | collision=0/3 | mean_final_distance=0.290 | samples/sec=23.442
+Episode 226 complete | env_steps=5906 | agent_samples=12314 | episode_env_steps=21 | episode_agent_samples=48 | mean_reward=122.442 | success=3/3 | collision=0/3 | mean_final_distance=0.278 | samples/sec=21.003
+Episode 227 complete | env_steps=5924 | agent_samples=12362 | episode_env_steps=18 | episode_agent_samples=48 | mean_reward=121.383 | success=3/3 | collision=0/3 | mean_final_distance=0.264 | samples/sec=24.596
+Episode 228 complete | env_steps=5950 | agent_samples=12422 | episode_env_steps=26 | episode_agent_samples=60 | mean_reward=115.679 | success=3/3 | collision=0/3 | mean_final_distance=0.277 | samples/sec=21.077
+Episode 229 complete | env_steps=5974 | agent_samples=12485 | episode_env_steps=24 | episode_agent_samples=63 | mean_reward=124.007 | success=3/3 | collision=0/3 | mean_final_distance=0.260 | samples/sec=23.826
+Episode 230 complete | env_steps=5989 | agent_samples=12519 | episode_env_steps=15 | episode_agent_samples=34 | mean_reward=115.720 | success=3/3 | collision=0/3 | mean_final_distance=0.269 | samples/sec=20.866
+Recent 10 episodes | avg_reward=118.989 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=687 | total_collision=1 | total_full_success=227
+Episode 231 complete | env_steps=6012 | agent_samples=12581 | episode_env_steps=23 | episode_agent_samples=62 | mean_reward=115.502 | success=3/3 | collision=0/3 | mean_final_distance=0.278 | samples/sec=24.842
+Episode 232 complete | env_steps=6031 | agent_samples=12631 | episode_env_steps=19 | episode_agent_samples=50 | mean_reward=120.318 | success=3/3 | collision=0/3 | mean_final_distance=0.267 | samples/sec=24.182
+Episode 233 complete | env_steps=6045 | agent_samples=12670 | episode_env_steps=14 | episode_agent_samples=39 | mean_reward=116.989 | success=3/3 | collision=0/3 | mean_final_distance=0.254 | samples/sec=25.473
+Episode 234 complete | env_steps=6062 | agent_samples=12717 | episode_env_steps=17 | episode_agent_samples=47 | mean_reward=122.934 | success=3/3 | collision=0/3 | mean_final_distance=0.251 | samples/sec=24.814
+Episode 235 complete | env_steps=6077 | agent_samples=12759 | episode_env_steps=15 | episode_agent_samples=42 | mean_reward=119.466 | success=3/3 | collision=0/3 | mean_final_distance=0.251 | samples/sec=25.481
+Episode 236 complete | env_steps=6093 | agent_samples=12800 | episode_env_steps=16 | episode_agent_samples=41 | mean_reward=118.677 | success=3/3 | collision=0/3 | mean_final_distance=0.260 | samples/sec=23.665
+Episode 237 complete | env_steps=6393 | agent_samples=13122 | episode_env_steps=300 | episode_agent_samples=322 | mean_reward=58.996 | success=2/3 | collision=0/3 | mean_final_distance=0.361 | samples/sec=9.883
+Episode 238 complete | env_steps=6415 | agent_samples=13176 | episode_env_steps=22 | episode_agent_samples=54 | mean_reward=123.834 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=22.227
+Episode 239 complete | env_steps=6439 | agent_samples=13226 | episode_env_steps=24 | episode_agent_samples=50 | mean_reward=116.438 | success=3/3 | collision=0/3 | mean_final_distance=0.267 | samples/sec=19.211
+Episode 240 complete | env_steps=6459 | agent_samples=13275 | episode_env_steps=20 | episode_agent_samples=49 | mean_reward=118.691 | success=3/3 | collision=0/3 | mean_final_distance=0.255 | samples/sec=22.633
+Recent 10 episodes | avg_reward=113.184 | success_rate=0.967 | collision_rate=0.000 | full_success_rate=0.900 | total_success=716 | total_collision=1 | total_full_success=236
+Episode 241 complete | env_steps=6474 | agent_samples=13311 | episode_env_steps=15 | episode_agent_samples=36 | mean_reward=115.066 | success=3/3 | collision=0/3 | mean_final_distance=0.286 | samples/sec=21.936
+Episode 242 complete | env_steps=6490 | agent_samples=13355 | episode_env_steps=16 | episode_agent_samples=44 | mean_reward=119.134 | success=3/3 | collision=0/3 | mean_final_distance=0.272 | samples/sec=25.728
+Episode 243 complete | env_steps=6506 | agent_samples=13394 | episode_env_steps=16 | episode_agent_samples=39 | mean_reward=116.837 | success=3/3 | collision=0/3 | mean_final_distance=0.293 | samples/sec=22.130
+Episode 244 complete | env_steps=6525 | agent_samples=13442 | episode_env_steps=19 | episode_agent_samples=48 | mean_reward=115.808 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=23.504
+Episode 245 complete | env_steps=6539 | agent_samples=13483 | episode_env_steps=14 | episode_agent_samples=41 | mean_reward=118.429 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=27.245
+Episode 246 complete | env_steps=6554 | agent_samples=13521 | episode_env_steps=15 | episode_agent_samples=38 | mean_reward=116.706 | success=3/3 | collision=0/3 | mean_final_distance=0.259 | samples/sec=23.331
+Episode 247 complete | env_steps=6573 | agent_samples=13564 | episode_env_steps=19 | episode_agent_samples=43 | mean_reward=119.031 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=20.473
+Episode 248 complete | env_steps=6600 | agent_samples=13625 | episode_env_steps=27 | episode_agent_samples=61 | mean_reward=118.602 | success=3/3 | collision=0/3 | mean_final_distance=0.278 | samples/sec=20.650
+Episode 249 complete | env_steps=6620 | agent_samples=13674 | episode_env_steps=20 | episode_agent_samples=49 | mean_reward=116.698 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=22.488
+Episode 250 complete | env_steps=6642 | agent_samples=13726 | episode_env_steps=22 | episode_agent_samples=52 | mean_reward=116.316 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=21.723
+Recent 10 episodes | avg_reward=117.263 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=746 | total_collision=1 | total_full_success=246
+Episode 251 complete | env_steps=6657 | agent_samples=13767 | episode_env_steps=15 | episode_agent_samples=41 | mean_reward=116.073 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=24.984
+Episode 252 complete | env_steps=6676 | agent_samples=13814 | episode_env_steps=19 | episode_agent_samples=47 | mean_reward=122.789 | success=3/3 | collision=0/3 | mean_final_distance=0.254 | samples/sec=22.567
+Episode 253 complete | env_steps=6700 | agent_samples=13867 | episode_env_steps=24 | episode_agent_samples=53 | mean_reward=118.813 | success=3/3 | collision=0/3 | mean_final_distance=0.274 | samples/sec=20.071
+Episode 254 complete | env_steps=6715 | agent_samples=13910 | episode_env_steps=15 | episode_agent_samples=43 | mean_reward=118.607 | success=3/3 | collision=0/3 | mean_final_distance=0.260 | samples/sec=26.918
+Episode 255 complete | env_steps=6739 | agent_samples=13959 | episode_env_steps=24 | episode_agent_samples=49 | mean_reward=117.540 | success=3/3 | collision=0/3 | mean_final_distance=0.262 | samples/sec=18.922
+Episode 256 complete | env_steps=6754 | agent_samples=14001 | episode_env_steps=15 | episode_agent_samples=42 | mean_reward=119.190 | success=3/3 | collision=0/3 | mean_final_distance=0.273 | samples/sec=26.173
+Episode 257 complete | env_steps=6771 | agent_samples=14045 | episode_env_steps=17 | episode_agent_samples=44 | mean_reward=121.741 | success=3/3 | collision=0/3 | mean_final_distance=0.269 | samples/sec=23.599
+Episode 258 complete | env_steps=6792 | agent_samples=14102 | episode_env_steps=21 | episode_agent_samples=57 | mean_reward=117.324 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=24.183
+Episode 259 complete | env_steps=6807 | agent_samples=14143 | episode_env_steps=15 | episode_agent_samples=41 | mean_reward=118.206 | success=3/3 | collision=0/3 | mean_final_distance=0.268 | samples/sec=25.336
+Episode 260 complete | env_steps=6822 | agent_samples=14184 | episode_env_steps=15 | episode_agent_samples=41 | mean_reward=118.684 | success=3/3 | collision=0/3 | mean_final_distance=0.265 | samples/sec=24.766
+Recent 10 episodes | avg_reward=118.897 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=776 | total_collision=1 | total_full_success=256
+Episode 261 complete | env_steps=6835 | agent_samples=14219 | episode_env_steps=13 | episode_agent_samples=35 | mean_reward=112.929 | success=3/3 | collision=0/3 | mean_final_distance=0.284 | samples/sec=24.784
+Episode 262 complete | env_steps=6869 | agent_samples=14287 | episode_env_steps=34 | episode_agent_samples=68 | mean_reward=119.189 | success=3/3 | collision=0/3 | mean_final_distance=0.248 | samples/sec=17.997
+Episode 263 complete | env_steps=6888 | agent_samples=14340 | episode_env_steps=19 | episode_agent_samples=53 | mean_reward=122.618 | success=3/3 | collision=0/3 | mean_final_distance=0.262 | samples/sec=25.467
+Episode 264 complete | env_steps=6903 | agent_samples=14381 | episode_env_steps=15 | episode_agent_samples=41 | mean_reward=117.529 | success=3/3 | collision=0/3 | mean_final_distance=0.265 | samples/sec=24.920
+Episode 265 complete | env_steps=6929 | agent_samples=14441 | episode_env_steps=26 | episode_agent_samples=60 | mean_reward=116.033 | success=3/3 | collision=0/3 | mean_final_distance=0.283 | samples/sec=21.082
+Episode 266 complete | env_steps=6950 | agent_samples=14487 | episode_env_steps=21 | episode_agent_samples=46 | mean_reward=120.013 | success=3/3 | collision=0/3 | mean_final_distance=0.276 | samples/sec=20.122
+Episode 267 complete | env_steps=6969 | agent_samples=14537 | episode_env_steps=19 | episode_agent_samples=50 | mean_reward=115.501 | success=3/3 | collision=0/3 | mean_final_distance=0.266 | samples/sec=24.148
+Episode 268 complete | env_steps=6991 | agent_samples=14588 | episode_env_steps=22 | episode_agent_samples=51 | mean_reward=117.734 | success=3/3 | collision=0/3 | mean_final_distance=0.265 | samples/sec=20.978
+Episode 269 complete | env_steps=7008 | agent_samples=14630 | episode_env_steps=17 | episode_agent_samples=42 | mean_reward=118.725 | success=3/3 | collision=0/3 | mean_final_distance=0.277 | samples/sec=22.732
+Episode 270 complete | env_steps=7025 | agent_samples=14673 | episode_env_steps=17 | episode_agent_samples=43 | mean_reward=116.537 | success=3/3 | collision=0/3 | mean_final_distance=0.283 | samples/sec=23.076
+Recent 10 episodes | avg_reward=117.681 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=806 | total_collision=1 | total_full_success=266
+Episode 271 complete | env_steps=7056 | agent_samples=14732 | episode_env_steps=31 | episode_agent_samples=59 | mean_reward=118.865 | success=3/3 | collision=0/3 | mean_final_distance=0.273 | samples/sec=17.436
+Episode 272 complete | env_steps=7079 | agent_samples=14789 | episode_env_steps=23 | episode_agent_samples=57 | mean_reward=124.759 | success=3/3 | collision=0/3 | mean_final_distance=0.261 | samples/sec=22.095
+Episode 273 complete | env_steps=7095 | agent_samples=14829 | episode_env_steps=16 | episode_agent_samples=40 | mean_reward=119.116 | success=3/3 | collision=0/3 | mean_final_distance=0.252 | samples/sec=22.434
+Episode 274 complete | env_steps=7114 | agent_samples=14874 | episode_env_steps=19 | episode_agent_samples=45 | mean_reward=121.043 | success=3/3 | collision=0/3 | mean_final_distance=0.268 | samples/sec=21.530
+Episode 275 complete | env_steps=7130 | agent_samples=14911 | episode_env_steps=16 | episode_agent_samples=37 | mean_reward=115.450 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=21.487
+Episode 276 complete | env_steps=7153 | agent_samples=14963 | episode_env_steps=23 | episode_agent_samples=52 | mean_reward=115.559 | success=3/3 | collision=0/3 | mean_final_distance=0.288 | samples/sec=20.709
+Episode 277 complete | env_steps=7178 | agent_samples=15020 | episode_env_steps=25 | episode_agent_samples=57 | mean_reward=122.390 | success=3/3 | collision=0/3 | mean_final_distance=0.256 | samples/sec=21.027
+Episode 278 complete | env_steps=7223 | agent_samples=15104 | episode_env_steps=45 | episode_agent_samples=84 | mean_reward=118.230 | success=3/3 | collision=0/3 | mean_final_distance=0.290 | samples/sec=17.116
+Episode 279 complete | env_steps=7249 | agent_samples=15165 | episode_env_steps=26 | episode_agent_samples=61 | mean_reward=115.444 | success=3/3 | collision=0/3 | mean_final_distance=0.281 | samples/sec=21.722
+Episode 280 complete | env_steps=7265 | agent_samples=15203 | episode_env_steps=16 | episode_agent_samples=38 | mean_reward=114.925 | success=3/3 | collision=0/3 | mean_final_distance=0.277 | samples/sec=22.013
+Recent 10 episodes | avg_reward=118.578 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=836 | total_collision=1 | total_full_success=276
+Episode 281 complete | env_steps=7283 | agent_samples=15251 | episode_env_steps=18 | episode_agent_samples=48 | mean_reward=120.647 | success=3/3 | collision=0/3 | mean_final_distance=0.279 | samples/sec=24.371
+Episode 282 complete | env_steps=7299 | agent_samples=15295 | episode_env_steps=16 | episode_agent_samples=44 | mean_reward=119.181 | success=3/3 | collision=0/3 | mean_final_distance=0.251 | samples/sec=24.837
+Episode 283 complete | env_steps=7314 | agent_samples=15337 | episode_env_steps=15 | episode_agent_samples=42 | mean_reward=119.037 | success=3/3 | collision=0/3 | mean_final_distance=0.252 | samples/sec=25.968
+Episode 284 complete | env_steps=7338 | agent_samples=15393 | episode_env_steps=24 | episode_agent_samples=56 | mean_reward=123.281 | success=3/3 | collision=0/3 | mean_final_distance=0.271 | samples/sec=21.498
+Episode 285 complete | env_steps=7359 | agent_samples=15436 | episode_env_steps=21 | episode_agent_samples=43 | mean_reward=114.872 | success=3/3 | collision=0/3 | mean_final_distance=0.283 | samples/sec=18.556
+Episode 286 complete | env_steps=7387 | agent_samples=15493 | episode_env_steps=28 | episode_agent_samples=57 | mean_reward=120.188 | success=3/3 | collision=0/3 | mean_final_distance=0.254 | samples/sec=18.905
+Episode 287 complete | env_steps=7402 | agent_samples=15534 | episode_env_steps=15 | episode_agent_samples=41 | mean_reward=117.858 | success=3/3 | collision=0/3 | mean_final_distance=0.261 | samples/sec=24.977
+Episode 288 complete | env_steps=7422 | agent_samples=15586 | episode_env_steps=20 | episode_agent_samples=52 | mean_reward=124.827 | success=3/3 | collision=0/3 | mean_final_distance=0.272 | samples/sec=23.706
+Episode 289 complete | env_steps=7446 | agent_samples=15643 | episode_env_steps=24 | episode_agent_samples=57 | mean_reward=121.332 | success=3/3 | collision=0/3 | mean_final_distance=0.261 | samples/sec=22.096
+Episode 290 complete | env_steps=7467 | agent_samples=15693 | episode_env_steps=21 | episode_agent_samples=50 | mean_reward=120.037 | success=3/3 | collision=0/3 | mean_final_distance=0.256 | samples/sec=21.575
+Recent 10 episodes | avg_reward=120.126 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=866 | total_collision=1 | total_full_success=286
+Episode 291 complete | env_steps=7483 | agent_samples=15736 | episode_env_steps=16 | episode_agent_samples=43 | mean_reward=118.041 | success=3/3 | collision=0/3 | mean_final_distance=0.256 | samples/sec=24.827
+Episode 292 complete | env_steps=7506 | agent_samples=15787 | episode_env_steps=23 | episode_agent_samples=51 | mean_reward=115.547 | success=3/3 | collision=0/3 | mean_final_distance=0.267 | samples/sec=20.211
+Episode 293 complete | env_steps=7531 | agent_samples=15843 | episode_env_steps=25 | episode_agent_samples=56 | mean_reward=116.993 | success=3/3 | collision=0/3 | mean_final_distance=0.272 | samples/sec=20.003
+Episode 294 complete | env_steps=7553 | agent_samples=15902 | episode_env_steps=22 | episode_agent_samples=59 | mean_reward=125.909 | success=3/3 | collision=0/3 | mean_final_distance=0.262 | samples/sec=25.081
+Episode 295 complete | env_steps=7581 | agent_samples=15956 | episode_env_steps=28 | episode_agent_samples=54 | mean_reward=117.755 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=17.847
+Episode 296 complete | env_steps=7598 | agent_samples=16000 | episode_env_steps=17 | episode_agent_samples=44 | mean_reward=118.623 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=23.024
+Episode 297 complete | env_steps=7622 | agent_samples=16053 | episode_env_steps=24 | episode_agent_samples=53 | mean_reward=118.486 | success=3/3 | collision=0/3 | mean_final_distance=0.270 | samples/sec=20.159
+Episode 298 complete | env_steps=7650 | agent_samples=16121 | episode_env_steps=28 | episode_agent_samples=68 | mean_reward=125.056 | success=3/3 | collision=0/3 | mean_final_distance=0.286 | samples/sec=22.170
+Episode 299 complete | env_steps=7669 | agent_samples=16170 | episode_env_steps=19 | episode_agent_samples=49 | mean_reward=120.387 | success=3/3 | collision=0/3 | mean_final_distance=0.275 | samples/sec=23.514
+Episode 300 complete | env_steps=7698 | agent_samples=16239 | episode_env_steps=29 | episode_agent_samples=69 | mean_reward=123.124 | success=3/3 | collision=0/3 | mean_final_distance=0.277 | samples/sec=21.728
+Recent 10 episodes | avg_reward=119.992 | success_rate=1.000 | collision_rate=0.000 | full_success_rate=1.000 | total_success=896 | total_collision=1 | total_full_success=296
+Target test episodes reached | episode_num=300 | target=300

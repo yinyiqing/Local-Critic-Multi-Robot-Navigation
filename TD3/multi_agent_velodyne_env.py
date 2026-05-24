@@ -92,6 +92,24 @@ class MultiAgentGazeboEnv:
         self.goal_min_distance = 0.8
         self.goal_clearance = 1.2
         self.goal_max_distance = 5.0
+        self.capacity_robot_clearance = _env_float(
+            "DRL_MULTI_CAPACITY_ROBOT_CLEARANCE", 0.95
+        )
+        self.capacity_goal_clearance = _env_float(
+            "DRL_MULTI_CAPACITY_GOAL_CLEARANCE", 0.85
+        )
+        self.capacity_robot_goal_clearance = _env_float(
+            "DRL_MULTI_CAPACITY_ROBOT_GOAL_CLEARANCE", 0.75
+        )
+        self.capacity_goal_max_distance = _env_float(
+            "DRL_MULTI_CAPACITY_GOAL_MAX_DISTANCE", 3.5
+        )
+        self.capacity_goal_x_offset = _env_range(
+            "DRL_MULTI_CAPACITY_GOAL_X_OFFSET", (-2.2, 2.2)
+        )
+        self.capacity_goal_y_offset = _env_range(
+            "DRL_MULTI_CAPACITY_GOAL_Y_OFFSET", (-2.4, 2.4)
+        )
         self.dense_start_x_range = _env_range(
             "DRL_MULTI_DENSE_START_X_RANGE", (-2.0, 2.0)
         )
@@ -419,6 +437,13 @@ class MultiAgentGazeboEnv:
             return float("inf")
         return float(min(distances))
 
+    def _uses_capacity_layout(self):
+        return (
+            self.scenario_mode == "standard"
+            and self.weak_coupling_layout
+            and self.num_agents >= 5
+        )
+
     def _sample_position(self, x_range, y_range):
         for _ in range(500):
             candidate = np.array(
@@ -478,9 +503,15 @@ class MultiAgentGazeboEnv:
             )
 
         x_range, y_range = self._agent_side_ranges(name)
+        if self._uses_capacity_layout():
+            x_offset_range = self.capacity_goal_x_offset
+            y_offset_range = self.capacity_goal_y_offset
+        else:
+            x_offset_range = (-1.8, 1.8)
+            y_offset_range = (-2.2, 2.2)
         while True:
-            x_offset = random.uniform(-1.8, 1.8)
-            y_offset = random.uniform(-2.2, 2.2)
+            x_offset = random.uniform(*x_offset_range)
+            y_offset = random.uniform(*y_offset_range)
             candidate = np.array(
                 [
                     np.clip(self.robot_positions[name][0] + x_offset, x_range[0], x_range[1]),
@@ -672,10 +703,12 @@ class MultiAgentGazeboEnv:
     def _sample_robot_positions(self, min_clearance=1.2):
         if self.scenario_mode == "dense":
             min_clearance = self.dense_robot_clearance
+        elif self._uses_capacity_layout():
+            min_clearance = min(min_clearance, self.capacity_robot_clearance)
         if self.weak_coupling_layout:
             if self.num_agents <= 2:
                 min_clearance = max(min_clearance, 3.0)
-            else:
+            elif not self._uses_capacity_layout():
                 min_clearance = max(min_clearance, 1.2)
         positions = {}
         for name in self.agent_names:
@@ -705,6 +738,11 @@ class MultiAgentGazeboEnv:
             goal_min_distance = self.dense_goal_min_distance
             goal_max_distance = self.dense_goal_max_distance
             robot_goal_clearance = self.dense_goal_clearance
+        elif self._uses_capacity_layout():
+            min_clearance = min(min_clearance, self.capacity_goal_clearance)
+            goal_min_distance = self.goal_min_distance
+            goal_max_distance = self.capacity_goal_max_distance
+            robot_goal_clearance = self.capacity_robot_goal_clearance
         else:
             goal_min_distance = self.goal_min_distance
             goal_max_distance = self.goal_max_distance
@@ -720,6 +758,13 @@ class MultiAgentGazeboEnv:
         elif self.weak_coupling_layout:
             if self.num_agents <= 2:
                 clearance_schedule = [max(min_clearance, 1.8), min_clearance]
+            elif self._uses_capacity_layout():
+                clearance_schedule = [
+                    min_clearance,
+                    max(min_clearance * 0.8, 0.65),
+                    max(min_clearance * 0.65, 0.55),
+                    max(min_clearance * 0.5, 0.45),
+                ]
             else:
                 clearance_schedule = [min_clearance, 1.0, 0.8]
 
@@ -782,7 +827,10 @@ class MultiAgentGazeboEnv:
                 if not check_pos(candidate[0], candidate[1]):
                     continue
 
-                clearance = 2.0 if self.weak_coupling_layout else 1.5
+                if self._uses_capacity_layout():
+                    clearance = 1.0
+                else:
+                    clearance = 2.0 if self.weak_coupling_layout else 1.5
                 too_close_robot = any(
                     np.linalg.norm(candidate - robot_pos) < clearance
                     for robot_pos in self.robot_positions.values()
