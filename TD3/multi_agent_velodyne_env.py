@@ -259,17 +259,38 @@ class MultiAgentGazeboEnv:
     def set_cooperative_reward(self, enabled):
         self.cooperative_reward = enabled
 
-    def wait_for_odom(self, name, timeout=60.0):
+    def wait_for_odom(self, name, timeout=60.0, recover_with_unpause=True):
         if self.last_odom[name] is not None:
             return
+        if recover_with_unpause:
+            try:
+                rospy.wait_for_service("/gazebo/unpause_physics", timeout=5.0)
+                self.unpause()
+                time.sleep(max(TIME_DELTA, 0.2))
+            except (rospy.ROSException, rospy.ServiceException):
+                pass
         try:
             self.last_odom[name] = rospy.wait_for_message(
                 f"/{name}/odom", Odometry, timeout=timeout
             )
+            return
         except rospy.ROSException as exc:
-            raise TimeoutError(
-                f"Timed out waiting for /{name}/odom after {timeout} seconds"
-            ) from exc
+            if not recover_with_unpause:
+                raise TimeoutError(
+                    f"Timed out waiting for /{name}/odom after {timeout} seconds"
+                ) from exc
+            try:
+                rospy.wait_for_service("/gazebo/unpause_physics", timeout=5.0)
+                self.unpause()
+                time.sleep(max(TIME_DELTA * 2, 0.4))
+                self.last_odom[name] = rospy.wait_for_message(
+                    f"/{name}/odom", Odometry, timeout=timeout
+                )
+                return
+            except (rospy.ROSException, rospy.ServiceException) as retry_exc:
+                raise TimeoutError(
+                    f"Timed out waiting for /{name}/odom after reset recovery"
+                ) from retry_exc
 
     def wait_for_all_odom(self, timeout_per_agent=2.0, attempts=5):
         missing = []
@@ -279,11 +300,20 @@ class MultiAgentGazeboEnv:
                 if self.last_odom[name] is not None:
                     continue
                 try:
-                    self.wait_for_odom(name, timeout=timeout_per_agent)
+                    self.wait_for_odom(
+                        name,
+                        timeout=timeout_per_agent,
+                        recover_with_unpause=False,
+                    )
                 except TimeoutError:
                     missing.append(name)
             if not missing:
                 return
+            try:
+                rospy.wait_for_service("/gazebo/unpause_physics", timeout=5.0)
+                self.unpause()
+            except (rospy.ROSException, rospy.ServiceException):
+                pass
             time.sleep(TIME_DELTA)
         raise TimeoutError(
             "Timed out waiting for odom topics after reset: "
