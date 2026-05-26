@@ -14,7 +14,7 @@
 | C | Weighted08 | 强 reward shaping 对照 |
 | D2 | 几何邻域 Critic + Weighted08 | 当前表现较好的 critic 结构 |
 
-当前已扩展到 `5智能体/`。五车 dense baseline 已完成，D2 正在作为直接对照推进。
+当前已扩展到 `5智能体/`。五车 dense baseline 和 D2 已完成直接对照。
 
 ## 运行入口
 
