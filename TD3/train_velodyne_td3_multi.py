@@ -1,4 +1,5 @@
 import os
+import random
 import socket
 import sys
 import time
@@ -22,13 +23,20 @@ def evaluate(network, env, epoch, eval_episodes=10):
     total_reward = 0.0
     total_collisions = 0
     total_targets = 0
+    total_unresolved = 0
     total_agents = eval_episodes * env.num_agents
     total_episode_steps = 0.0
     total_final_distance = 0.0
+    full_success_count = 0
+    timeout_episode_count = 0
+    success_hist = np.zeros(env.num_agents + 1, dtype=np.int32)
+    collision_hist = np.zeros(env.num_agents + 1, dtype=np.int32)
 
     for _ in range(eval_episodes):
         states = env.reset()
         active_mask = [True] * env.num_agents
+        episode_success_flags = np.zeros(env.num_agents, dtype=np.int32)
+        episode_collision_flags = np.zeros(env.num_agents, dtype=np.int32)
         count = 0
         while any(active_mask) and count < max_ep:
             actions = []
@@ -43,10 +51,15 @@ def evaluate(network, env, epoch, eval_episodes=10):
                 actions, active_mask
             )
             total_reward += sum(rewards)
-            total_collisions += sum(int(flag) for flag in collisions)
-            total_targets += sum(int(flag) for flag in targets)
 
             for idx, done in enumerate(dones):
+                if active_mask[idx]:
+                    episode_success_flags[idx] = max(
+                        episode_success_flags[idx], int(targets[idx])
+                    )
+                    episode_collision_flags[idx] = max(
+                        episode_collision_flags[idx], int(collisions[idx])
+                    )
                 if active_mask[idx] and done:
                     active_mask[idx] = False
 
@@ -54,6 +67,18 @@ def evaluate(network, env, epoch, eval_episodes=10):
             count += 1
 
         total_episode_steps += count
+        episode_success_count = int(np.sum(episode_success_flags))
+        episode_collision_count = int(np.sum(episode_collision_flags))
+        episode_unresolved_count = max(
+            env.num_agents - episode_success_count - episode_collision_count, 0
+        )
+        total_targets += episode_success_count
+        total_collisions += episode_collision_count
+        total_unresolved += episode_unresolved_count
+        full_success_count += int(episode_success_count == env.num_agents)
+        timeout_episode_count += int(count >= max_ep)
+        success_hist[episode_success_count] += 1
+        collision_hist[episode_collision_count] += 1
         for name in env.agent_names:
             distance = env.last_step_info["agents"][name]["distance"]
             if distance is not None:
@@ -62,22 +87,31 @@ def evaluate(network, env, epoch, eval_episodes=10):
     avg_reward = total_reward / total_agents
     success_rate = total_targets / total_agents
     collision_rate = total_collisions / total_agents
+    unresolved_rate = total_unresolved / total_agents
+    full_success_rate = full_success_count / eval_episodes
+    timeout_episode_rate = timeout_episode_count / eval_episodes
     avg_episode_steps = total_episode_steps / eval_episodes
     avg_final_distance = total_final_distance / total_agents
 
     print("..............................................")
     print(
         "Multi-Agent Eval Epoch %i | avg_reward=%.3f | success_rate=%.3f | "
-        "collision_rate=%.3f | avg_env_steps=%.1f | avg_final_distance=%.3f"
+        "collision_rate=%.3f | unresolved_rate=%.3f | full_success_rate=%.3f | "
+        "timeout_episode_rate=%.3f | avg_env_steps=%.1f | avg_final_distance=%.3f"
         % (
             epoch,
             avg_reward,
             success_rate,
             collision_rate,
+            unresolved_rate,
+            full_success_rate,
+            timeout_episode_rate,
             avg_episode_steps,
             avg_final_distance,
         )
     )
+    print("Eval success_hist 0..N:", success_hist.tolist())
+    print("Eval collision_hist 0..N:", collision_hist.tolist())
     print("..............................................")
 
     env.set_cooperative_reward(previous_mode)
@@ -85,8 +119,13 @@ def evaluate(network, env, epoch, eval_episodes=10):
         "avg_reward": avg_reward,
         "success_rate": success_rate,
         "collision_rate": collision_rate,
+        "unresolved_rate": unresolved_rate,
+        "full_success_rate": full_success_rate,
+        "timeout_episode_rate": timeout_episode_rate,
         "avg_episode_steps": avg_episode_steps,
         "avg_final_distance": avg_final_distance,
+        "success_hist": success_hist.tolist(),
+        "collision_hist": collision_hist.tolist(),
     }
 
 
@@ -396,7 +435,7 @@ def make_agent_names():
     return [f"r{idx}" for idx in range(1, num_agents + 1)]
 
 
-seed = 0
+seed = env_int("DRL_MULTI_SEED", 0)
 eval_freq = 5e3
 max_ep = 300
 eval_ep = int(os.environ.get("DRL_MULTI_EVAL_EPISODES", "10"))
@@ -419,9 +458,11 @@ use_local_critic = env_flag("DRL_MULTI_USE_LOCAL_CRITIC", False)
 local_critic_geometry_only = env_flag(
     "DRL_MULTI_LOCAL_CRITIC_GEOMETRY_ONLY", False
 )
+active_neighbors_only = env_flag("DRL_MULTI_ACTIVE_NEIGHBORS_ONLY", False)
 local_critic_max_agents = env_int("DRL_MULTI_LOCAL_CRITIC_MAX_AGENTS", 10)
 local_critic_max_neighbors = max(local_critic_max_agents - 1, 1)
 local_critic_feature_dim = 5 if local_critic_geometry_only else 7
+best_metric = os.environ.get("DRL_MULTI_BEST_METRIC", "success").strip().lower()
 scenario_mode = os.environ.get("DRL_MULTI_SCENARIO", "standard").strip().lower()
 use_distance_weighted_reward = env_flag(
     "DRL_MULTI_USE_DISTANCE_WEIGHTED_REWARD", False
@@ -519,8 +560,10 @@ env = MultiAgentGazeboEnv(
     robot_safe_distance=0.0,
     weak_coupling_layout=True,
     scenario_mode=scenario_mode,
+    active_neighbors_only=active_neighbors_only,
 )
 time.sleep(5)
+random.seed(seed)
 torch.manual_seed(seed)
 np.random.seed(seed)
 state_dim = environment_dim + robot_dim
@@ -580,6 +623,7 @@ print("Training version:", training_version)
 print("Training process PID:", os.getpid())
 print("Launchfile:", launchfile)
 print("Scenario mode:", scenario_mode)
+print("Seed:", seed)
 print("Device:", device)
 if torch.cuda.is_available():
     print("GPU:", torch.cuda.get_device_name(0))
@@ -590,10 +634,12 @@ print("Distance-weighted reward:", use_distance_weighted_reward)
 print("Distance reward sigma:", cooperative_reward_sigma)
 print("Local critic enabled:", use_local_critic)
 print("Local critic geometry only:", local_critic_geometry_only)
+print("Active neighbors only:", active_neighbors_only)
 print("Actor state dim:", state_dim)
 print("Critic state dim:", critic_state_dim)
 print("Local critic max neighbors:", local_critic_max_neighbors)
 print("Local critic context dim:", critic_context_dim)
+print("Best metric:", best_metric)
 print("Eval episodes:", eval_ep)
 print("Max epochs:", max_epochs or "unlimited")
 print("TensorBoard log dir:", log_dir)
@@ -631,18 +677,40 @@ def context_stats(contexts):
 def is_better_eval(candidate, current_best):
     if current_best is None:
         return True
-    candidate_key = (
-        candidate["success_rate"],
-        -candidate["collision_rate"],
-        candidate["avg_reward"],
-        -candidate["avg_final_distance"],
-    )
-    best_key = (
-        current_best["success_rate"],
-        -current_best["collision_rate"],
-        current_best["avg_reward"],
-        -current_best["avg_final_distance"],
-    )
+    if best_metric in {"full", "full_success", "full_success_rate", "team"}:
+        candidate_key = (
+            candidate["full_success_rate"],
+            candidate["success_rate"],
+            -candidate["collision_rate"],
+            -candidate["unresolved_rate"],
+            -candidate["timeout_episode_rate"],
+            candidate["avg_reward"],
+            -candidate["avg_final_distance"],
+        )
+        best_key = (
+            current_best.get("full_success_rate", 0.0),
+            current_best["success_rate"],
+            -current_best["collision_rate"],
+            -current_best.get("unresolved_rate", 1.0),
+            -current_best.get("timeout_episode_rate", 1.0),
+            current_best["avg_reward"],
+            -current_best["avg_final_distance"],
+        )
+    else:
+        candidate_key = (
+            candidate["success_rate"],
+            -candidate["collision_rate"],
+            -candidate["unresolved_rate"],
+            candidate["avg_reward"],
+            -candidate["avg_final_distance"],
+        )
+        best_key = (
+            current_best["success_rate"],
+            -current_best["collision_rate"],
+            -current_best.get("unresolved_rate", 1.0),
+            current_best["avg_reward"],
+            -current_best["avg_final_distance"],
+        )
     return candidate_key > best_key
 
 while timestep < max_timesteps:
@@ -810,6 +878,9 @@ while timestep < max_timesteps:
                     last_eval_summary["collision_rate"],
                     last_eval_summary["avg_episode_steps"],
                     last_eval_summary["avg_final_distance"],
+                    last_eval_summary["unresolved_rate"],
+                    last_eval_summary["full_success_rate"],
+                    last_eval_summary["timeout_episode_rate"],
                 ]
             )
             network.writer.add_scalar(
@@ -820,6 +891,19 @@ while timestep < max_timesteps:
             )
             network.writer.add_scalar(
                 "eval/collision_rate", last_eval_summary["collision_rate"], epoch
+            )
+            network.writer.add_scalar(
+                "eval/unresolved_rate", last_eval_summary["unresolved_rate"], epoch
+            )
+            network.writer.add_scalar(
+                "eval/full_success_rate",
+                last_eval_summary["full_success_rate"],
+                epoch,
+            )
+            network.writer.add_scalar(
+                "eval/timeout_episode_rate",
+                last_eval_summary["timeout_episode_rate"],
+                epoch,
             )
             network.writer.add_scalar(
                 "eval/avg_env_steps", last_eval_summary["avg_episode_steps"], epoch
@@ -878,12 +962,16 @@ while timestep < max_timesteps:
                 )
                 print(
                     "Best checkpoint updated | epoch=%i | success_rate=%.3f | "
-                    "collision_rate=%.3f | avg_reward=%.3f | path=%s"
+                    "collision_rate=%.3f | full_success_rate=%.3f | "
+                    "unresolved_rate=%.3f | avg_reward=%.3f | metric=%s | path=%s"
                     % (
                         best_epoch,
                         best_eval_summary["success_rate"],
                         best_eval_summary["collision_rate"],
+                        best_eval_summary["full_success_rate"],
+                        best_eval_summary["unresolved_rate"],
                         best_eval_summary["avg_reward"],
+                        best_metric,
                         best_checkpoint_path,
                     )
                 )
@@ -901,17 +989,18 @@ while timestep < max_timesteps:
 
         states = env.reset()
         zero_env_actions = [[0.0, 0.0] for _ in agent_names]
+        active_mask = [True] * len(agent_names)
         neighbor_contexts = (
             env.build_neighbor_context(
                 zero_env_actions,
                 max_neighbors=local_critic_max_neighbors,
                 include_actions=not local_critic_geometry_only,
+                active_mask=active_mask,
             )
             if use_local_critic
             else None
         )
         skip_episode_summary_once = False
-        active_mask = [True] * len(agent_names)
         episode_done = False
         episode_rewards = np.zeros(len(agent_names), dtype=np.float32)
         episode_timesteps = 0
@@ -970,19 +1059,24 @@ while timestep < max_timesteps:
     next_states, rewards, dones, targets, collisions = env.step(
         env_actions, active_mask
     )
+    env_step_count += 1
+    step_agents = env.last_step_info["agents"]
+
+    truncated = episode_timesteps + 1 == max_ep
+    next_active_mask = [
+        active_mask[idx] and not (dones[idx] or truncated)
+        for idx in range(len(agent_names))
+    ]
     next_neighbor_contexts = (
         env.build_neighbor_context(
             env_actions,
             max_neighbors=local_critic_max_neighbors,
             include_actions=not local_critic_geometry_only,
+            active_mask=next_active_mask,
         )
         if use_local_critic
         else None
     )
-    env_step_count += 1
-    step_agents = env.last_step_info["agents"]
-
-    truncated = episode_timesteps + 1 == max_ep
     for idx in range(len(agent_names)):
         if not active_mask[idx]:
             continue
@@ -1046,6 +1140,9 @@ evaluations.append(
         last_eval_summary["collision_rate"],
         last_eval_summary["avg_episode_steps"],
         last_eval_summary["avg_final_distance"],
+        last_eval_summary["unresolved_rate"],
+        last_eval_summary["full_success_rate"],
+        last_eval_summary["timeout_episode_rate"],
     ]
 )
 network.writer.add_scalar("eval/avg_reward", last_eval_summary["avg_reward"], epoch)
@@ -1054,6 +1151,15 @@ network.writer.add_scalar(
 )
 network.writer.add_scalar(
     "eval/collision_rate", last_eval_summary["collision_rate"], epoch
+)
+network.writer.add_scalar(
+    "eval/unresolved_rate", last_eval_summary["unresolved_rate"], epoch
+)
+network.writer.add_scalar(
+    "eval/full_success_rate", last_eval_summary["full_success_rate"], epoch
+)
+network.writer.add_scalar(
+    "eval/timeout_episode_rate", last_eval_summary["timeout_episode_rate"], epoch
 )
 network.writer.add_scalar(
     "eval/avg_env_steps", last_eval_summary["avg_episode_steps"], epoch

@@ -1,4 +1,5 @@
 import os
+import random
 import socket
 import time
 from datetime import datetime
@@ -66,7 +67,7 @@ def make_agent_names():
     return [f"r{idx}" for idx in range(1, num_agents + 1)]
 
 
-seed = 0
+seed = env_int("DRL_MULTI_SEED", 0)
 max_ep = 300
 target_test_episodes = int(os.environ.get("DRL_MULTI_TEST_TARGET_EPISODES", "0"))
 scenario_mode = os.environ.get("DRL_MULTI_SCENARIO", "standard").strip().lower()
@@ -136,6 +137,7 @@ env = MultiAgentGazeboEnv(
     scenario_mode=scenario_mode,
 )
 time.sleep(5)
+random.seed(seed)
 torch.manual_seed(seed)
 np.random.seed(seed)
 state_dim = environment_dim + robot_dim
@@ -153,11 +155,17 @@ total_env_steps = test_state.get("total_env_steps", 0)
 total_agent_samples = test_state.get("total_agent_samples", 0)
 success_count = test_state.get("success_count", 0)
 collision_count = test_state.get("collision_count", 0)
+unresolved_count = test_state.get("unresolved_count", 0)
 full_success_count = test_state.get("full_success_count", 0)
+timeout_episode_count = test_state.get("timeout_episode_count", 0)
+success_hist = test_state.get("success_hist", [0] * (len(agent_names) + 1))
+collision_hist = test_state.get("collision_hist", [0] * (len(agent_names) + 1))
 recent_rewards = []
 recent_success_rates = []
 recent_collision_rates = []
+recent_unresolved_rates = []
 recent_full_success = []
+recent_timeout_episodes = []
 log_dir = make_test_run_dir()
 writer = SummaryWriter(log_dir=log_dir)
 
@@ -167,6 +175,7 @@ print("Test process PID:", os.getpid())
 print("Launchfile:", launchfile)
 print("Model file:", file_name)
 print("Scenario mode:", scenario_mode)
+print("Seed:", seed)
 print("Device:", device)
 if torch.cuda.is_available():
     print("GPU:", torch.cuda.get_device_name(0))
@@ -238,7 +247,14 @@ while True:
     steps_per_sec = episode_agent_samples / elapsed if elapsed > 0 else 0.0
     success_rate = float(np.mean(episode_success_flags))
     collision_rate = float(np.mean(episode_collision_flags))
+    episode_success_count = int(np.sum(episode_success_flags))
+    episode_collision_count = int(np.sum(episode_collision_flags))
+    episode_unresolved_count = max(
+        len(agent_names) - episode_success_count - episode_collision_count, 0
+    )
+    unresolved_rate = episode_unresolved_count / len(agent_names)
     full_success = int(np.sum(episode_success_flags) == len(agent_names))
+    timeout_episode = int(episode_env_steps >= max_ep)
     mean_reward = float(np.mean(episode_rewards))
     mean_final_distance = float(
         np.mean(
@@ -250,22 +266,35 @@ while True:
         )
     )
 
-    success_count += int(np.sum(episode_success_flags))
-    collision_count += int(np.sum(episode_collision_flags))
+    success_count += episode_success_count
+    collision_count += episode_collision_count
+    unresolved_count += episode_unresolved_count
     full_success_count += full_success
+    timeout_episode_count += timeout_episode
+    if episode_success_count < len(success_hist):
+        success_hist[episode_success_count] += 1
+    if episode_collision_count < len(collision_hist):
+        collision_hist[episode_collision_count] += 1
     recent_rewards.append(mean_reward)
     recent_success_rates.append(success_rate)
     recent_collision_rates.append(collision_rate)
+    recent_unresolved_rates.append(unresolved_rate)
     recent_full_success.append(full_success)
+    recent_timeout_episodes.append(timeout_episode)
 
     avg_reward = float(np.mean(recent_rewards[-print_every_episodes:]))
     avg_success = float(np.mean(recent_success_rates[-print_every_episodes:]))
     avg_collision = float(np.mean(recent_collision_rates[-print_every_episodes:]))
+    avg_unresolved = float(np.mean(recent_unresolved_rates[-print_every_episodes:]))
     avg_full_success = float(np.mean(recent_full_success[-print_every_episodes:]))
+    avg_timeout_episode = float(
+        np.mean(recent_timeout_episodes[-print_every_episodes:])
+    )
 
     print(
         "Episode %i complete | env_steps=%i | agent_samples=%i | episode_env_steps=%i | "
         "episode_agent_samples=%i | mean_reward=%.3f | success=%i/%i | collision=%i/%i | "
+        "unresolved=%i/%i | full_success=%i | timeout=%i | "
         "mean_final_distance=%.3f | samples/sec=%.3f"
         % (
             episode_num,
@@ -274,10 +303,14 @@ while True:
             episode_env_steps,
             episode_agent_samples,
             mean_reward,
-            int(np.sum(episode_success_flags)),
+            episode_success_count,
             len(agent_names),
-            int(np.sum(episode_collision_flags)),
+            episode_collision_count,
             len(agent_names),
+            episode_unresolved_count,
+            len(agent_names),
+            full_success,
+            timeout_episode,
             mean_final_distance,
             steps_per_sec,
         )
@@ -286,29 +319,43 @@ while True:
     if episode_num % print_every_episodes == 0:
         print(
             "Recent %i episodes | avg_reward=%.3f | success_rate=%.3f | collision_rate=%.3f | "
-            "full_success_rate=%.3f | total_success=%i | total_collision=%i | total_full_success=%i"
+            "unresolved_rate=%.3f | full_success_rate=%.3f | timeout_episode_rate=%.3f | "
+            "total_success=%i | total_collision=%i | total_unresolved=%i | "
+            "total_full_success=%i | timeout_episodes=%i | success_hist=%s | collision_hist=%s"
             % (
                 print_every_episodes,
                 avg_reward,
                 avg_success,
                 avg_collision,
+                avg_unresolved,
                 avg_full_success,
+                avg_timeout_episode,
                 success_count,
                 collision_count,
+                unresolved_count,
                 full_success_count,
+                timeout_episode_count,
+                success_hist,
+                collision_hist,
             )
         )
 
     writer.add_scalar("test/episode_mean_reward", mean_reward, episode_num)
     writer.add_scalar("test/episode_success_rate", success_rate, episode_num)
     writer.add_scalar("test/episode_collision_rate", collision_rate, episode_num)
+    writer.add_scalar("test/episode_unresolved_rate", unresolved_rate, episode_num)
     writer.add_scalar("test/episode_full_success", full_success, episode_num)
+    writer.add_scalar("test/episode_timeout", timeout_episode, episode_num)
     writer.add_scalar("test/mean_final_distance", mean_final_distance, episode_num)
     writer.add_scalar("test/samples_per_sec", steps_per_sec, episode_num)
     writer.add_scalar("test/recent_avg_reward", avg_reward, episode_num)
     writer.add_scalar("test/recent_success_rate", avg_success, episode_num)
     writer.add_scalar("test/recent_collision_rate", avg_collision, episode_num)
+    writer.add_scalar("test/recent_unresolved_rate", avg_unresolved, episode_num)
     writer.add_scalar("test/recent_full_success_rate", avg_full_success, episode_num)
+    writer.add_scalar(
+        "test/recent_timeout_episode_rate", avg_timeout_episode, episode_num
+    )
     writer.flush()
 
     save_test_state(
@@ -318,7 +365,11 @@ while True:
             "total_agent_samples": total_agent_samples,
             "success_count": success_count,
             "collision_count": collision_count,
+            "unresolved_count": unresolved_count,
             "full_success_count": full_success_count,
+            "timeout_episode_count": timeout_episode_count,
+            "success_hist": success_hist,
+            "collision_hist": collision_hist,
             "last_episode_mean_reward": mean_reward,
         }
     )
@@ -330,10 +381,12 @@ while True:
             episode_env_steps,
             episode_agent_samples,
             mean_reward,
-            int(np.sum(episode_success_flags)),
-            int(np.sum(episode_collision_flags)),
+            episode_success_count,
+            episode_collision_count,
             full_success,
             mean_final_distance,
+            episode_unresolved_count,
+            timeout_episode,
         ]
     )
 

@@ -71,6 +71,7 @@ class MultiAgentGazeboEnv:
         robot_safe_distance=1.0,
         weak_coupling_layout=False,
         scenario_mode="standard",
+        active_neighbors_only=False,
     ):
         self.environment_dim = environment_dim
         self.agent_names = agent_names or ["r1", "r2", "r3"]
@@ -83,6 +84,7 @@ class MultiAgentGazeboEnv:
         self.reward_neighbor_fov = reward_neighbor_fov
         self.robot_safe_distance = robot_safe_distance
         self.weak_coupling_layout = weak_coupling_layout
+        self.active_neighbors_only = active_neighbors_only
         self.scenario_mode = scenario_mode.strip().lower()
         if self.scenario_mode not in ("standard", "dense"):
             raise ValueError("scenario_mode must be either 'standard' or 'dense'")
@@ -366,7 +368,7 @@ class MultiAgentGazeboEnv:
         robot_state = [distance, theta, action[0], action[1]]
         return np.append([self.velodyne_data[name]], robot_state), distance
 
-    def _compute_visible_neighbors(self, name):
+    def _compute_visible_neighbors(self, name, active_names=None):
         neighbors = []
         origin = self.robot_positions[name]
         yaw = self._get_robot_yaw(name)
@@ -374,6 +376,8 @@ class MultiAgentGazeboEnv:
 
         for other_name in self.agent_names:
             if other_name == name:
+                continue
+            if active_names is not None and other_name not in active_names:
                 continue
             offset = self.robot_positions[other_name] - origin
             distance = np.linalg.norm(offset)
@@ -390,18 +394,33 @@ class MultiAgentGazeboEnv:
         )
         return neighbors
 
-    def build_neighbor_context(self, actions, max_neighbors=9, include_actions=True):
+    def build_neighbor_context(
+        self, actions, max_neighbors=9, include_actions=True, active_mask=None
+    ):
         contexts = []
+        feature_dim = 7 if include_actions else 5
+        active_names = None
+        if self.active_neighbors_only and active_mask is not None:
+            active_names = {
+                name
+                for idx, name in enumerate(self.agent_names)
+                if idx < len(active_mask) and active_mask[idx]
+            }
         action_by_name = {
             name: np.array(actions[idx], dtype=np.float32)
             for idx, name in enumerate(self.agent_names)
         }
 
         for name in self.agent_names:
+            if active_names is not None and name not in active_names:
+                contexts.append(np.zeros(max_neighbors * feature_dim, dtype=np.float32))
+                continue
             origin = self.robot_positions[name]
             yaw = self._get_robot_yaw(name)
             context = []
-            for other_name in self._compute_visible_neighbors(name)[:max_neighbors]:
+            for other_name in self._compute_visible_neighbors(
+                name, active_names=active_names
+            )[:max_neighbors]:
                 offset = self.robot_positions[other_name] - origin
                 distance = float(np.linalg.norm(offset))
                 bearing = math.atan2(offset[1], offset[0]) - yaw
@@ -423,7 +442,6 @@ class MultiAgentGazeboEnv:
                 neighbor_features.append(1.0)
                 context.extend(neighbor_features)
 
-            feature_dim = 7 if include_actions else 5
             missing = max_neighbors - len(context) // feature_dim
             if missing > 0:
                 context.extend([0.0] * missing * feature_dim)
@@ -433,10 +451,20 @@ class MultiAgentGazeboEnv:
     def _apply_cooperative_reward(self, rewards, active_mask):
         adjusted = rewards.copy()
         self.last_reward_neighbors = {name: [] for name in self.agent_names}
+        active_names = None
+        if self.active_neighbors_only:
+            active_names = {
+                name
+                for idx, name in enumerate(self.agent_names)
+                if idx < len(active_mask) and active_mask[idx]
+            }
         for idx, name in enumerate(self.agent_names):
             if not active_mask[idx]:
                 continue
-            visible = [name] + self._compute_visible_neighbors(name)
+            visible_neighbors = self._compute_visible_neighbors(
+                name, active_names=active_names
+            )
+            visible = [name] + visible_neighbors
             self.last_reward_neighbors[name] = [n for n in visible if n != name]
             if (
                 self.cooperative_reward_self_weight is not None
