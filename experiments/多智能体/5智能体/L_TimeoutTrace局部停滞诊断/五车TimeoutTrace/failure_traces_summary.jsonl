@@ -1,0 +1,11 @@
+{"collision_count": 0, "episode_agent_samples": 633, "episode_env_steps": 300, "full_success": 0, "mean_reward": 40.46171188354492, "success_count": 3, "timeout": 1, "unresolved_count": 2}
+{"collision_count": 1, "episode_agent_samples": 367, "episode_env_steps": 300, "full_success": 0, "mean_reward": 38.941253662109375, "success_count": 3, "timeout": 1, "unresolved_count": 1}
+{"collision_count": 0, "episode_agent_samples": 369, "episode_env_steps": 300, "full_success": 0, "mean_reward": 92.34335327148438, "success_count": 4, "timeout": 1, "unresolved_count": 1}
+{"collision_count": 0, "episode_agent_samples": 399, "episode_env_steps": 300, "full_success": 0, "mean_reward": 88.83283996582031, "success_count": 4, "timeout": 1, "unresolved_count": 1}
+{"collision_count": 0, "episode_agent_samples": 340, "episode_env_steps": 300, "full_success": 0, "mean_reward": 79.35330963134766, "success_count": 4, "timeout": 1, "unresolved_count": 1}
+{"collision_count": 0, "episode_agent_samples": 349, "episode_env_steps": 300, "full_success": 0, "mean_reward": 90.55882263183594, "success_count": 4, "timeout": 1, "unresolved_count": 1}
+{"collision_count": 0, "episode_agent_samples": 373, "episode_env_steps": 300, "full_success": 0, "mean_reward": 100.3011703491211, "success_count": 4, "timeout": 1, "unresolved_count": 1}
+{"collision_count": 0, "episode_agent_samples": 355, "episode_env_steps": 300, "full_success": 0, "mean_reward": 94.28340148925781, "success_count": 4, "timeout": 1, "unresolved_count": 1}
+{"collision_count": 1, "episode_agent_samples": 354, "episode_env_steps": 300, "full_success": 0, "mean_reward": 44.94568634033203, "success_count": 3, "timeout": 1, "unresolved_count": 1}
+{"collision_count": 1, "episode_agent_samples": 336, "episode_env_steps": 300, "full_success": 0, "mean_reward": 37.969215393066406, "success_count": 3, "timeout": 1, "unresolved_count": 1}
+{"collision_count": 1, "episode_agent_samples": 352, "episode_env_steps": 300, "full_success": 0, "mean_reward": 45.20083999633789, "success_count": 3, "timeout": 1, "unresolved_count": 1}
