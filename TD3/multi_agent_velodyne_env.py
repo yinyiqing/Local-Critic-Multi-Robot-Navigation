@@ -41,6 +41,13 @@ def _env_float(name, default):
     return float(value)
 
 
+def _env_bool(name, default=False):
+    value = os.environ.get(name)
+    if value is None or value.strip() == "":
+        return default
+    return value.strip().lower() in ("1", "true", "yes", "on")
+
+
 def _env_range(name, default):
     value = os.environ.get(name)
     if value is None or value.strip() == "":
@@ -100,6 +107,23 @@ class MultiAgentGazeboEnv:
         self.scenario_mode = scenario_mode.strip().lower()
         if self.scenario_mode not in ("standard", "dense"):
             raise ValueError("scenario_mode must be either 'standard' or 'dense'")
+        self.relocate_successful_done_agents = _env_bool(
+            "DRL_MULTI_RELOCATE_SUCCESSFUL_DONE_AGENTS", False
+        )
+        self.done_agent_holding_x = _env_float("DRL_MULTI_DONE_AGENT_HOLDING_X", 20.0)
+        self.done_agent_holding_y = _env_float("DRL_MULTI_DONE_AGENT_HOLDING_Y", 20.0)
+        self.done_agent_holding_spacing = _env_float(
+            "DRL_MULTI_DONE_AGENT_HOLDING_SPACING", 2.0
+        )
+        if self.relocate_successful_done_agents:
+            print(
+                "Successful done-agent relocation enabled: holding_origin=(%.2f, %.2f), spacing=%.2f"
+                % (
+                    self.done_agent_holding_x,
+                    self.done_agent_holding_y,
+                    self.done_agent_holding_spacing,
+                )
+            )
 
         self.upper = 5.0
         self.lower = -5.0
@@ -161,6 +185,7 @@ class MultiAgentGazeboEnv:
         self.last_active_visible_neighbor_counts = {
             name: 0 for name in self.agent_names
         }
+        self.success_relocated_agents = set()
 
         self.gaps = [[-np.pi / 2 - 0.03, -np.pi / 2 + np.pi / self.environment_dim]]
         for m in range(self.environment_dim - 1):
@@ -227,6 +252,38 @@ class MultiAgentGazeboEnv:
         state.pose.orientation.w = 1.0
         return state
 
+    def _holding_position(self, idx):
+        return np.array(
+            [
+                self.done_agent_holding_x + idx * self.done_agent_holding_spacing,
+                self.done_agent_holding_y,
+            ],
+            dtype=np.float32,
+        )
+
+    def _relocate_successful_agent(self, name, idx):
+        if name in self.success_relocated_agents:
+            return
+        holding_position = self._holding_position(idx)
+        state = self.set_self_states[name]
+        state.pose.position.x = float(holding_position[0])
+        state.pose.position.y = float(holding_position[1])
+        state.pose.position.z = 0.0
+        state.pose.orientation.x = 0.0
+        state.pose.orientation.y = 0.0
+        state.pose.orientation.z = 0.0
+        state.pose.orientation.w = 1.0
+        state.twist.linear.x = 0.0
+        state.twist.linear.y = 0.0
+        state.twist.linear.z = 0.0
+        state.twist.angular.x = 0.0
+        state.twist.angular.y = 0.0
+        state.twist.angular.z = 0.0
+        self.set_state.publish(state)
+        self.robot_positions[name] = holding_position
+        self.last_odom[name] = None
+        self.success_relocated_agents.add(name)
+
     def _make_velodyne_callback(self, name):
         def callback(msg):
             data = list(pc2.read_points(msg, skip_nans=False, field_names=("x", "y", "z")))
@@ -271,12 +328,15 @@ class MultiAgentGazeboEnv:
                     "reward_neighbors": [],
                     "active_visible_neighbor_count": 0,
                     "nearest_active_visible_neighbor_distance": None,
+                    "relocated_to_holding": False,
                 }
                 for name in self.agent_names
             },
             "mean_reward": 0.0,
             "success_count": 0,
             "collision_count": 0,
+            "relocated_successful_count": 0,
+            "relocated_successful_agents": [],
             "active_neighbor_agent_count": 0,
             "mean_active_visible_neighbors": 0.0,
             "max_active_visible_neighbors": 0,
@@ -748,6 +808,7 @@ class MultiAgentGazeboEnv:
                 "reward_neighbors": [],
                 "active_visible_neighbor_count": 0,
                 "nearest_active_visible_neighbor_distance": None,
+                "relocated_to_holding": False,
             }
 
         if self.cooperative_reward:
@@ -789,12 +850,21 @@ class MultiAgentGazeboEnv:
             for idx, name in enumerate(self.agent_names)
             if idx < len(active_mask) and active_mask[idx]
         ]
+        relocated_successful_agents = []
+        if self.relocate_successful_done_agents:
+            for idx, name in enumerate(self.agent_names):
+                if idx < len(active_mask) and active_mask[idx] and targets[idx]:
+                    self._relocate_successful_agent(name, idx)
+                    step_agents_info[name]["relocated_to_holding"] = True
+                    relocated_successful_agents.append(name)
 
         self.last_step_info = {
             "agents": step_agents_info,
             "mean_reward": float(np.mean(rewards)) if rewards else 0.0,
             "success_count": int(sum(int(flag) for flag in targets)),
             "collision_count": int(sum(int(flag) for flag in collisions)),
+            "relocated_successful_count": len(relocated_successful_agents),
+            "relocated_successful_agents": relocated_successful_agents,
             "active_neighbor_agent_count": int(
                 sum(1 for count in active_neighbor_counts if count > 0)
             ),
@@ -825,6 +895,7 @@ class MultiAgentGazeboEnv:
 
         self.last_odom = {name: None for name in self.agent_names}
         self.previous_distances = {name: None for name in self.agent_names}
+        self.success_relocated_agents = set()
         self.last_step_info = self._empty_last_step_info()
 
         last_error = None
