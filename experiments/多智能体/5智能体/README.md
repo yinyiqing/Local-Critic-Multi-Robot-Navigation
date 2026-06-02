@@ -4,7 +4,7 @@
 
 ## 当前状态
 
-五车 zero-shot warm-start 对照、共享 Policy baseline、RewardOnly、Weighted08、D2 几何邻域 Critic + Weighted08、E 纯几何邻域 Critic、F Weighted09、G 几何邻域 Critic + RewardOnly、H Weighted09 Active、I InteractionOnly Active 和 J Individual Active Probe 已完成 300 episodes 测试。K/L 为基于 J checkpoint 的 test-only 诊断，用于定位五车长尾 timeout 的来源。
+五车 zero-shot warm-start 对照、共享 Policy baseline、RewardOnly、Weighted08、D2 几何邻域 Critic + Weighted08、E 纯几何邻域 Critic、F Weighted09、G 几何邻域 Critic + RewardOnly、H Weighted09 Active、I InteractionOnly Active、J Individual Active Probe 和 M Individual Anti-Stagnation 已完成 300 episodes 测试。K/L 为基于 J checkpoint 的 test-only 诊断，用于定位五车长尾 timeout 的来源。
 
 ## 计划优先级
 
@@ -25,8 +25,9 @@
 | J | Individual Active Probe | 纯 individual reward，同时保留 active-neighbor exposure 诊断 |
 | K | DoneAgentRelocate TestOnly | 把成功 done 机器人移出场景，验证静态完成机器人是否造成长尾 timeout |
 | L | TimeoutTrace TestOnly | 记录 timeout 前最后 100 step，定位 unresolved agent 的局部停滞机理 |
+| M | Individual Anti-Stagnation | 在 J 的基础上加入本车低速低进展停滞惩罚，验证是否能缓解长尾 timeout |
 
-当前 Z0/A/B/C/D2/E/F/G/H/I/J 已补齐，可用于判断五车训练是否真正改善 warm-start，以及五车 D2 下降主要来自 reward 设计、critic 结构还是 inactive/done 邻居污染。K/L 进一步把问题从“成功车挡路”收窄到“活跃机器人近障局部停滞”。
+当前 Z0/A/B/C/D2/E/F/G/H/I/J/M 已补齐，可用于判断五车训练是否真正改善 warm-start，以及五车 D2 下降主要来自 reward 设计、critic 结构还是 inactive/done 邻居污染。K/L/M 进一步把问题从“成功车挡路”收窄到“活跃机器人近障局部停滞以及基础局部导航缺陷”。
 
 ## 当前结果
 
@@ -45,6 +46,7 @@
 | J | Individual Active Probe | 0.869 | 0.087 | 0.537 | 已完成 |
 | K | DoneAgentRelocate TestOnly | 0.869 | 0.095 | 0.533 | 已完成 |
 | L | TimeoutTrace TestOnly | 0.876 | 0.071 | 0.548 | 42 episodes 诊断 |
+| M | Individual Anti-Stagnation | 0.864 | 0.125 | 0.530 | 已完成 |
 
 ## 当前观察
 
@@ -61,4 +63,5 @@
 - I 的 300 episodes 测试略高于 baseline/H，但 J 的纯 individual reward 结果接近同一水平，说明 I 的小幅优势还不能证明局部 interaction penalty 已稳定带来协同能力。
 - K 显示成功车移出会降低 timeout 和 avg_env_steps，但不提升 full_success，说明静态完成机器人不是主因。
 - L 显示 timeout 里的 unresolved agent 最后 100 step 几乎全是零线速度、零 progress，且多数没有被其他机器人贴身堵住，更像近墙/近障状态下的局部 actor 停滞。
+- M 显示简单停滞惩罚可降低 timeout，但没有提升 full_success，且 collision_rate 升高，说明不能把“停住”粗暴改成“动起来”。后续应停止该分支调参。
 - 三车中 D2 优于 baseline，但五车标准场景未保持该优势。后续若继续优化五车，应优先处理局部停滞/脱困能力，再回到 reward sharing 或更复杂 critic。
