@@ -19,8 +19,10 @@ from replay_buffer import ReplayBuffer
 def evaluate(network, env, epoch, eval_episodes=10):
     previous_mode = env.cooperative_reward
     previous_anti_stagnation = env.anti_stagnation_reward
+    previous_wall_clearance = env.wall_clearance_reward
     env.set_cooperative_reward(False)
     env.set_anti_stagnation_reward(False)
+    env.set_wall_clearance_reward(False)
 
     total_reward = 0.0
     total_collisions = 0
@@ -118,6 +120,7 @@ def evaluate(network, env, epoch, eval_episodes=10):
 
     env.set_cooperative_reward(previous_mode)
     env.set_anti_stagnation_reward(previous_anti_stagnation)
+    env.set_wall_clearance_reward(previous_wall_clearance)
     return {
         "avg_reward": avg_reward,
         "success_rate": success_rate,
@@ -497,6 +500,11 @@ anti_stagnation_progress_threshold = env_float(
     "DRL_MULTI_ANTI_STAGNATION_PROGRESS_THRESHOLD", 0.005
 )
 anti_stagnation_min_laser = env_float("DRL_MULTI_ANTI_STAGNATION_MIN_LASER", 0.35)
+wall_clearance_reward = env_flag("DRL_MULTI_USE_WALL_CLEARANCE_REWARD", False)
+wall_clearance_safe_distance = env_float("DRL_MULTI_WALL_CLEARANCE_SAFE_DISTANCE", 0.75)
+wall_clearance_penalty = env_float("DRL_MULTI_WALL_CLEARANCE_PENALTY", 1.5)
+wall_clearance_speed_weight = env_float("DRL_MULTI_WALL_CLEARANCE_SPEED_WEIGHT", 0.8)
+wall_clearance_turn_weight = env_float("DRL_MULTI_WALL_CLEARANCE_TURN_WEIGHT", 0.4)
 base_file_name = "TD3_velodyne_multi_v4"
 file_name = os.environ.get(
     "DRL_MULTI_TRAIN_FILE_NAME",
@@ -595,6 +603,11 @@ env = MultiAgentGazeboEnv(
     anti_stagnation_linear_threshold=anti_stagnation_linear_threshold,
     anti_stagnation_progress_threshold=anti_stagnation_progress_threshold,
     anti_stagnation_min_laser=anti_stagnation_min_laser,
+    wall_clearance_reward=wall_clearance_reward,
+    wall_clearance_safe_distance=wall_clearance_safe_distance,
+    wall_clearance_penalty=wall_clearance_penalty,
+    wall_clearance_speed_weight=wall_clearance_speed_weight,
+    wall_clearance_turn_weight=wall_clearance_turn_weight,
     robot_safe_distance=0.0,
     weak_coupling_layout=True,
     scenario_mode=scenario_mode,
@@ -681,6 +694,11 @@ print("Anti-stagnation penalty:", anti_stagnation_penalty)
 print("Anti-stagnation linear threshold:", anti_stagnation_linear_threshold)
 print("Anti-stagnation progress threshold:", anti_stagnation_progress_threshold)
 print("Anti-stagnation min laser:", anti_stagnation_min_laser)
+print("Wall-clearance reward:", wall_clearance_reward)
+print("Wall-clearance safe distance:", wall_clearance_safe_distance)
+print("Wall-clearance penalty:", wall_clearance_penalty)
+print("Wall-clearance speed weight:", wall_clearance_speed_weight)
+print("Wall-clearance turn weight:", wall_clearance_turn_weight)
 print("Local critic enabled:", use_local_critic)
 print("Local critic geometry only:", local_critic_geometry_only)
 print("Active neighbors only:", active_neighbors_only)
@@ -872,6 +890,16 @@ while timestep < max_timesteps:
                 if episode_sample_count > 0
                 else 0.0
             )
+            mean_wall_clearance_reward_step = (
+                episode_wall_clearance_reward_sum / episode_sample_count
+                if episode_sample_count > 0
+                else 0.0
+            )
+            mean_abs_wall_clearance_reward_step = (
+                episode_abs_wall_clearance_reward_sum / episode_sample_count
+                if episode_sample_count > 0
+                else 0.0
+            )
             mean_context_neighbors, max_context_neighbors = context_stats(
                 episode_last_neighbor_contexts
             )
@@ -889,7 +917,8 @@ while timestep < max_timesteps:
                 "active_neighbor_step_rate=%.3f | mean_active_neighbors_step=%.3f | "
                 "max_active_neighbors_step=%i | interaction_reward=%.4f | "
                 "abs_interaction_reward=%.4f | anti_stag_reward=%.4f | "
-                "abs_anti_stag_reward=%.4f | "
+                "abs_anti_stag_reward=%.4f | wall_clear_reward=%.4f | "
+                "abs_wall_clear_reward=%.4f | "
                 "context_neighbors_mean=%.2f | context_neighbors_max=%.0f | "
                 "expl_noise=%.4f | "
                 "replay=%i | samples/sec=%.3f"
@@ -922,6 +951,8 @@ while timestep < max_timesteps:
                     mean_abs_interaction_reward_step,
                     mean_anti_stagnation_reward_step,
                     mean_abs_anti_stagnation_reward_step,
+                    mean_wall_clearance_reward_step,
+                    mean_abs_wall_clearance_reward_step,
                     mean_context_neighbors,
                     max_context_neighbors,
                     expl_noise,
@@ -1119,6 +1150,8 @@ while timestep < max_timesteps:
         episode_abs_interaction_reward_sum = 0.0
         episode_anti_stagnation_reward_sum = 0.0
         episode_abs_anti_stagnation_reward_sum = 0.0
+        episode_wall_clearance_reward_sum = 0.0
+        episode_abs_wall_clearance_reward_sum = 0.0
         episode_num += 1
 
     if expl_noise > expl_min:
@@ -1182,6 +1215,11 @@ while timestep < max_timesteps:
         )
         episode_anti_stagnation_reward_sum += anti_stagnation_reward_step
         episode_abs_anti_stagnation_reward_sum += abs(anti_stagnation_reward_step)
+        wall_clearance_reward_step = float(
+            step_agents[name].get("wall_clearance_reward", 0.0)
+        )
+        episode_wall_clearance_reward_sum += wall_clearance_reward_step
+        episode_abs_wall_clearance_reward_sum += abs(wall_clearance_reward_step)
 
     truncated = episode_timesteps + 1 == max_ep
     next_active_mask = [

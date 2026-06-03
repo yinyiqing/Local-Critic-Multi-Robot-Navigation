@@ -83,6 +83,11 @@ class MultiAgentGazeboEnv:
         anti_stagnation_linear_threshold=0.05,
         anti_stagnation_progress_threshold=0.005,
         anti_stagnation_min_laser=0.35,
+        wall_clearance_reward=False,
+        wall_clearance_safe_distance=0.75,
+        wall_clearance_penalty=1.5,
+        wall_clearance_speed_weight=0.8,
+        wall_clearance_turn_weight=0.4,
         reward_neighbor_radius=10.0,
         reward_neighbor_fov=np.pi / 2 + 0.03,
         robot_safe_distance=1.0,
@@ -110,6 +115,11 @@ class MultiAgentGazeboEnv:
         self.anti_stagnation_linear_threshold = anti_stagnation_linear_threshold
         self.anti_stagnation_progress_threshold = anti_stagnation_progress_threshold
         self.anti_stagnation_min_laser = anti_stagnation_min_laser
+        self.wall_clearance_reward = wall_clearance_reward
+        self.wall_clearance_safe_distance = wall_clearance_safe_distance
+        self.wall_clearance_penalty = wall_clearance_penalty
+        self.wall_clearance_speed_weight = wall_clearance_speed_weight
+        self.wall_clearance_turn_weight = wall_clearance_turn_weight
         self.reward_neighbor_radius = reward_neighbor_radius
         self.reward_neighbor_fov = reward_neighbor_fov
         self.robot_safe_distance = robot_safe_distance
@@ -419,6 +429,8 @@ class MultiAgentGazeboEnv:
                     "reward": 0.0,
                     "raw_reward": 0.0,
                     "interaction_reward": 0.0,
+                    "anti_stagnation_reward": 0.0,
+                    "wall_clearance_reward": 0.0,
                     "reward_neighbors": [],
                     "active_visible_neighbor_count": 0,
                     "nearest_active_visible_neighbor_distance": None,
@@ -443,6 +455,9 @@ class MultiAgentGazeboEnv:
 
     def set_anti_stagnation_reward(self, enabled):
         self.anti_stagnation_reward = enabled
+
+    def set_wall_clearance_reward(self, enabled):
+        self.wall_clearance_reward = enabled
 
     def wait_for_odom(self, name, timeout=60.0, recover_with_unpause=True):
         if self.last_odom[name] is not None:
@@ -737,6 +752,22 @@ class MultiAgentGazeboEnv:
             return float(self.anti_stagnation_penalty)
         return 0.0
 
+    def _compute_wall_clearance_penalty(self, target, collision, action, min_laser):
+        if not self.wall_clearance_reward or target or collision:
+            return 0.0
+        if min_laser is None:
+            return 0.0
+        safe_distance = max(float(self.wall_clearance_safe_distance), COLLISION_DIST)
+        if min_laser >= safe_distance:
+            return 0.0
+        pressure = (safe_distance - min_laser) / safe_distance
+        motion_scale = (
+            1.0
+            + self.wall_clearance_speed_weight * max(float(action[0]), 0.0)
+            + self.wall_clearance_turn_weight * abs(float(action[1]))
+        )
+        return float(self.wall_clearance_penalty) * pressure * motion_scale
+
     def _nearest_robot_distance(self, name):
         origin = self.robot_positions[name]
         distances = []
@@ -893,6 +924,10 @@ class MultiAgentGazeboEnv:
                 target, collision, actions[idx], min_laser, progress
             )
             reward -= anti_stagnation_penalty
+            wall_clearance_penalty = self._compute_wall_clearance_penalty(
+                target, collision, actions[idx], min_laser
+            )
+            reward -= wall_clearance_penalty
             self.previous_distances[name] = distance
             nearest_robot_distance = self._nearest_robot_distance(name)
             if (
@@ -909,6 +944,7 @@ class MultiAgentGazeboEnv:
                 target = False
                 progress = 0.0
                 anti_stagnation_penalty = 0.0
+                wall_clearance_penalty = 0.0
                 nearest_robot_distance = None
 
             next_states.append(state)
@@ -927,6 +963,7 @@ class MultiAgentGazeboEnv:
                 "raw_reward": reward,
                 "interaction_reward": 0.0,
                 "anti_stagnation_reward": -anti_stagnation_penalty,
+                "wall_clearance_reward": -wall_clearance_penalty,
                 "reward_neighbors": [],
                 "active_visible_neighbor_count": 0,
                 "nearest_active_visible_neighbor_distance": None,
@@ -977,6 +1014,11 @@ class MultiAgentGazeboEnv:
             for idx, name in enumerate(self.agent_names)
             if idx < len(active_mask) and active_mask[idx]
         ]
+        wall_clearance_rewards = [
+            step_agents_info[name]["wall_clearance_reward"]
+            for idx, name in enumerate(self.agent_names)
+            if idx < len(active_mask) and active_mask[idx]
+        ]
         relocated_successful_agents = []
         if self.relocate_successful_done_agents:
             for idx, name in enumerate(self.agent_names):
@@ -1007,6 +1049,11 @@ class MultiAgentGazeboEnv:
             "mean_anti_stagnation_reward": (
                 float(np.mean(anti_stagnation_rewards))
                 if anti_stagnation_rewards
+                else 0.0
+            ),
+            "mean_wall_clearance_reward": (
+                float(np.mean(wall_clearance_rewards))
+                if wall_clearance_rewards
                 else 0.0
             ),
         }

@@ -48,6 +48,19 @@ case "$STAGE" in
     DEFAULT_ACTOR_LR=0.0001
     DEFAULT_CRITIC_LR=0.0001
     ;;
+  stage1c_wall_clearance)
+    NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-1}"
+    MODEL_NAME="${DRL_MULTI_TRAIN_FILE_NAME:-TD3_velodyne_multi_v4_curriculum_stage1c_wall_clearance}"
+    LOAD_MODEL_NAME="${DRL_MULTI_LOAD_MODEL_NAME:-TD3_velodyne_multi_v4_curriculum_stage1b_single_best}"
+    CASES_PATH="$PROJECT_ROOT/experiments/多智能体/课程学习/cases/stage1c_wall_clearance_cases.json"
+    VERSION="multi-agent-curriculum-stage1c-wall-clearance-v1"
+    DEFAULT_MAX_EPOCHS=10
+    DEFAULT_EVAL_EPISODES=48
+    DEFAULT_EXPL_NOISE=0.10
+    DEFAULT_EXPL_MIN=0.03
+    DEFAULT_ACTOR_LR=0.00005
+    DEFAULT_CRITIC_LR=0.00005
+    ;;
   stage2_dense)
     NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-5}"
     MODEL_NAME="${DRL_MULTI_TRAIN_FILE_NAME:-TD3_velodyne_multi_v4_curriculum_stage2_dense_5}"
@@ -76,7 +89,7 @@ case "$STAGE" in
     ;;
   *)
     echo "Unknown curriculum stage: $STAGE"
-    echo "Available stages: stage1_single, stage1b_single, stage1b_hard_only, stage2_three_dense, stage2_dense"
+    echo "Available stages: stage1_single, stage1b_single, stage1b_hard_only, stage1c_wall_clearance, stage2_three_dense, stage2_dense"
     exit 1
     ;;
 esac
@@ -91,6 +104,15 @@ EXPL_NOISE="${DRL_MULTI_EXPL_NOISE:-$DEFAULT_EXPL_NOISE}"
 EXPL_MIN="${DRL_MULTI_EXPL_MIN:-$DEFAULT_EXPL_MIN}"
 ACTOR_LR="${DRL_MULTI_ACTOR_LR:-$DEFAULT_ACTOR_LR}"
 CRITIC_LR="${DRL_MULTI_CRITIC_LR:-$DEFAULT_CRITIC_LR}"
+if [[ "$STAGE" == "stage1c_wall_clearance" ]]; then
+  WALL_CLEARANCE_REWARD="${DRL_MULTI_USE_WALL_CLEARANCE_REWARD:-1}"
+else
+  WALL_CLEARANCE_REWARD="${DRL_MULTI_USE_WALL_CLEARANCE_REWARD:-0}"
+fi
+WALL_CLEARANCE_SAFE_DISTANCE="${DRL_MULTI_WALL_CLEARANCE_SAFE_DISTANCE:-0.75}"
+WALL_CLEARANCE_PENALTY="${DRL_MULTI_WALL_CLEARANCE_PENALTY:-1.5}"
+WALL_CLEARANCE_SPEED_WEIGHT="${DRL_MULTI_WALL_CLEARANCE_SPEED_WEIGHT:-0.8}"
+WALL_CLEARANCE_TURN_WEIGHT="${DRL_MULTI_WALL_CLEARANCE_TURN_WEIGHT:-0.4}"
 
 mkdir -p "$LOG_DIR"
 
@@ -137,6 +159,11 @@ setsid bash -lc "
   export DRL_MULTI_USE_DYNAMIC_REWARD=0
   export DRL_MULTI_USE_LOCAL_CRITIC=0
   export DRL_MULTI_ACTIVE_NEIGHBORS_ONLY=1
+  export DRL_MULTI_USE_WALL_CLEARANCE_REWARD='$WALL_CLEARANCE_REWARD'
+  export DRL_MULTI_WALL_CLEARANCE_SAFE_DISTANCE='$WALL_CLEARANCE_SAFE_DISTANCE'
+  export DRL_MULTI_WALL_CLEARANCE_PENALTY='$WALL_CLEARANCE_PENALTY'
+  export DRL_MULTI_WALL_CLEARANCE_SPEED_WEIGHT='$WALL_CLEARANCE_SPEED_WEIGHT'
+  export DRL_MULTI_WALL_CLEARANCE_TURN_WEIGHT='$WALL_CLEARANCE_TURN_WEIGHT'
   export DRL_MULTI_BEST_METRIC=full_success
   export DRL_MULTI_EVAL_EPISODES='$EVAL_EPISODES'
   export DRL_MULTI_MAX_EPOCHS='$MAX_EPOCHS'
@@ -170,4 +197,7 @@ echo "Eval episodes: $EVAL_EPISODES"
 echo "Exploration noise: $EXPL_NOISE"
 echo "Actor LR: $ACTOR_LR"
 echo "Critic LR: $CRITIC_LR"
+echo "Wall-clearance reward: $WALL_CLEARANCE_REWARD"
+echo "Wall-clearance safe distance: $WALL_CLEARANCE_SAFE_DISTANCE"
+echo "Wall-clearance penalty: $WALL_CLEARANCE_PENALTY"
 echo "Log: $log_file"

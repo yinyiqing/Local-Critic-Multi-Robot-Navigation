@@ -26,6 +26,11 @@ case "$STAGE" in
     DEFAULT_MODEL="TD3_velodyne_multi_v4_curriculum_stage1b_hard_only_best"
     CASES_PATH="$PROJECT_ROOT/experiments/多智能体/课程学习/cases/stage1b_hard_only_cases.json"
     ;;
+  stage1c_wall_clearance)
+    NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-1}"
+    DEFAULT_MODEL="TD3_velodyne_multi_v4_curriculum_stage1c_wall_clearance_best"
+    CASES_PATH="$PROJECT_ROOT/experiments/多智能体/课程学习/cases/stage1c_wall_clearance_cases.json"
+    ;;
   stage2_dense)
     NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-5}"
     DEFAULT_MODEL="TD3_velodyne_multi_v4_curriculum_stage2_dense_5_best"
@@ -38,7 +43,7 @@ case "$STAGE" in
     ;;
   *)
     echo "Unknown curriculum stage: $STAGE"
-    echo "Available stages: stage1_single, stage1b_single, stage1b_hard_only, stage2_three_dense, stage2_dense"
+    echo "Available stages: stage1_single, stage1b_single, stage1b_hard_only, stage1c_wall_clearance, stage2_three_dense, stage2_dense"
     exit 1
     ;;
 esac

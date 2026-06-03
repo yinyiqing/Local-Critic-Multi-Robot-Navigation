@@ -55,8 +55,8 @@
 
 | case | episodes | success | collision | unresolved |
 | --- | ---: | ---: | ---: | ---: |
-| wall_parallel_close_pass | 32 | 19 | 10 | 3 |
-| goal_adjacent_wall_capture | 32 | 32 | 0 | 0 |
+| wall_parallel_close_pass | 32 | 20 | 10 | 2 |
+| goal_adjacent_wall_capture | 32 | 31 | 0 | 1 |
 
 ## 判断
 

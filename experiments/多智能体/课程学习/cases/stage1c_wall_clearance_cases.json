@@ -1,0 +1,72 @@
+{
+  "name": "stage1c_wall_clearance_cases",
+  "description": "Single-agent wall-parallel clearance cases with fixed empty boxes.",
+  "cases": [
+    {
+      "name": "wall_parallel_tight_straight",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-4.0, 0.65],
+          "goal": [-1.0, 0.65],
+          "heading": 0.0
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_tight_yaw_in",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-4.0, 0.65],
+          "goal": [-1.0, 0.65],
+          "heading": -0.18
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_tight_yaw_out",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-4.0, 0.65],
+          "goal": [-1.0, 0.65],
+          "heading": 0.18
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_moderate_straight",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-4.0, 0.85],
+          "goal": [-1.0, 0.85],
+          "heading": 0.0
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_reverse_tight",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-1.0, 0.65],
+          "goal": [-4.0, 0.65],
+          "heading": 3.14159
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_reverse_moderate",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-1.0, 0.85],
+          "goal": [-4.0, 0.85],
+          "heading": 3.14159
+        }
+      }
+    }
+  ]
+}
