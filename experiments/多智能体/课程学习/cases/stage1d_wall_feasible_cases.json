@@ -1,0 +1,72 @@
+{
+  "name": "stage1d_wall_feasible_cases",
+  "description": "Feasible wall-parallel single-agent cases with fixed empty boxes.",
+  "cases": [
+    {
+      "name": "wall_parallel_north_clear_straight",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-4.0, 0.95],
+          "goal": [-1.0, 0.95],
+          "heading": 0.0
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_north_clear_yaw_in",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-4.0, 0.95],
+          "goal": [-1.0, 0.95],
+          "heading": -0.15
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_north_clear_yaw_out",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-4.0, 0.95],
+          "goal": [-1.0, 0.95],
+          "heading": 0.15
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_north_safe_straight",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-4.0, 1.15],
+          "goal": [-1.0, 1.15],
+          "heading": 0.0
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_reverse_clear",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-1.0, 0.95],
+          "goal": [-4.0, 0.95],
+          "heading": 3.14159
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_reverse_safe",
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-1.0, 1.15],
+          "goal": [-4.0, 1.15],
+          "heading": 3.14159
+        }
+      }
+    }
+  ]
+}
