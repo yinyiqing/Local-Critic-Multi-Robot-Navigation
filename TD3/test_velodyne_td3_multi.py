@@ -143,6 +143,76 @@ def append_stats(record):
     np.save(test_stats_path, np.array(history, dtype=object))
 
 
+def current_case_name(env):
+    case = getattr(env, "current_curriculum_case", None)
+    if isinstance(case, dict):
+        return str(case.get("name") or "unnamed_curriculum_case")
+    return "standard"
+
+
+def new_case_record():
+    return {
+        "episodes": 0,
+        "success": 0,
+        "collision": 0,
+        "unresolved": 0,
+        "full_success": 0,
+        "timeout": 0,
+        "env_steps": 0,
+        "final_distance_sum": 0.0,
+    }
+
+
+def update_case_stats(
+    case_stats,
+    case_name,
+    episode_success_count,
+    episode_collision_count,
+    episode_unresolved_count,
+    full_success,
+    timeout_episode,
+    episode_env_steps,
+    mean_final_distance,
+):
+    stats = case_stats.setdefault(case_name, new_case_record())
+    stats["episodes"] += 1
+    stats["success"] += int(episode_success_count)
+    stats["collision"] += int(episode_collision_count)
+    stats["unresolved"] += int(episode_unresolved_count)
+    stats["full_success"] += int(full_success)
+    stats["timeout"] += int(timeout_episode)
+    stats["env_steps"] += int(episode_env_steps)
+    stats["final_distance_sum"] += float(mean_final_distance)
+
+
+def print_case_stats(case_stats):
+    if not case_stats:
+        return
+    print("Case summary:")
+    for name in sorted(case_stats):
+        stats = case_stats[name]
+        episodes = max(int(stats["episodes"]), 1)
+        denom = episodes * len(agent_names)
+        avg_steps = stats["env_steps"] / episodes
+        avg_final_distance = stats["final_distance_sum"] / episodes
+        print(
+            "  %s | episodes=%i | success_rate=%.3f | collision_rate=%.3f | "
+            "unresolved_rate=%.3f | full_success_rate=%.3f | timeout_rate=%.3f | "
+            "avg_env_steps=%.1f | avg_final_distance=%.3f"
+            % (
+                name,
+                stats["episodes"],
+                stats["success"] / denom,
+                stats["collision"] / denom,
+                stats["unresolved"] / denom,
+                stats["full_success"] / episodes,
+                stats["timeout"] / episodes,
+                avg_steps,
+                avg_final_distance,
+            )
+        )
+
+
 def scalar_or_none(value):
     if value is None:
         return None
@@ -267,6 +337,7 @@ full_success_count = test_state.get("full_success_count", 0)
 timeout_episode_count = test_state.get("timeout_episode_count", 0)
 success_hist = test_state.get("success_hist", [0] * (len(agent_names) + 1))
 collision_hist = test_state.get("collision_hist", [0] * (len(agent_names) + 1))
+case_stats = test_state.get("case_stats", {})
 recent_rewards = []
 recent_success_rates = []
 recent_collision_rates = []
@@ -294,6 +365,8 @@ print("Starting episode:", episode_num)
 print("Starting env steps:", total_env_steps)
 print("Starting agent samples:", total_agent_samples)
 print("Target test episodes:", target_test_episodes or "unlimited")
+if scenario_mode == "curriculum":
+    print("Case-level stats enabled")
 if trace_failures:
     print("Failure trace mode:", trace_failure_mode)
     print("Failure trace window steps:", trace_window_steps)
@@ -301,6 +374,7 @@ if trace_failures:
 print("==============================================")
 
 states = env.reset()
+episode_case_name = current_case_name(env)
 active_mask = [True] * len(agent_names)
 episode_done = False
 episode_env_steps = 0
@@ -388,6 +462,17 @@ while True:
             ]
         )
     )
+    update_case_stats(
+        case_stats,
+        episode_case_name,
+        episode_success_count,
+        episode_collision_count,
+        episode_unresolved_count,
+        full_success,
+        timeout_episode,
+        episode_env_steps,
+        mean_final_distance,
+    )
 
     success_count += episode_success_count
     collision_count += episode_collision_count
@@ -430,12 +515,13 @@ while True:
         )
 
     print(
-        "Episode %i complete | env_steps=%i | agent_samples=%i | episode_env_steps=%i | "
+        "Episode %i complete | case=%s | env_steps=%i | agent_samples=%i | episode_env_steps=%i | "
         "episode_agent_samples=%i | mean_reward=%.3f | success=%i/%i | collision=%i/%i | "
         "unresolved=%i/%i | full_success=%i | timeout=%i | "
         "mean_final_distance=%.3f | samples/sec=%.3f"
         % (
             episode_num,
+            episode_case_name,
             total_env_steps,
             total_agent_samples,
             episode_env_steps,
@@ -477,6 +563,8 @@ while True:
                 collision_hist,
             )
         )
+        if scenario_mode == "curriculum":
+            print_case_stats(case_stats)
 
     writer.add_scalar("test/episode_mean_reward", mean_reward, episode_num)
     writer.add_scalar("test/episode_success_rate", success_rate, episode_num)
@@ -508,6 +596,7 @@ while True:
             "timeout_episode_count": timeout_episode_count,
             "success_hist": success_hist,
             "collision_hist": collision_hist,
+            "case_stats": case_stats,
             "last_episode_mean_reward": mean_reward,
         }
     )
@@ -525,6 +614,7 @@ while True:
             mean_final_distance,
             episode_unresolved_count,
             timeout_episode,
+            episode_case_name,
         ]
     )
 
@@ -537,6 +627,7 @@ while True:
         break
 
     states = env.reset()
+    episode_case_name = current_case_name(env)
     active_mask = [True] * len(agent_names)
     episode_done = False
     episode_env_steps = 0
