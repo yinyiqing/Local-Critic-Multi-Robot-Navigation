@@ -1,0 +1,62 @@
+{
+  "name": "stage2_main_pairwise_repair_cases",
+  "description": "Second curriculum mainline repair: two-agent hard interaction cases with a few retention cases.",
+  "cases": [
+    {
+      "name": "repair_same_direction_wall_parallel_a",
+      "agents": {
+        "r1": {"start": [1.0, 2.75], "goal": [4.25, 2.75]},
+        "r2": {"start": [1.65, 3.25], "goal": [4.35, 3.25]}
+      }
+    },
+    {
+      "name": "repair_same_direction_wall_parallel_b",
+      "agents": {
+        "r1": {"start": [1.05, 3.2], "goal": [4.35, 3.2]},
+        "r2": {"start": [1.8, 2.7], "goal": [4.25, 2.7]}
+      }
+    },
+    {
+      "name": "repair_perpendicular_cross_center_a",
+      "agents": {
+        "r1": {"start": [-1.7, 0.0], "goal": [1.7, 0.0]},
+        "r2": {"start": [0.0, -1.7], "goal": [0.0, 1.7]}
+      }
+    },
+    {
+      "name": "repair_perpendicular_cross_center_b",
+      "agents": {
+        "r1": {"start": [1.7, 0.0], "goal": [-1.7, 0.0]},
+        "r2": {"start": [0.0, 1.7], "goal": [0.0, -1.7]}
+      }
+    },
+    {
+      "name": "repair_head_on_symmetric_center_a",
+      "agents": {
+        "r1": {"start": [-1.8, 0.0], "goal": [1.8, 0.0]},
+        "r2": {"start": [1.8, 0.0], "goal": [-1.8, 0.0]}
+      }
+    },
+    {
+      "name": "repair_head_on_symmetric_center_b",
+      "agents": {
+        "r1": {"start": [-1.8, 0.15], "goal": [1.8, 0.15]},
+        "r2": {"start": [1.8, 0.15], "goal": [-1.8, 0.15]}
+      }
+    },
+    {
+      "name": "retention_goal_merge_easy",
+      "agents": {
+        "r1": {"start": [-1.8, -0.7], "goal": [-0.25, 0.05]},
+        "r2": {"start": [1.8, 0.7], "goal": [0.35, 0.05]}
+      }
+    },
+    {
+      "name": "retention_same_direction_far_lane",
+      "agents": {
+        "r1": {"start": [-1.8, -0.65], "goal": [1.8, -0.65]},
+        "r2": {"start": [-1.8, 0.65], "goal": [1.8, 0.65]}
+      }
+    }
+  ]
+}

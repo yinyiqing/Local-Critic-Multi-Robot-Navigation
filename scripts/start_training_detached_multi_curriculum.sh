@@ -126,6 +126,19 @@ case "$STAGE" in
     DEFAULT_ACTOR_LR=0.00004
     DEFAULT_CRITIC_LR=0.00004
     ;;
+  stage2_main_pairwise_repair)
+    NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-2}"
+    MODEL_NAME="${DRL_MULTI_TRAIN_FILE_NAME:-TD3_velodyne_multi_v4_curriculum_stage2_main_pairwise_repair_from_stage2_pre_best}"
+    LOAD_MODEL_NAME="${DRL_MULTI_LOAD_MODEL_NAME:-TD3_velodyne_multi_v4_curriculum_stage2_pre_pairwise_warmup_from_stage1g_best}"
+    CASES_PATH="$PROJECT_ROOT/experiments/多智能体/课程学习/cases/stage2_main_pairwise_repair_cases.json"
+    VERSION="multi-agent-curriculum-stage2-main-pairwise-repair-v1"
+    DEFAULT_MAX_EPOCHS=8
+    DEFAULT_EVAL_EPISODES=64
+    DEFAULT_EXPL_NOISE=0.025
+    DEFAULT_EXPL_MIN=0.008
+    DEFAULT_ACTOR_LR=0.00002
+    DEFAULT_CRITIC_LR=0.00003
+    ;;
   stage2_dense)
     NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-5}"
     MODEL_NAME="${DRL_MULTI_TRAIN_FILE_NAME:-TD3_velodyne_multi_v4_curriculum_stage2_dense_5}"
@@ -154,7 +167,7 @@ case "$STAGE" in
     ;;
   *)
     echo "Unknown curriculum stage: $STAGE"
-    echo "Available stages: stage1_single, stage1b_single, stage1e_single_rescue, stage1f_wall_parallel_rescue, stage1g_collision_guard, stage1h_separated_reverse_guard, stage1i_yaw_reverse_collision_guard, stage2_pre_pairwise_warmup, stage2a_manual_dense_crossing, stage2_three_dense, stage2_dense"
+    echo "Available stages: stage1_single, stage1b_single, stage1e_single_rescue, stage1f_wall_parallel_rescue, stage1g_collision_guard, stage1h_separated_reverse_guard, stage1i_yaw_reverse_collision_guard, stage2_pre_pairwise_warmup, stage2_main_pairwise_repair, stage2a_manual_dense_crossing, stage2_three_dense, stage2_dense"
     exit 1
     ;;
 esac
@@ -196,7 +209,7 @@ WALL_CLEARANCE_SPEED_WEIGHT="${DRL_MULTI_WALL_CLEARANCE_SPEED_WEIGHT:-$DEFAULT_W
 WALL_CLEARANCE_TURN_WEIGHT="${DRL_MULTI_WALL_CLEARANCE_TURN_WEIGHT:-$DEFAULT_WALL_CLEARANCE_TURN_WEIGHT}"
 if [[ "$STAGE" == "stage1e_single_rescue" || "$STAGE" == "stage1f_wall_parallel_rescue" || "$STAGE" == "stage1g_collision_guard" || "$STAGE" == "stage1h_separated_reverse_guard" || "$STAGE" == "stage1i_yaw_reverse_collision_guard" ]]; then
   LOCAL_NAVIGATION_REWARD="${DRL_MULTI_USE_LOCAL_NAVIGATION_REWARD:-1}"
-elif [[ "$STAGE" == "stage2a_manual_dense_crossing" || "$STAGE" == "stage2_pre_pairwise_warmup" ]]; then
+elif [[ "$STAGE" == "stage2a_manual_dense_crossing" || "$STAGE" == "stage2_pre_pairwise_warmup" || "$STAGE" == "stage2_main_pairwise_repair" ]]; then
   LOCAL_NAVIGATION_REWARD="${DRL_MULTI_USE_LOCAL_NAVIGATION_REWARD:-1}"
 else
   LOCAL_NAVIGATION_REWARD="${DRL_MULTI_USE_LOCAL_NAVIGATION_REWARD:-0}"
@@ -206,6 +219,12 @@ if [[ "$STAGE" == "stage2_pre_pairwise_warmup" ]]; then
   DEFAULT_REWARD_MODE="interaction_only"
   DEFAULT_INTERACTION_SAFE_DISTANCE=0.9
   DEFAULT_INTERACTION_CLOSE_PENALTY=0.25
+  DEFAULT_INTERACTION_STAGNATION_PENALTY=0.02
+elif [[ "$STAGE" == "stage2_main_pairwise_repair" ]]; then
+  DEFAULT_DYNAMIC_REWARD=1
+  DEFAULT_REWARD_MODE="average"
+  DEFAULT_INTERACTION_SAFE_DISTANCE=0.9
+  DEFAULT_INTERACTION_CLOSE_PENALTY=0.35
   DEFAULT_INTERACTION_STAGNATION_PENALTY=0.02
 else
   DEFAULT_DYNAMIC_REWARD=0
@@ -219,6 +238,22 @@ REWARD_MODE="${DRL_MULTI_REWARD_MODE:-$DEFAULT_REWARD_MODE}"
 INTERACTION_SAFE_DISTANCE="${DRL_MULTI_INTERACTION_SAFE_DISTANCE:-$DEFAULT_INTERACTION_SAFE_DISTANCE}"
 INTERACTION_CLOSE_PENALTY="${DRL_MULTI_INTERACTION_CLOSE_PENALTY:-$DEFAULT_INTERACTION_CLOSE_PENALTY}"
 INTERACTION_STAGNATION_PENALTY="${DRL_MULTI_INTERACTION_STAGNATION_PENALTY:-$DEFAULT_INTERACTION_STAGNATION_PENALTY}"
+if [[ "$STAGE" == "stage2_main_pairwise_repair" ]]; then
+  DEFAULT_DISTANCE_WEIGHTED_REWARD=1
+  DEFAULT_REWARD_SELF_WEIGHT=0.8
+  DEFAULT_LOCAL_CRITIC=1
+  DEFAULT_LOCAL_CRITIC_GEOMETRY_ONLY=0
+else
+  DEFAULT_DISTANCE_WEIGHTED_REWARD=0
+  DEFAULT_REWARD_SELF_WEIGHT=""
+  DEFAULT_LOCAL_CRITIC=0
+  DEFAULT_LOCAL_CRITIC_GEOMETRY_ONLY=0
+fi
+DISTANCE_WEIGHTED_REWARD="${DRL_MULTI_USE_DISTANCE_WEIGHTED_REWARD:-$DEFAULT_DISTANCE_WEIGHTED_REWARD}"
+REWARD_SELF_WEIGHT="${DRL_MULTI_REWARD_SELF_WEIGHT:-$DEFAULT_REWARD_SELF_WEIGHT}"
+LOCAL_CRITIC="${DRL_MULTI_USE_LOCAL_CRITIC:-$DEFAULT_LOCAL_CRITIC}"
+LOCAL_CRITIC_GEOMETRY_ONLY="${DRL_MULTI_LOCAL_CRITIC_GEOMETRY_ONLY:-$DEFAULT_LOCAL_CRITIC_GEOMETRY_ONLY}"
+LOCAL_CRITIC_MAX_AGENTS="${DRL_MULTI_LOCAL_CRITIC_MAX_AGENTS:-10}"
 LOCAL_NAV_HEADING_WEIGHT="${DRL_MULTI_LOCAL_NAV_HEADING_WEIGHT:-0.35}"
 LOCAL_NAV_WRONG_WAY_PENALTY="${DRL_MULTI_LOCAL_NAV_WRONG_WAY_PENALTY:-0.25}"
 LOCAL_NAV_TURN_WEIGHT="${DRL_MULTI_LOCAL_NAV_TURN_WEIGHT:-0.22}"
@@ -269,10 +304,14 @@ setsid bash -lc "
   export DRL_MULTI_CURRICULUM_SAMPLING='$CURRICULUM_SAMPLING'
   export DRL_MULTI_USE_DYNAMIC_REWARD='$DYNAMIC_REWARD'
   export DRL_MULTI_REWARD_MODE='$REWARD_MODE'
+  if [[ -n '$REWARD_SELF_WEIGHT' ]]; then export DRL_MULTI_REWARD_SELF_WEIGHT='$REWARD_SELF_WEIGHT'; fi
+  export DRL_MULTI_USE_DISTANCE_WEIGHTED_REWARD='$DISTANCE_WEIGHTED_REWARD'
   export DRL_MULTI_INTERACTION_SAFE_DISTANCE='$INTERACTION_SAFE_DISTANCE'
   export DRL_MULTI_INTERACTION_CLOSE_PENALTY='$INTERACTION_CLOSE_PENALTY'
   export DRL_MULTI_INTERACTION_STAGNATION_PENALTY='$INTERACTION_STAGNATION_PENALTY'
-  export DRL_MULTI_USE_LOCAL_CRITIC=0
+  export DRL_MULTI_USE_LOCAL_CRITIC='$LOCAL_CRITIC'
+  export DRL_MULTI_LOCAL_CRITIC_GEOMETRY_ONLY='$LOCAL_CRITIC_GEOMETRY_ONLY'
+  export DRL_MULTI_LOCAL_CRITIC_MAX_AGENTS='$LOCAL_CRITIC_MAX_AGENTS'
   export DRL_MULTI_ACTIVE_NEIGHBORS_ONLY=1
   export DRL_MULTI_USE_WALL_CLEARANCE_REWARD='$WALL_CLEARANCE_REWARD'
   export DRL_MULTI_WALL_CLEARANCE_SAFE_DISTANCE='$WALL_CLEARANCE_SAFE_DISTANCE'
@@ -320,9 +359,13 @@ echo "Actor LR: $ACTOR_LR"
 echo "Critic LR: $CRITIC_LR"
 echo "Dynamic reward: $DYNAMIC_REWARD"
 echo "Reward mode: $REWARD_MODE"
+echo "Distance-weighted reward: $DISTANCE_WEIGHTED_REWARD"
+echo "Reward self weight: ${REWARD_SELF_WEIGHT:-default}"
 echo "Interaction safe distance: $INTERACTION_SAFE_DISTANCE"
 echo "Interaction close penalty: $INTERACTION_CLOSE_PENALTY"
 echo "Interaction stagnation penalty: $INTERACTION_STAGNATION_PENALTY"
+echo "Local critic: $LOCAL_CRITIC"
+echo "Local critic geometry only: $LOCAL_CRITIC_GEOMETRY_ONLY"
 echo "Wall-clearance reward: $WALL_CLEARANCE_REWARD"
 echo "Wall-clearance safe distance: $WALL_CLEARANCE_SAFE_DISTANCE"
 echo "Wall-clearance penalty: $WALL_CLEARANCE_PENALTY"

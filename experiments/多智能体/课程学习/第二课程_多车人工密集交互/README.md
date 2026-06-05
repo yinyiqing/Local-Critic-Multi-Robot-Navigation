@@ -17,6 +17,7 @@
 | --- | --- | --- | --- |
 | `stage2_pairwise_diagnostic` | 诊断：双车交互拆解 | completed | 已完成 `stage1g best` 与双车预热 best 对照，定位剩余短板。 |
 | `stage2_pre_pairwise_warmup` | 预热：双车基础交互 | completed / weak | 2 车会车、交叉、同向超车、目标区轻聚集；未形成稳定提升。 |
+| `stage2_main_pairwise_repair` | 主线：双车让行修复 | active | 回到共享 policy、动态 reward、距离加权 reward、局部邻域 critic 的主线机制。 |
 | `stage2a_manual_dense_crossing` | 正式：三车人工密集交互 | paused | 直接从第一课程进入该阶段过难，先降回预热。 |
 
 ## 直接三车密集尝试
@@ -172,21 +173,30 @@ case 结果：
 
 ## 下一步判断
 
-第二课程下一步不直接回到三车密集。推荐新开一个“双车让行修复”阶段，从双车预热 best warm-start，训练样本只围绕三类硬伤：
+第二课程下一步不直接回到三车密集。新开“主线：双车让行修复”阶段，从双车预热 best warm-start，训练样本围绕三类硬伤，并保留少量已会 case 防止退化：
 
 - 靠墙并行：修复 `same_direction_wall_parallel` 的稳定碰撞。
 - 垂直中心交叉：修复 `perpendicular_cross_center` 的高碰撞。
 - 对称迎面：修复 `head_on_symmetric_center` 的抢行。
 
-训练设置建议：
+训练设置：
 
+- case file: `../cases/stage2_main_pairwise_repair_cases.json`
 - warm-start: `TD3_velodyne_multi_v4_curriculum_stage2_pre_pairwise_warmup_from_stage1g_best`
-- actor lr: 比预热更小，建议 `0.00002`
-- critic lr: `0.00003` 或 `0.00004`
-- exploration noise: 不要回到很大，建议 `0.025`
+- actor lr: `0.00002`
+- critic lr: `0.00003`
+- exploration noise: `0.025`
 - exploration min: `0.008`
-- replay buffer: 保留模型参数，训练状态建议重置，让新样本占主导
-- eval: 固定使用 `stage2_pairwise_diagnostic`，并额外看三类硬伤的 case-level full success
+- dynamic reward: on
+- reward mode: `average`
+- distance-weighted reward: on
+- reward self weight: `0.8`
+- local critic: on
+- active-neighbor filtering: on
+- replay buffer: 重置，让新样本占主导
+- eval: 训练内看当前修复集；训练后固定用 `stage2_pairwise_diagnostic` 做完整对照
+
+注意：`stage2_pre_pairwise_warmup` 是旁路预热，未启用局部邻域 critic。`stage2_main_pairwise_repair` 才回到当前主线机制。
 
 ## 运行命令
 
@@ -194,9 +204,15 @@ case 结果：
 scripts/start_training_detached_multi_curriculum.sh stage2_pre_pairwise_warmup
 ```
 
-预热稳定后再回到三车密集：
+主线双车修复：
 
 ```bash
-DRL_MULTI_LOAD_MODEL_NAME=TD3_velodyne_multi_v4_curriculum_stage2_pre_pairwise_warmup_from_stage1g_best \
+scripts/start_training_detached_multi_curriculum.sh stage2_main_pairwise_repair
+```
+
+修复稳定后再回到三车密集：
+
+```bash
+DRL_MULTI_LOAD_MODEL_NAME=TD3_velodyne_multi_v4_curriculum_stage2_main_pairwise_repair_from_stage2_pre_best \
 scripts/start_training_detached_multi_curriculum.sh stage2a_manual_dense_crossing
 ```
