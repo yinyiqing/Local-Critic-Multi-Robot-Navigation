@@ -1,0 +1,123 @@
+{
+  "name": "stage1i_yaw_reverse_collision_cases",
+  "description": "Single-agent narrow guard curriculum for yaw-sensitive separated-wall and reverse wall-parallel collision tails.",
+  "cases": [
+    {
+      "name": "wall_separated_north_yaw_in",
+      "weight": 4.0,
+      "local_navigation_reward": false,
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [1.1, 2.9],
+          "goal": [4.3, 2.8],
+          "heading": -0.08
+        }
+      }
+    },
+    {
+      "name": "wall_separated_north_yaw_out",
+      "weight": 4.0,
+      "local_navigation_reward": false,
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [1.1, 2.9],
+          "goal": [4.3, 2.8],
+          "heading": 0.08
+        }
+      }
+    },
+    {
+      "name": "wall_separated_north",
+      "weight": 2.0,
+      "local_navigation_reward": false,
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [1.1, 2.9],
+          "goal": [4.3, 2.8],
+          "heading": 0.0
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_reverse_safe",
+      "weight": 4.0,
+      "local_navigation_reward": true,
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-1.0, 1.15],
+          "goal": [-4.0, 1.15],
+          "heading": 3.14159
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_reverse_clear",
+      "weight": 2.0,
+      "local_navigation_reward": true,
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-1.0, 0.95],
+          "goal": [-4.0, 0.95],
+          "heading": 3.14159
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_north_safe_yaw_in",
+      "weight": 0.8,
+      "local_navigation_reward": true,
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-4.0, 1.15],
+          "goal": [-1.0, 1.15],
+          "heading": -0.15
+        }
+      }
+    },
+    {
+      "name": "wall_parallel_north_clear_yaw_in",
+      "weight": 0.8,
+      "local_navigation_reward": true,
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-4.0, 0.95],
+          "goal": [-1.0, 0.95],
+          "heading": -0.15
+        }
+      }
+    },
+    {
+      "name": "near_goal_tangent_left",
+      "weight": 0.3,
+      "local_navigation_reward": true,
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [0.10, -0.35],
+          "goal": [0.45, 0.05],
+          "heading": 1.55
+        }
+      }
+    },
+    {
+      "name": "offset_goal_approach",
+      "weight": 0.3,
+      "local_navigation_reward": true,
+      "boxes": [],
+      "agents": {
+        "r1": {
+          "start": [-0.8, -0.6],
+          "goal": [0.2, -0.1],
+          "heading": 1.8
+        }
+      }
+    }
+  ]
+}
