@@ -6,7 +6,7 @@
 - training model: `TD3_velodyne_multi_v4_curriculum_stage1_single`
 - warm-start: `TD3_velodyne_multi_v4`
 - scenario: `curriculum`
-- cases: `../cases/stage1_single_local_cases.json`
+- cases: `../../cases/stage1_single_local_cases.json`
 - agents: 1
 - max epochs: 8
 - eval episodes: 24

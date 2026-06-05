@@ -7,7 +7,7 @@
 ## Config
 
 - stage: `stage1f_wall_parallel_rescue`
-- case file: `../cases/stage1f_wall_parallel_rescue_cases.json`
+- case file: `../../cases/stage1f_wall_parallel_rescue_cases.json`
 - warm-start: `TD3_velodyne_multi_v4_curriculum_stage1e_single_rescue_from_stage1_single_best`
 - best model: `TD3_velodyne_multi_v4_curriculum_stage1f_wall_parallel_rescue_from_stage1e_best`
 - agents: 1

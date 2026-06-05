@@ -4,7 +4,7 @@
 
 - 训练模型：`TD3_velodyne_multi_v4_curriculum_stage2_three_dense_3`
 - warm-start：`TD3_velodyne_multi_v4_curriculum_stage1_single_best`
-- case 文件：`../cases/stage2_three_dense_cases.json`
+- case 文件：`../../cases/stage2_three_dense_cases.json`
 - 机器人数量：3
 - 原始运行产物：已清理，仅保留复盘摘要
 

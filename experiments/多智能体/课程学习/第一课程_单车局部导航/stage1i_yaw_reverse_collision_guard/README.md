@@ -7,7 +7,7 @@
 ## Config
 
 - stage: `stage1i_yaw_reverse_collision_guard`
-- case file: `../cases/stage1i_yaw_reverse_collision_cases.json`
+- case file: `../../cases/stage1i_yaw_reverse_collision_cases.json`
 - warm-start: `TD3_velodyne_multi_v4_curriculum_stage1g_collision_guard_from_stage1f_best`
 - training model: `TD3_velodyne_multi_v4_curriculum_stage1i_yaw_reverse_collision_guard_from_stage1g`
 - agents: 1

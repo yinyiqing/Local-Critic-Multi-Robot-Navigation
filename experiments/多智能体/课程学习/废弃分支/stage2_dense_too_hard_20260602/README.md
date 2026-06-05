@@ -6,7 +6,7 @@
 - model: `TD3_velodyne_multi_v4_curriculum_stage2_dense_5`
 - warm-start: `TD3_velodyne_multi_v4_curriculum_stage1_single_best`
 - agents: 5
-- cases: `../../cases/stage2_dense_multi_cases.json`
+- cases: `../../../cases/stage2_dense_multi_cases.json`
 - started: `20260602_141432`
 - stopped manually after epoch 1 and early epoch 2
 

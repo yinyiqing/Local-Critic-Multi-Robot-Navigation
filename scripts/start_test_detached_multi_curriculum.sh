@@ -46,6 +46,11 @@ case "$STAGE" in
     DEFAULT_MODEL="TD3_velodyne_multi_v4_curriculum_stage1i_yaw_reverse_collision_guard_from_stage1g_best"
     CASES_PATH="$PROJECT_ROOT/experiments/多智能体/课程学习/cases/stage1i_yaw_reverse_collision_cases.json"
     ;;
+  stage2a_manual_dense_crossing)
+    NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-3}"
+    DEFAULT_MODEL="TD3_velodyne_multi_v4_curriculum_stage2a_manual_dense_crossing_from_stage1g_best"
+    CASES_PATH="$PROJECT_ROOT/experiments/多智能体/课程学习/cases/stage2a_manual_dense_crossing_cases.json"
+    ;;
   stage2_dense)
     NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-5}"
     DEFAULT_MODEL="TD3_velodyne_multi_v4_curriculum_stage2_dense_5_best"
@@ -58,7 +63,7 @@ case "$STAGE" in
     ;;
   *)
     echo "Unknown curriculum stage: $STAGE"
-    echo "Available stages: stage1_single, stage1b_single, stage1e_single_rescue, stage1f_wall_parallel_rescue, stage1g_collision_guard, stage1h_separated_reverse_guard, stage1i_yaw_reverse_collision_guard, stage2_three_dense, stage2_dense"
+    echo "Available stages: stage1_single, stage1b_single, stage1e_single_rescue, stage1f_wall_parallel_rescue, stage1g_collision_guard, stage1h_separated_reverse_guard, stage1i_yaw_reverse_collision_guard, stage2a_manual_dense_crossing, stage2_three_dense, stage2_dense"
     exit 1
     ;;
 esac

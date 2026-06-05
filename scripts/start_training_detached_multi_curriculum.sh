@@ -100,6 +100,19 @@ case "$STAGE" in
     DEFAULT_ACTOR_LR=0.00002
     DEFAULT_CRITIC_LR=0.00002
     ;;
+  stage2a_manual_dense_crossing)
+    NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-3}"
+    MODEL_NAME="${DRL_MULTI_TRAIN_FILE_NAME:-TD3_velodyne_multi_v4_curriculum_stage2a_manual_dense_crossing_from_stage1g}"
+    LOAD_MODEL_NAME="${DRL_MULTI_LOAD_MODEL_NAME:-TD3_velodyne_multi_v4_curriculum_stage1g_collision_guard_from_stage1f_best}"
+    CASES_PATH="$PROJECT_ROOT/experiments/多智能体/课程学习/cases/stage2a_manual_dense_crossing_cases.json"
+    VERSION="multi-agent-curriculum-stage2a-manual-dense-crossing-v1"
+    DEFAULT_MAX_EPOCHS=8
+    DEFAULT_EVAL_EPISODES=48
+    DEFAULT_EXPL_NOISE=0.055
+    DEFAULT_EXPL_MIN=0.018
+    DEFAULT_ACTOR_LR=0.00005
+    DEFAULT_CRITIC_LR=0.00005
+    ;;
   stage2_dense)
     NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-5}"
     MODEL_NAME="${DRL_MULTI_TRAIN_FILE_NAME:-TD3_velodyne_multi_v4_curriculum_stage2_dense_5}"
@@ -128,7 +141,7 @@ case "$STAGE" in
     ;;
   *)
     echo "Unknown curriculum stage: $STAGE"
-    echo "Available stages: stage1_single, stage1b_single, stage1e_single_rescue, stage1f_wall_parallel_rescue, stage1g_collision_guard, stage1h_separated_reverse_guard, stage1i_yaw_reverse_collision_guard, stage2_three_dense, stage2_dense"
+    echo "Available stages: stage1_single, stage1b_single, stage1e_single_rescue, stage1f_wall_parallel_rescue, stage1g_collision_guard, stage1h_separated_reverse_guard, stage1i_yaw_reverse_collision_guard, stage2a_manual_dense_crossing, stage2_three_dense, stage2_dense"
     exit 1
     ;;
 esac
@@ -169,6 +182,8 @@ WALL_CLEARANCE_PENALTY="${DRL_MULTI_WALL_CLEARANCE_PENALTY:-$DEFAULT_WALL_CLEARA
 WALL_CLEARANCE_SPEED_WEIGHT="${DRL_MULTI_WALL_CLEARANCE_SPEED_WEIGHT:-$DEFAULT_WALL_CLEARANCE_SPEED_WEIGHT}"
 WALL_CLEARANCE_TURN_WEIGHT="${DRL_MULTI_WALL_CLEARANCE_TURN_WEIGHT:-$DEFAULT_WALL_CLEARANCE_TURN_WEIGHT}"
 if [[ "$STAGE" == "stage1e_single_rescue" || "$STAGE" == "stage1f_wall_parallel_rescue" || "$STAGE" == "stage1g_collision_guard" || "$STAGE" == "stage1h_separated_reverse_guard" || "$STAGE" == "stage1i_yaw_reverse_collision_guard" ]]; then
+  LOCAL_NAVIGATION_REWARD="${DRL_MULTI_USE_LOCAL_NAVIGATION_REWARD:-1}"
+elif [[ "$STAGE" == "stage2a_manual_dense_crossing" ]]; then
   LOCAL_NAVIGATION_REWARD="${DRL_MULTI_USE_LOCAL_NAVIGATION_REWARD:-1}"
 else
   LOCAL_NAVIGATION_REWARD="${DRL_MULTI_USE_LOCAL_NAVIGATION_REWARD:-0}"

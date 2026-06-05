@@ -7,7 +7,7 @@
 ## Config
 
 - stage: `stage1g_collision_guard`
-- case file: `../cases/stage1g_collision_guard_cases.json`
+- case file: `../../cases/stage1g_collision_guard_cases.json`
 - warm-start: `TD3_velodyne_multi_v4_curriculum_stage1f_wall_parallel_rescue_from_stage1e_best`
 - best model: `TD3_velodyne_multi_v4_curriculum_stage1g_collision_guard_from_stage1f_best`
 - agents: 1

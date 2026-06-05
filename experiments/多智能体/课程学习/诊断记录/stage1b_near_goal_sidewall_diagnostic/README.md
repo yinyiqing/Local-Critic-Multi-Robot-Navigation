@@ -3,7 +3,7 @@
 ## 口径
 
 - 测试模型：`TD3_velodyne_multi_v4_curriculum_stage1_single_best`
-- case 文件：`../cases/stage1b_single_near_goal_sidewall_cases.json`
+- case 文件：`../../cases/stage1b_single_near_goal_sidewall_cases.json`
 - 机器人数量：1
 - 测试集数：64 episodes，8 个 case 循环 8 遍
 - 原始运行产物：已清理，仅保留复盘摘要
