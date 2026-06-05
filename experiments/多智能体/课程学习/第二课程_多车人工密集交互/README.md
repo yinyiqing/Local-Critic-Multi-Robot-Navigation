@@ -15,7 +15,7 @@
 
 | 阶段 | 中文说明 | 状态 | 说明 |
 | --- | --- | --- | --- |
-| `stage2_pairwise_diagnostic` | 诊断：双车交互拆解 | running | 已测 `stage1g best`，下一步测双车预热 best，确认预热是否带来提升。 |
+| `stage2_pairwise_diagnostic` | 诊断：双车交互拆解 | completed | 已完成 `stage1g best` 与双车预热 best 对照，定位剩余短板。 |
 | `stage2_pre_pairwise_warmup` | 预热：双车基础交互 | completed / weak | 2 车会车、交叉、同向超车、目标区轻聚集；未形成稳定提升。 |
 | `stage2a_manual_dense_crossing` | 正式：三车人工密集交互 | paused | 直接从第一课程进入该阶段过难，先降回预热。 |
 
@@ -74,7 +74,7 @@
 
 ## 双车诊断
 
-双车预热里 collision 仍偏高，因此下一步先测、不训练。诊断集会把双车交互拆成同向、轻交叉、正面对穿和目标区合流，分别测试 `stage1g best` 与双车预热 best。
+双车预热里 collision 仍偏高，因此先测、不训练。诊断集把双车交互拆成同向、轻交叉、正面对穿和目标区合流，分别测试 `stage1g best` 与双车预热 best。
 
 case file: `../cases/stage2_pairwise_diagnostic_cases.json`
 
@@ -118,11 +118,75 @@ case 结果：
 - `stage1g best` 不是不能迁移到双车，普通目标汇合、部分会车可以完成。
 - 失败集中在“同向接近时的速度协调”、“交叉路口的先后顺序”、“贴墙目标附近的等待/绕行”。
 - 第二课程不应直接推进三车密集，也不应继续泛泛训练双车随机；应该把上述三类失败作为核心样本。
-- 下一步先用同一诊断集测试双车预热 best。如果双车预热 best 没有明显改善，说明当前预热设置没有学到有效交互语义，需要重做预热设置。
+- 下一步用同一诊断集测试双车预热 best。如果双车预热 best 没有明显改善，说明当前预热设置没有学到有效交互语义，需要重做预热设置。
 
 日志：
 
 - `logs/test/test_multi_curriculum_stage2_pairwise_diagnostic_TD3_velodyne_multi_v4_curriculum_stage1g_collision_guard_from_stage1f_best_detached_20260605_200327.log`
+
+### 双车预热 best 结果
+
+测试 160 个 episode，每个 case 10 次，模型为 `TD3_velodyne_multi_v4_curriculum_stage2_pre_pairwise_warmup_from_stage1g_best`。
+
+整体结果：
+
+| 指标 | 数值 | 相对 `stage1g best` |
+| --- | ---: | ---: |
+| agent success | 235 / 320 = 0.734 | +0.041 |
+| agent collision | 79 / 320 = 0.247 | +0.028 |
+| agent unresolved | 9 / 320 = 0.028 | -0.059 |
+| full success | 101 / 160 = 0.631 | +0.081 |
+| timeout episode | 8 / 160 = 0.050 | -0.081 |
+
+case 结果：
+
+| case | success | collision | full success | timeout | 判断 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| `goal_merge_close_center` | 1.000 | 0.050 | 1.000 | 0.000 | 稳定，略有碰撞噪声 |
+| `goal_merge_easy_a` | 0.900 | 0.200 | 0.800 | 0.000 | 可用但碰撞升高 |
+| `goal_merge_easy_b` | 1.000 | 0.000 | 1.000 | 0.000 | 稳定 |
+| `goal_merge_wall_a` | 0.650 | 0.050 | 0.400 | 0.500 | 明显改善但仍不稳 |
+| `head_on_offset_lane` | 0.800 | 0.200 | 0.800 | 0.000 | 改善 |
+| `head_on_symmetric_center` | 0.350 | 0.600 | 0.300 | 0.100 | 退化，硬伤 |
+| `head_on_wall_offset` | 0.800 | 0.200 | 0.700 | 0.000 | 基本持平 |
+| `head_on_wall_side` | 0.950 | 0.050 | 0.900 | 0.000 | 改善 |
+| `offset_cross_easy_a` | 0.800 | 0.100 | 0.600 | 0.200 | 改善但仍会等待失败 |
+| `offset_cross_easy_b` | 0.750 | 0.250 | 0.600 | 0.000 | 改善 |
+| `perpendicular_cross_center` | 0.300 | 0.700 | 0.300 | 0.000 | 明显退化，硬伤 |
+| `perpendicular_cross_staggered` | 0.650 | 0.350 | 0.600 | 0.000 | full success 改善但碰撞仍高 |
+| `same_direction_far_lane_a` | 0.950 | 0.050 | 0.900 | 0.000 | 明显改善 |
+| `same_direction_far_lane_b` | 0.950 | 0.050 | 0.900 | 0.000 | 略低于 `stage1g best`，仍可用 |
+| `same_direction_overtake_light` | 0.600 | 0.400 | 0.300 | 0.000 | 从 0 提升，但仍不稳 |
+| `same_direction_wall_parallel` | 0.300 | 0.700 | 0.000 | 0.000 | 仍失败，且碰撞更高 |
+
+对照结论：
+
+- 双车预热 best 有学习效果，full success 从 0.550 提到 0.631，timeout 明显下降。
+- 改善主要来自贴墙目标汇合、错位交叉、同向远距离和同向追越；说明双车预热不是完全无效。
+- 碰撞率从 0.219 升到 0.247，说明当前预热更偏向“抢过”，没有形成稳定让行。
+- 剩余硬伤非常集中：靠墙并行、垂直中心交叉、对称迎面。这三类应组成下一轮训练核心，而不是继续扩大到三车。
+
+日志：
+
+- `logs/test/test_multi_curriculum_stage2_pairwise_diagnostic_TD3_velodyne_multi_v4_curriculum_stage2_pre_pairwise_warmup_from_stage1g_best_detached_20260605_204725.log`
+
+## 下一步判断
+
+第二课程下一步不直接回到三车密集。推荐新开一个“双车让行修复”阶段，从双车预热 best warm-start，训练样本只围绕三类硬伤：
+
+- 靠墙并行：修复 `same_direction_wall_parallel` 的稳定碰撞。
+- 垂直中心交叉：修复 `perpendicular_cross_center` 的高碰撞。
+- 对称迎面：修复 `head_on_symmetric_center` 的抢行。
+
+训练设置建议：
+
+- warm-start: `TD3_velodyne_multi_v4_curriculum_stage2_pre_pairwise_warmup_from_stage1g_best`
+- actor lr: 比预热更小，建议 `0.00002`
+- critic lr: `0.00003` 或 `0.00004`
+- exploration noise: 不要回到很大，建议 `0.025`
+- exploration min: `0.008`
+- replay buffer: 保留模型参数，训练状态建议重置，让新样本占主导
+- eval: 固定使用 `stage2_pairwise_diagnostic`，并额外看三类硬伤的 case-level full success
 
 ## 运行命令
 
