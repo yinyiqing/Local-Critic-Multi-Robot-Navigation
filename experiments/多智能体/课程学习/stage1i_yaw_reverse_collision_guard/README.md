@@ -17,22 +17,30 @@
 - critic lr: 0.00002
 - exploration noise: 0.025
 
-## Current Status
+## Status
 
-Active run:
+Completed run:
 
 - `logs/train/train_multi_curriculum_stage1i_yaw_reverse_collision_guard_detached_20260605_101704.log`
 
-Current eval snapshots:
+Training eval snapshots:
 
-| epoch | success_rate | collision_rate | timeout_episode_rate | note |
-| ---: | ---: | ---: | ---: | --- |
-| 1 | 0.958 | 0.042 | 0.000 | best checkpoint created |
-| 2 | 0.958 | 0.042 | 0.000 | best checkpoint updated by reward tie-break |
+| epoch | success_rate | collision_rate | unresolved_rate | timeout_episode_rate | note |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 1 | 0.958 | 0.042 | 0.000 | 0.000 | best checkpoint created |
+| 2 | 0.958 | 0.042 | 0.000 | 0.000 | best checkpoint updated by reward tie-break |
+| 3 | 0.681 | 0.167 | 0.153 | 0.153 | latest regressed sharply |
+
+## Checkpoints
+
+- best: `TD3_velodyne_multi_v4_curriculum_stage1i_yaw_reverse_collision_guard_from_stage1g_best`, epoch 2.
+- latest: `TD3_velodyne_multi_v4_curriculum_stage1i_yaw_reverse_collision_guard_from_stage1g_latest`, epoch 4 resume counter after completing 3 epochs.
+
+Do not use latest for comparison. Epoch 3 introduced both collision and timeout regression.
 
 ## Decision Rule
 
-Do not use latest by default. After training finishes, compare best checkpoints on:
+Compare only the best checkpoint on:
 
 - `stage1h_separated_reverse_guard` hard suite.
 - `stage1e_single_rescue` comprehensive suite.
