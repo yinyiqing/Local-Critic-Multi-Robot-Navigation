@@ -12,9 +12,9 @@
 | `stage1b_near_goal_sidewall_diagnostic/` | diagnostic | 发现近目标和侧墙仍不稳 | `TD3_velodyne_multi_v4_curriculum_stage1_single_best` |
 | `stage1e_single_rescue/` | completed | 修复近目标、贴墙目标和墙边基础缺陷 | `TD3_velodyne_multi_v4_curriculum_stage1e_single_rescue_from_stage1_single_best` |
 | `stage1f_wall_parallel_rescue/` | completed | 补墙边平行通行 | `TD3_velodyne_multi_v4_curriculum_stage1f_wall_parallel_rescue_from_stage1e_best` |
-| `stage1g_collision_guard/` | current baseline | 当前最可信单车候选 | `TD3_velodyne_multi_v4_curriculum_stage1g_collision_guard_from_stage1f_best` |
+| `stage1g_collision_guard/` | conservative baseline | 综合单车集最稳候选 | `TD3_velodyne_multi_v4_curriculum_stage1g_collision_guard_from_stage1f_best` |
 | `stage1h_separated_reverse_guard/` | superseded / test suite | 训练效果不佳，但保留为难例评估集 | `stage1h` best 不作为主模型 |
-| `stage1i_yaw_reverse_collision_guard/` | active | 正在压缩 yaw/reverse collision 尾巴 | `TD3_velodyne_multi_v4_curriculum_stage1i_yaw_reverse_collision_guard_from_stage1g` |
+| `stage1i_yaw_reverse_collision_guard/` | completed / candidate | hard suite 更强，但综合集略低于 stage1g | `TD3_velodyne_multi_v4_curriculum_stage1i_yaw_reverse_collision_guard_from_stage1g_best` |
 
 ## 完整实验索引
 
@@ -27,9 +27,9 @@
 | `aborted/stage2_dense_too_hard_20260602/` | aborted | 仅保留摘要 | 五车 dense 过早，epoch 1 已显示难度过高。 |
 | `stage1e_single_rescue/` | completed | `logs/` 已归档 | 修复近目标、目标贴墙和基础墙边缺陷。 |
 | `stage1f_wall_parallel_rescue/` | completed | `logs/` 已归档 | 继续补墙边平行通行和 yaw-in。 |
-| `stage1g_collision_guard/` | current baseline | `logs/` 已归档 | 当前最可信单车 baseline，targeted test 为 `120/120`。 |
+| `stage1g_collision_guard/` | conservative baseline | `logs/` 已归档 | 综合单车集 `117/120`，targeted test 为 `120/120`。 |
 | `stage1h_separated_reverse_guard/` | superseded / test suite | `logs/` 已归档 | 训练不采用，但保留为 hard suite。 |
-| `stage1i_yaw_reverse_collision_guard/` | active | active train log 已归档并软链接到根 `logs/` | 从 stage1g best 继续压 yaw/reverse collision tail。 |
+| `stage1i_yaw_reverse_collision_guard/` | completed / candidate | `logs/` 已归档 | hard suite `112/120`，综合单车集 `115/120`。 |
 
 ## 暂停或诊断项
 
@@ -51,6 +51,6 @@
 
 ## 当前判断
 
-当前不应进入多车密集训练。`stage1g` 已解决大部分墙边和近目标问题，但在 `stage1h` 难例集上仍有 collision tail。`stage1i` 正在从 `stage1g` best warm-start，目标是压低 `wall_separated_north_yaw_in/out` 和 `wall_parallel_reverse_safe/clear` 的碰撞率。
+当前不应进入多车密集训练。`stage1g` 已解决大部分墙边和近目标问题，但在 `stage1h` 难例集上仍有 collision tail。`stage1i` 从 `stage1g` best warm-start 后，把 hard suite 从 `105/120` 提到 `112/120`，但综合单车集从 stage1g 的 `117/120` 降到 `115/120`。
 
-下一步只比较 best checkpoint：`stage1g best`、`stage1h best`、`stage1i best` 在相同难例集和综合单车集上的结果。
+因此当前有两个可选基准：保守推进用 `stage1g best`；若优先压 hard-suite collision tail，可用 `stage1i best`，但需要接受综合集略微回落。

@@ -75,6 +75,29 @@ Compared with stage1g best on the same suite (`105/120`, 15 collisions), stage1i
 
 Next check is the `stage1e_single_rescue` comprehensive suite. Stage1i best should only replace stage1g best if it keeps the broad single-agent result near or above stage1g's `117/120`.
 
+## Comprehensive Retest
+
+Test suite: `stage1e_single_rescue`, 120 episodes.
+
+| metric | value |
+| --- | ---: |
+| total_success | 115 / 120 |
+| total_collision | 5 / 120 |
+| total_unresolved | 0 / 120 |
+| timeout_episodes | 0 / 120 |
+| success_rate | 0.958 |
+| collision_rate | 0.042 |
+
+Compared with stage1g best on the same suite (`117/120`, 3 collisions), stage1i best gives up 2 successes on the broader suite while improving the hard suite by 7 successes. It is therefore a candidate when the priority is hard-suite collision reduction, but not an unconditional replacement for stage1g best.
+
+Remaining comprehensive failures:
+
+| case | success | collision |
+| --- | ---: | ---: |
+| `wall_parallel_north_safe_straight` | 8 / 10 | 2 / 10 |
+| `wall_separated_north` | 8 / 10 | 2 / 10 |
+| `wall_parallel_north_clear_yaw_out` | 9 / 10 | 1 / 10 |
+
 ## Logs
 
 - `logs/train/`
