@@ -69,6 +69,24 @@
 
 - `logs/train/train_multi_stage1_to_2a_shared_detached_20260605_223647.log`
 
+固定测试：
+
+- model: `TD3_velodyne_multi_v4_curriculum_stage2_2a_shared_from_stage1g_best`
+- scenario: `standard`
+- launchfile: `multi_robot_scenario_multi_2.launch`
+- episodes: 300
+- agent success: `531 / 600 = 0.885`
+- agent collision: `43 / 600 = 0.072`
+- agent unresolved: `27 / 600 = 0.045`
+- full success: `235 / 300 = 0.783`
+- timeout episode: `25 / 300 = 0.083`
+
+这个测试与旧 2 车 A 的普通测试口径一致，不是人工复杂 case；复杂 case 仍看 `stage2_pairwise_diagnostic`。
+
+测试日志：
+
+- `logs/test/test_multi_stage1_to_2a_shared_TD3_velodyne_multi_v4_curriculum_stage2_2a_shared_from_stage1g_best_detached_20260606_091850.log`
+
 checkpoint:
 
 - `TD3/checkpoints/TD3_velodyne_multi_v4_curriculum_stage2_2a_shared_from_stage1g_best.pt`
