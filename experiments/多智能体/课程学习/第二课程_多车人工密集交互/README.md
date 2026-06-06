@@ -15,13 +15,13 @@
 
 | 阶段 | 中文说明 | 状态 | 说明 |
 | --- | --- | --- | --- |
-| `stage1_to_2a_shared` | 主线复位：2车A共享Policy | active | 从第一课程 `stage1g best` warm-start，关闭动态 reward、距离加权和局部 critic，回到旧 2 车 A 口径。 |
+| `stage1_to_2a_shared` | 主线复位：2车A共享Policy | completed | 从第一课程 `stage1g best` warm-start，关闭动态 reward、距离加权和局部 critic，已确认能接回旧 2 车 A 口径。 |
 | `stage2_pairwise_diagnostic` | 诊断：双车交互拆解 | completed | 已完成 `stage1g best` 与双车预热 best 对照，定位剩余短板。 |
 | `stage2_pre_pairwise_warmup` | 预热：双车基础交互 | completed / weak | 2 车会车、交叉、同向超车、目标区轻聚集；未形成稳定提升。 |
 | `stage2_main_pairwise_repair` | 过早尝试：双车让行修复 | paused | 在复位检查前直接上主线修复，路线不够清晰，先暂停归档。 |
 | `stage2a_manual_dense_crossing` | 正式：三车人工密集交互 | paused | 直接从第一课程进入该阶段过难，先降回预热。 |
 
-## 当前主线复位实验
+## 主线复位实验结果
 
 `stage1_to_2a_shared` 对应旧 2 车 A 实验，但模型从第一课程 best 接上：
 
@@ -42,10 +42,36 @@
 - eval episodes: 40
 - best metric: `success`
 
-判断标准：
+训练跑满 12 个 epoch，best checkpoint 在 epoch 2：
 
-- 如果它能接近旧 2 车 A 的训练评估水平，说明第一课程能力能接回主线；下一步跑 2 车 D，也就是共享 policy + 动态 reward + 距离加权 + 局部邻域 critic。
-- 如果它明显低于旧 2 车 A，说明问题不是三车或五车交互，而是 Stage1 warm-start 到随机 2 车分布出现迁移断层，需要先比较 `stage1g`、`stage1i` 和旧单车模型的 2 车迁移。
+| epoch | success_rate | collision_rate | unresolved_rate | full_success_rate | timeout_episode_rate |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 0.863 | 0.087 | 0.050 | 0.750 | 0.100 |
+| 2 | 0.912 | 0.037 | 0.050 | 0.825 | 0.100 |
+| 3 | 0.850 | 0.087 | 0.062 | 0.750 | 0.125 |
+| 4 | 0.838 | 0.138 | 0.025 | 0.725 | 0.050 |
+| 5 | 0.863 | 0.087 | 0.050 | 0.725 | 0.100 |
+| 6 | 0.838 | 0.125 | 0.037 | 0.675 | 0.075 |
+| 7 | 0.825 | 0.100 | 0.075 | 0.650 | 0.150 |
+| 8 | 0.887 | 0.050 | 0.062 | 0.775 | 0.125 |
+| 9 | 0.887 | 0.087 | 0.025 | 0.775 | 0.050 |
+| 10 | 0.900 | 0.050 | 0.062 | 0.800 | 0.125 |
+| 11 | 0.900 | 0.075 | 0.025 | 0.825 | 0.050 |
+| 12 | 0.900 | 0.050 | 0.050 | 0.800 | 0.100 |
+
+结论：
+
+- 第一课程的 `stage1g best` 可以稳定接回 2 车共享 policy 基线，不存在明显迁移断层。
+- 这一步说明当前问题不在“从单车到 2 车完全接不上”，而在更强交互机制和更高密度场景下如何降低碰撞、处理让行。
+- 下一步应进入 2 车 D 主线机制：共享 policy + 动态 reward + 距离加权 + 局部邻域 critic。优先从 `TD3_velodyne_multi_v4_curriculum_stage2_2a_shared_from_stage1g_best` warm-start。
+
+日志：
+
+- `logs/train/train_multi_stage1_to_2a_shared_detached_20260605_223647.log`
+
+checkpoint:
+
+- `TD3/checkpoints/TD3_velodyne_multi_v4_curriculum_stage2_2a_shared_from_stage1g_best.pt`
 
 运行命令：
 
