@@ -11,17 +11,23 @@
 
 ## 当前阶段
 
-第二课程先把主线复位到 2 车。第一课程只负责补单车局部导航能力，不能直接替代主线；因此第二课程的第一步不是继续堆更难人工 case，而是检查“第一课程 best + 2 车共享 policy 基线”是否能恢复旧主线的基本水平。
+第二课程当前只保留一条主线：先确认第一课程能接回 2车A，再从 2车A 接 2车D，稳定后再进入三车密集。
 
-| 阶段 | 中文说明 | 状态 | 说明 |
-| --- | --- | --- | --- |
-| `stage1_to_2a_shared` | 主线复位：2车A共享Policy | completed | 从第一课程 `stage1g best` warm-start，关闭动态 reward、距离加权和局部 critic，已确认能接回旧 2 车 A 口径。 |
-| `stage2_2d_local_critic_from_2a` | 主线推进：2车D局部邻域Critic | paused / failed | 从 `stage1_to_2a_shared best` warm-start actor 后效果明显差，先归档，不继续沿这个激进接法训练。 |
-| `stage2_2d_local_critic_from_2a_guarded` | 主线推进：2车D保守接入 | active | 仍从 `stage1_to_2a_shared best` warm-start actor，但先延迟 actor 更新，让新 local critic 预热。 |
-| `stage2_pairwise_diagnostic` | 诊断：双车交互拆解 | completed | 已完成 `stage1g best` 与双车预热 best 对照，定位剩余短板。 |
-| `stage2_pre_pairwise_warmup` | 预热：双车基础交互 | completed / weak | 2 车会车、交叉、同向超车、目标区轻聚集；未形成稳定提升。 |
-| `stage2_main_pairwise_repair` | 过早尝试：双车让行修复 | paused | 在复位检查前直接上主线修复，路线不够清晰，先暂停归档。 |
-| `stage2a_manual_dense_crossing` | 正式：三车人工密集交互 | paused | 直接从第一课程进入该阶段过难，先降回预热。 |
+| 主线步骤 | 状态 | 作用 |
+| --- | --- | --- |
+| 1. `stage1_to_2a_shared` | completed | 第一课程 best 接回 2车A，共享 policy 普通测试优于旧 2车A。 |
+| 2. `stage2_2d_local_critic_from_2a_guarded` | active | 从 2车A best 接 2车D；保留 actor、重置 critic、调学习率和探索噪声，先冻结 actor。 |
+| 3. 三车密集交互 | pending | 等 2车D 稳定后再推进。 |
+
+旁路记录不作为当前主线继续：
+
+| 记录 | 结论 |
+| --- | --- |
+| `stage2_2d_local_critic_from_2a` | 直接接 2车D 失败，原因是新 critic 还没稳定就立刻更新 actor。 |
+| `stage2_pairwise_diagnostic` | 诊断集，只用于定位双车交互短板。 |
+| `stage2_pre_pairwise_warmup` | 有一点效果但不稳定，collision 偏高，不作为主线继续。 |
+| `stage2_main_pairwise_repair` | 路线复位前的过早尝试，暂停。 |
+| `stage2a_manual_dense_crossing` | 直接上三车太难，暂停。 |
 
 ## 主线复位实验结果
 
