@@ -19,7 +19,7 @@
 | 2. `stage2_2d_local_critic_from_2a_gentle` | completed | 从 2车A best 接 2车D；best 在 epoch 5，后续 actor 更新让性能下降。 |
 | 3. `stage2_2d_local_critic_from_2a_gentle_best` 固定测试 | completed | 300 集普通测试略好于 2车A best，可以作为当前 2D 主线节点。 |
 | 4. `stage2b_three_light_dense` 诊断 | completed | 三车轻密集整体碰撞很高，不能直接训练。 |
-| 5. `stage2_to_3a_shared_from_2d_gentle` | active | 先回普通 3车A，确认三车共享 policy 主线能否接上。 |
+| 5. `stage2_to_3a_shared_from_2d_gentle` | active | 先回普通 3车A，确认三车共享 policy 主线能否接上。修正后必须 actor-only warm-start。 |
 | 6. 三车D或三车密集课程 | pending | 3A 成立后再决定接 3D，或进入手工密集课程。 |
 
 旁路记录不作为当前主线继续：
@@ -32,6 +32,23 @@
 | `stage2_pre_pairwise_warmup` | 有一点效果但不稳定，collision 偏高，不作为主线继续。 |
 | `stage2_main_pairwise_repair` | 路线复位前的过早尝试，暂停。 |
 | `stage2a_manual_dense_crossing` | 直接上三车太难，暂停。 |
+| `stage2_to_3a_shared_from_2d_gentle` 第一次启动 | 加载 2D gentle best 时强行加载 critic，critic 结构不兼容，导致随机初始化；这次结果不作为算法结论。 |
+
+## 当前必须注意
+
+从 2车D 接普通 3车A 时，只能加载 actor。
+
+原因很简单：2车D 用了局部邻域 critic，3车A 不用局部邻域 critic，critic 输入结构不同。若按完整模型加载，会失败并随机初始化。正确做法是：
+
+- actor 从 `TD3_velodyne_multi_v4_curriculum_stage2_2d_local_critic_from_2a_gentle_best` 加载。
+- critic 按 3车A 结构重新初始化。
+- 训练日志开头必须看到 `Loaded initial actor parameters from:`。
+- 如果看到 `Could not load the stored model parameters, initializing randomly`，这条训练要立刻停掉。
+
+失败记录：
+
+- log: `logs/failed/train_multi_stage2_to_3a_shared_detached_20260607_090302.log`
+- 这次产生的 checkpoint/model 是随机初始化结果，已删除，避免后续误用。
 
 ## 第二课程B：三车轻密集
 

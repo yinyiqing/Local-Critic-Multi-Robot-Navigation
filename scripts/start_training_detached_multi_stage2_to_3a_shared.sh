@@ -68,6 +68,7 @@ setsid bash -lc "
   export DRL_MULTI_TRAINING_VERSION='stage2-to-3a-shared-policy-from-2d-gentle-v1'
   export DRL_MULTI_TRAIN_FILE_NAME='$MODEL_NAME'
   export DRL_MULTI_LOAD_MODEL=1
+  export DRL_MULTI_LOAD_ACTOR_ONLY=1
   export DRL_MULTI_LOAD_MODEL_NAME='$LOAD_MODEL_NAME'
   cd '$PROJECT_ROOT/catkin_ws'
   source devel_isolated/setup.bash
@@ -82,6 +83,7 @@ echo "PID: $(cat "$PID_FILE")"
 echo "Agents: $NUM_AGENTS"
 echo "Model: $MODEL_NAME"
 echo "Warm start: $LOAD_MODEL_NAME"
+echo "Warm start mode: actor only"
 echo "Launch: $LAUNCH_PATH"
 echo "Dynamic reward: 0"
 echo "Distance-weighted reward: 0"

@@ -534,6 +534,7 @@ file_name = os.environ.get(
 )
 save_model = True
 load_model = env_flag("DRL_MULTI_LOAD_MODEL", False)
+load_actor_only = env_flag("DRL_MULTI_LOAD_ACTOR_ONLY", False)
 load_model_name = os.environ.get("DRL_MULTI_LOAD_MODEL_NAME", file_name)
 random_near_obstacle = False
 resume_training = True
@@ -671,10 +672,13 @@ if checkpoint:
     print("Resumed multi-agent training from checkpoint:", checkpoint_path)
 elif load_model:
     try:
-        if use_local_critic:
+        if use_local_critic or load_actor_only:
             network.load_actor(load_model_name, "./pytorch_models")
             print("Loaded initial actor parameters from:", load_model_name)
-            print("Local critic is newly initialized because critic input dim changed.")
+            if use_local_critic:
+                print("Local critic is newly initialized because critic input dim changed.")
+            else:
+                print("Critic is newly initialized because actor-only warm start was requested.")
         else:
             network.load(load_model_name, "./pytorch_models")
             print("Loaded initial model parameters from:", load_model_name)
