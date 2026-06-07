@@ -130,6 +130,35 @@
 - 但解冻后没有超过 frozen best，latest 到 epoch 12 退化到 full success `0.700`。所以不能说原版 3D 已经让 policy 明显变强。
 - 后续不能把 frozen best 冒充“3D 学成”。要么正式测试 epoch 6 best 作为 frozen/guarded 对照，要么跑 soft-unfreeze 版本，专门保存解冻后 best。
 
+正式测试：
+
+- model: `TD3_velodyne_multi_v4_curriculum_stage2_to_3d_local_critic_from_3a_guarded_best`
+- log: `logs/test/test_multi_stage2_to_3d_local_critic_from_3a_guarded_TD3_velodyne_multi_v4_curriculum_stage2_to_3d_local_critic_from_3a_guarded_best_detached_20260607_212412.log`
+- episodes: `300`
+- agent success: `837 / 900 = 0.930`
+- agent collision: `44 / 900 = 0.049`
+- agent unresolved: `22 / 900 = 0.024`
+- full success: `244 / 300 = 0.813`
+- timeout episodes: `21 / 300 = 0.070`
+- success hist `[0, 7, 49, 244]`
+- collision hist `[260, 36, 4, 0]`
+
+和已有三车结果对比：
+
+| model | agent success | collision | full success | timeout | 备注 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| 旧 3A shared baseline | `0.926` | `0.056` | `0.797` | `0.053` | 旧三车 A |
+| 旧 3D local critic | `0.913` | `0.052` | `0.747` | `0.100` | 原始局部邻域 critic |
+| 旧 3D2 geometry critic | `0.937` | `0.053` | `0.827` | `0.010` | 几何邻域 critic，旧最佳三车 D 类 |
+| 当前 guarded 3D best | `0.930` | `0.049` | `0.813` | `0.070` | 由 3A guarded best 迁移，best 在解冻前 |
+
+判断：
+
+- 当前 guarded 3D 明显好于旧原始 3D：full success `0.813` vs `0.747`。
+- 它略好于旧 3A shared baseline：full success `0.813` vs `0.797`，collision 也更低。
+- 它仍低于旧 3D2 geometry critic：full success `0.813` vs `0.827`，timeout 明显更高。
+- 因为当前 best 在 actor 解冻前，不能证明原始 3D local critic 的 actor 更新真正带来了收益；它更适合作为“3A actor 在 3D 配置下的 guarded/frozen 对照”。
+
 为什么 critic 不继承：
 
 - 3A 不用 local critic，3D 用 local critic，critic 输入维度从普通 state 变成 `state + 邻居上下文`。
@@ -145,8 +174,8 @@
 
 下一步判断：
 
-- 若要做正式结果，优先测试 `TD3_velodyne_multi_v4_curriculum_stage2_to_3d_local_critic_from_3a_guarded_best`，但报告里必须写清楚 best 在解冻前。
 - 若要证明 D 阶段真的改善了 policy，应跑 soft-unfreeze：不要长冻结 actor，而是从早期开始低频、小学习率更新 actor，并单独保存解冻后 best。
+- 若 soft-unfreeze 仍不能超过 frozen best，应优先转向 D2 geometry critic，而不是继续硬训原始 3D latest。
 
 ## 第二课程B：三车轻密集
 
