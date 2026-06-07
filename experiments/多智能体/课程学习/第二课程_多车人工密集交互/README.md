@@ -20,8 +20,8 @@
 | 3. `stage2_2d_local_critic_from_2a_gentle_best` 固定测试 | completed | 300 集普通测试略好于 2车A best，可以作为当前 2D 主线节点。 |
 | 4. `stage2b_three_light_dense` 诊断 | completed | 三车轻密集整体碰撞很高，不能直接训练。 |
 | 5. `stage2_to_3a_shared_from_2d_gentle` | stopped | 普通 3车A 已能从 0 接起来，但 RViz 观察到掠过目标、远离目标，说明目标收敛能力被破坏。 |
-| 6. `stage2_to_3a_shared_from_2d_gentle_guarded` | stopped | epoch 4 很好，epoch 5 在 actor 解冻后明显退化；保留 epoch 4 best，下一步测试 best。 |
-| 7. 三车D或三车密集课程 | pending | 3A 成立后再决定接 3D，或进入手工密集课程。 |
+| 6. `stage2_to_3a_shared_from_2d_gentle_guarded` | completed | epoch 4 best 正式 300 集测试通过，可作为当前 3A 节点。 |
+| 7. 三车D或三车密集课程 | pending | 基于 3A guarded best 接 3D，或进入手工密集课程。 |
 
 旁路记录不作为当前主线继续：
 
@@ -76,6 +76,21 @@
 - epoch 5: success `0.533`, collision `0.317`, full success `0.125`, avg final distance `0.621`
 
 判断：epoch 5 的下降不是普通波动。actor update delay 是 `20000`，epoch 4 eval 在约 `20239` agent samples，刚到解冻边界；epoch 5 已经经历 actor 更新，性能立刻掉下来。所以当前不继续训 guarded latest，先用 `TD3_velodyne_multi_v4_curriculum_stage2_to_3a_shared_from_2d_gentle_guarded_best` 做正式测试。
+
+保守 3车A正式测试：
+
+- model: `TD3_velodyne_multi_v4_curriculum_stage2_to_3a_shared_from_2d_gentle_guarded_best`
+- log: `logs/test/test_multi_stage2_to_3a_shared_guarded_TD3_velodyne_multi_v4_curriculum_stage2_to_3a_shared_from_2d_gentle_guarded_best_detached_20260607_154504.log`
+- episodes: `300`
+- agent success: `845 / 900 = 0.939`
+- agent collision: `39 / 900 = 0.043`
+- agent unresolved: `18 / 900 = 0.020`
+- full success: `248 / 300 = 0.827`
+- timeout episodes: `18 / 300 = 0.060`
+- success hist `[0, 3, 49, 248]`
+- collision hist `[263, 35, 2, 0]`
+
+结论：`3A guarded best` 可以作为当前三车普通场景节点。它说明前面课程学到的 actor 可以迁移到 3车；问题不在 warm-start 本身，而在解冻后的 actor 更新会破坏策略。
 
 ## 第二课程B：三车轻密集
 
