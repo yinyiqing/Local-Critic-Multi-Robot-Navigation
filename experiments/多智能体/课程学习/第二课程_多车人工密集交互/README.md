@@ -19,9 +19,8 @@
 | 2. `stage2_2d_local_critic_from_2a_gentle` | completed | 从 2车A best 接 2车D；best 在 epoch 5，后续 actor 更新让性能下降。 |
 | 3. `stage2_2d_local_critic_from_2a_gentle_best` 固定测试 | completed | 300 集普通测试略好于 2车A best，可以作为当前 2D 主线节点。 |
 | 4. `stage2b_three_light_dense` 诊断 | completed | 三车轻密集整体碰撞很高，不能直接训练。 |
-| 5. `stage2b_three_transition` 训练 | active | 更小过渡：两车冲突 + 第三车轻参与，先适应三车输入和邻域。 |
-| 6. `stage2b_three_light_dense` 复测/训练 | pending | 过渡训练后再回到三车轻密集。 |
-| 7. 三车中/强密集和随机测试 | pending | B 段训练后同时测手工密集和随机三车。 |
+| 5. `stage2_to_3a_shared_from_2d_gentle` | active | 先回普通 3车A，确认三车共享 policy 主线能否接上。 |
+| 6. 三车D或三车密集课程 | pending | 3A 成立后再决定接 3D，或进入手工密集课程。 |
 
 旁路记录不作为当前主线继续：
 
@@ -79,10 +78,19 @@ scripts/start_test_detached_multi_curriculum.sh stage2b_three_light_dense
 
 - `logs/test/test_multi_curriculum_stage2b_three_light_dense_TD3_velodyne_multi_v4_curriculum_stage2_2d_local_critic_from_2a_gentle_best_detached_20260606_224522.log`
 
+路线修正：
+
+- `stage2b_three_transition` 曾短暂启动，但路线讨论后停止，归为过早尝试。
+- 当前不继续三车过渡训练，先从普通 3车A 接回主线。
+
+过早尝试日志：
+
+- `logs/too_early/train_multi_curriculum_stage2b_three_transition_detached_20260607_085334.log`
+
 当前训练命令：
 
 ```bash
-scripts/start_training_detached_multi_curriculum.sh stage2b_three_transition
+scripts/start_training_detached_multi_stage2_to_3a_shared.sh
 ```
 
 ## 主线复位实验结果
