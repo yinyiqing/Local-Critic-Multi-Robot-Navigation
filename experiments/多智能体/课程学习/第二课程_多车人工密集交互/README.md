@@ -19,8 +19,9 @@
 | 2. `stage2_2d_local_critic_from_2a_gentle` | completed | 从 2车A best 接 2车D；best 在 epoch 5，后续 actor 更新让性能下降。 |
 | 3. `stage2_2d_local_critic_from_2a_gentle_best` 固定测试 | completed | 300 集普通测试略好于 2车A best，可以作为当前 2D 主线节点。 |
 | 4. `stage2b_three_light_dense` 诊断 | completed | 三车轻密集整体碰撞很高，不能直接训练。 |
-| 5. `stage2_to_3a_shared_from_2d_gentle` | active | 先回普通 3车A，确认三车共享 policy 主线能否接上。修正后必须 actor-only warm-start。 |
-| 6. 三车D或三车密集课程 | pending | 3A 成立后再决定接 3D，或进入手工密集课程。 |
+| 5. `stage2_to_3a_shared_from_2d_gentle` | stopped | 普通 3车A 已能从 0 接起来，但 RViz 观察到掠过目标、远离目标，说明目标收敛能力被破坏。 |
+| 6. `stage2_to_3a_shared_from_2d_gentle_guarded` | active | 重新跑保守 3车A：actor-only warm-start，critic 重置，先延迟 actor 更新，再用很小 actor lr。 |
+| 7. 三车D或三车密集课程 | pending | 3A 成立后再决定接 3D，或进入手工密集课程。 |
 
 旁路记录不作为当前主线继续：
 
@@ -49,6 +50,24 @@
 
 - log: `logs/failed/train_multi_stage2_to_3a_shared_detached_20260607_090302.log`
 - 这次产生的 checkpoint/model 是随机初始化结果，已删除，避免后续误用。
+
+普通 3车A 修正后能学起来，但行为不稳：
+
+- log: `logs/train/train_multi_stage2_to_3a_shared_detached_20260607_111218.log`
+- epoch 5 best: success `0.375`, collision `0.608`, full success `0.100`
+- epoch 6: success `0.483`, collision `0.500`, full success `0.075`
+- RViz 观察：多车普遍掠过目标，甚至远离目标。
+
+判断：这不是继续加 epoch 能解决的问题，而是阶段切换时 actor 更新过强，把 2D gentle best 的目标收敛能力推歪了。
+
+接下来的保守 3车A规则：
+
+- actor 仍从 `TD3_velodyne_multi_v4_curriculum_stage2_2d_local_critic_from_2a_gentle_best` 加载。
+- critic 按 3车A 重新初始化。
+- 前 `20000` agent samples 延迟 actor 更新，让 critic 先适应三车数据。
+- actor lr 降到 `0.000005`。
+- exploration noise 降到 `0.05`，min 降到 `0.02`。
+- 新模型名：`TD3_velodyne_multi_v4_curriculum_stage2_to_3a_shared_from_2d_gentle_guarded`。
 
 ## 第二课程B：三车轻密集
 
