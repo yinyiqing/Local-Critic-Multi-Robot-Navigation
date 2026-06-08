@@ -22,6 +22,7 @@
 | 5. `stage2_to_3a_shared_from_2d_gentle` | stopped | 普通 3车A 已能从 0 接起来，但 RViz 观察到掠过目标、远离目标，说明目标收敛能力被破坏。 |
 | 6. `stage2_to_3a_shared_from_2d_gentle_guarded` | completed | epoch 4 best 正式 300 集测试通过，可作为当前 3A 节点。 |
 | 7. `stage2_to_3d_local_critic_from_3a_guarded` | completed | 基于 3A guarded best 接 3D；best 仍在 actor 解冻前，解冻后未崩但低于 frozen best。 |
+| 8. `stage2_to_3d2_geo_critic_from_3a_guarded` | stopped | 基于 3A guarded best 接 3D2 几何 critic；epoch 3 best 很高，但后续持续退化，停止 latest。 |
 
 旁路记录不作为当前主线继续：
 
@@ -176,6 +177,56 @@
 
 - 若要证明 D 阶段真的改善了 policy，应跑 soft-unfreeze：不要长冻结 actor，而是从早期开始低频、小学习率更新 actor，并单独保存解冻后 best。
 - 若 soft-unfreeze 仍不能超过 frozen best，应优先转向 D2 geometry critic，而不是继续硬训原始 3D latest。
+
+## 3A guarded best 接 3D2 几何 critic
+
+这一步用于验证：不继承旧 D2 critic，只继承当前课程链路里的 3A guarded actor，重新训练几何邻域 critic，是否能比原始 3D critic 更稳。
+
+训练设置：
+
+- model: `TD3_velodyne_multi_v4_curriculum_stage2_to_3d2_geo_critic_from_3a_guarded`
+- warm start: `TD3_velodyne_multi_v4_curriculum_stage2_to_3a_shared_from_2d_gentle_guarded_best`
+- log: `logs/train/train_multi_stage2_to_3d2_geo_critic_from_3a_guarded_detached_20260607_225854.log`
+- actor: 从 3A guarded best 加载
+- critic: 重新初始化
+- local critic: on
+- geometry-only critic: on
+- dynamic reward: on
+- distance-weighted reward: on
+- actor update delay: `20000`
+- actor lr: `0.000001`
+- critic lr: `0.00008`
+- exploration noise: `0.03`
+- exploration min: `0.015`
+- max epochs: 原计划 `20`，实际 epoch 17 后停止
+
+训练结果：
+
+| epoch | full success | agent success | collision | timeout | avg final distance | 判断 |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| 1 | `0.700` | `0.900` | `0.058` | `0.125` | `0.310` | 起点不错 |
+| 2 | `0.825` | `0.942` | `0.025` | `0.100` | `0.263` | 继续上升 |
+| 3 | `0.925` | `0.975` | `0.033` | `0.000` | `0.213` | best |
+| 5 | `0.600` | `0.825` | `0.075` | `0.300` | `0.304` | 开始明显退化 |
+| 9 | `0.675` | `0.875` | `0.067` | `0.175` | `0.275` | 短暂稳定但没回到 best |
+| 10 | `0.300` | `0.708` | `0.133` | `0.425` | `0.410` | 崩点 |
+| 13 | `0.025` | `0.400` | `0.183` | `0.850` | `0.760` | timeout/停滞主导 |
+| 16 | `0.000` | `0.325` | `0.167` | `0.850` | `0.727` | 已无继续训练价值 |
+| 17 | `0.075` | `0.333` | `0.125` | `0.925` | `0.741` | 停止 |
+
+结论：
+
+- 这次不是继承旧 D2 critic。日志明确记录 `Loaded initial actor parameters from ...3a_shared...best`，并记录 `Local critic is newly initialized because critic input dim changed`、`Local critic geometry only: True`。
+- epoch 3 的 best 很强，说明当前 3A guarded actor 接到 D2 几何 critic 配置时，短期性能可以超过旧 3D2 的 40 集 eval 水平。
+- 但 epoch 10 后开始坍塌，后段主要问题不是碰撞，而是 timeout 和目标收敛失败：avg env steps 接近 `300`，avg final distance 升到 `0.7+`。
+- 所以不能继续使用 latest，也不能说 3D2 更新稳定改善了 actor。当前只能把 `TD3_velodyne_multi_v4_curriculum_stage2_to_3d2_geo_critic_from_3a_guarded_best` 当作早期 best 去正式测试。
+- 下一步应 test 这个 best。如果 300 集也明显高于旧 3D2，再考虑保存为当前 3D2 节点；如果 300 集没有优势，说明 40 集 eval 的 epoch 3 有随机性，不能继续沿用。
+
+后续实验方向：
+
+- 不再继续当前 latest。
+- 优先正式测试 epoch 3 best。
+- 若要继续训练，应该做更保守的 actor 更新：更小 actor lr、更低 actor 更新频率，或加入“性能下降即回滚/冻结 actor”的保护。
 
 ## 第二课程B：三车轻密集
 
