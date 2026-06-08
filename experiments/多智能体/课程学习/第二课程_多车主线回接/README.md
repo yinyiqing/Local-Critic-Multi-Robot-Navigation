@@ -26,7 +26,7 @@
 | 2D 局部 Critic | `02_2D_局部Critic/` | gentle 版可作为当前 2D 节点；best 在早期，后续 actor 更新会退化。 |
 | 3A 共享 Policy | `03_3A_共享Policy/` | guarded best 300 集 full success `0.827`，作为当前 3A 节点。 |
 | 3D 原始局部 Critic | `04_3D_原始局部Critic/` | 300 集 full success `0.813`，好于旧 3D，但 best 在 actor 解冻前。 |
-| 3D2 几何邻域 Critic | `05_3D2_几何邻域Critic/` | 40 集 eval epoch 3 full success `0.925`，后续 latest 明显退化；正在测 best 的 300 集。 |
+| 3D2 几何邻域 Critic | `05_3D2_几何邻域Critic/` | best 300 集 full success `0.830`，当前最高但只略高于旧 3D2 和课程 3A。 |
 | 诊断与旁路 | `诊断与旁路/` | pairwise warmup、失败启动、过早 repair 等，不作为主线节点。 |
 
 ## 关键教训
@@ -36,17 +36,19 @@
 - 当前的 best checkpoint 可以作为节点测试，但不能把“解冻前 best”说成“该阶段 actor 更新已经学成”。
 - 如果后续要证明 D/D2 阶段真的提升了 policy，需要单独设计更保守的 actor 更新策略，并记录“解冻后 best”。
 
-## 当前进行中
+## 当前结论
 
-正在测试课程 3D2 best：
+第二课程已经把主线接回到 3D2。当前普通三车标准测试最好节点是课程 3D2：
 
-- model: `TD3_velodyne_multi_v4_curriculum_stage2_to_3d2_geo_critic_from_3a_guarded_best`
-- active log: root `logs/test_multi_stage2_three_geo_critic_best_...20260608_084901.log`
-- 跑完后归档到 `05_3D2_几何邻域Critic/logs/test/`
+- agent success: `0.939`
+- collision: `0.046`
+- full success: `0.830`
+- timeout: `0.053`
+
+但优势很小：它只比旧 3D2 的 full success `0.827` 高 `0.003`，也只比课程 3A 的 `0.827` 高 `0.003`。所以它可以作为当前节点，但不能夸大为明显突破。
 
 ## 细节档案
 
 完整逐轮解释和旧路径记录保留在：
 
 - `README_旧版长记录.md`
-
