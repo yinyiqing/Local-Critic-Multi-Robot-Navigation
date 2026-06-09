@@ -380,12 +380,18 @@ class TD3(object):
         torch.save(self.critic.state_dict(), "%s/%s_critic.pth" % (directory, filename))
 
     def load(self, filename, directory):
-        self.actor.load_state_dict(
-            torch.load("%s/%s_actor.pth" % (directory, filename), map_location=device)
+        actor_state = torch.load(
+            "%s/%s_actor.pth" % (directory, filename), map_location=device
         )
-        self.critic.load_state_dict(
-            torch.load("%s/%s_critic.pth" % (directory, filename), map_location=device)
+        critic_state = torch.load(
+            "%s/%s_critic.pth" % (directory, filename), map_location=device
         )
+        self.actor.load_state_dict(actor_state)
+        self.critic.load_state_dict(critic_state)
+        # Warm start must also synchronize target networks. Otherwise TD targets
+        # are computed from stale/random targets even though online nets were loaded.
+        self.actor_target.load_state_dict(actor_state)
+        self.critic_target.load_state_dict(critic_state)
 
     def load_actor(self, filename, directory):
         actor_state = torch.load(
