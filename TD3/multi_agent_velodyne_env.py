@@ -244,8 +244,13 @@ class MultiAgentGazeboEnv:
         self.gaps[-1][-1] += 0.03
 
         port = os.environ.get("ROS_PORT_SIM", "11311")
-        subprocess.Popen(["roscore", "-p", port])
-        print("Roscore launched!")
+        ros_master_uri = os.environ.get("ROS_MASTER_URI", "").strip()
+        should_launch_roscore = not ros_master_uri
+        if should_launch_roscore:
+            subprocess.Popen(["roscore", "-p", port])
+            print("Roscore launched!")
+        else:
+            print("Using existing ROS master:", ros_master_uri)
 
         rospy.init_node("multi_agent_gym", anonymous=True)
         if launchfile.startswith("/"):
