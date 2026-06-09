@@ -1,38 +1,38 @@
 {
   "name": "stage3_asym_three_5_cases",
-  "description": "Third curriculum restart level 2: five-agent environment with one asymmetric three-agent conflict and two non-conflicting retention agents.",
+  "description": "Third curriculum restart level 2: five-agent environment with one softened asymmetric three-agent interaction, where only two agents form the main conflict and the third joins with a clear disadvantage.",
   "cases": [
     {
-      "name": "three_cross_arrival_gap",
-      "weight": 1.3,
+      "name": "three_cross_main_pair_with_late_third",
+      "weight": 1.5,
       "agents": {
-        "r1": {"start": [-1.95, -0.22], "goal": [1.85, -0.05]},
-        "r2": {"start": [1.25, 0.30], "goal": [-1.10, 0.10]},
-        "r3": {"start": [0.40, -1.45], "goal": [0.15, 1.80]},
-        "r4": {"start": [-0.20, 3.00], "goal": [0.90, 3.00]},
-        "r5": {"start": [1.80, -1.65], "goal": [0.70, -1.65]}
+        "r1": {"start": [-1.15, -0.18], "goal": [1.90, -0.05]},
+        "r2": {"start": [0.35, -1.45], "goal": [0.10, 1.85]},
+        "r3": {"start": [1.85, 0.82], "goal": [0.95, 0.55]},
+        "r4": {"start": [-0.20, 3.05], "goal": [0.95, 3.05]},
+        "r5": {"start": [1.85, -1.65], "goal": [0.70, -1.65]}
       }
     },
     {
-      "name": "three_goal_cluster_priority_gap",
-      "weight": 1.0,
+      "name": "three_goal_merge_main_pair_with_outer_third",
+      "weight": 1.2,
       "agents": {
-        "r1": {"start": [-1.10, -0.85], "goal": [-0.30, 0.15]},
-        "r2": {"start": [1.85, -0.55], "goal": [0.40, 0.15]},
-        "r3": {"start": [0.35, 1.55], "goal": [0.05, 0.72]},
-        "r4": {"start": [-0.25, 3.05], "goal": [0.75, 3.05]},
-        "r5": {"start": [1.85, 1.35], "goal": [0.95, 1.35]}
+        "r1": {"start": [-1.05, -0.72], "goal": [-0.18, 0.12]},
+        "r2": {"start": [1.85, 0.62], "goal": [0.42, 0.16]},
+        "r3": {"start": [0.10, 1.95], "goal": [0.28, 0.92]},
+        "r4": {"start": [-0.25, 3.10], "goal": [0.82, 3.10]},
+        "r5": {"start": [1.82, -1.58], "goal": [0.82, -1.58]}
       }
     },
     {
-      "name": "three_wall_adjacent_asymmetric",
-      "weight": 0.9,
+      "name": "three_wall_pair_with_far_third",
+      "weight": 0.8,
       "agents": {
-        "r1": {"start": [1.05, -0.45], "goal": [4.15, -0.05]},
-        "r2": {"start": [4.05, 0.25], "goal": [1.20, -0.35]},
-        "r3": {"start": [0.65, 1.10], "goal": [1.10, 0.25]},
-        "r4": {"start": [-0.25, 3.10], "goal": [0.80, 3.10]},
-        "r5": {"start": [-0.95, -1.10], "goal": [0.05, -1.10]}
+        "r1": {"start": [1.05, -0.42], "goal": [4.08, -0.10]},
+        "r2": {"start": [4.08, 0.18], "goal": [1.25, -0.28]},
+        "r3": {"start": [0.85, 1.25], "goal": [1.55, 0.90]},
+        "r4": {"start": [-0.25, 3.10], "goal": [0.82, 3.10]},
+        "r5": {"start": [-0.92, -1.12], "goal": [0.08, -1.12]}
       }
     }
   ]

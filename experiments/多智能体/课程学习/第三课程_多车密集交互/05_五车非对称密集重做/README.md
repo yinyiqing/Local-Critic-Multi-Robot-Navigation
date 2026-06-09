@@ -55,6 +55,11 @@
 
 - `logs/train/train_multi_curriculum_stage3_asym_three_5_detached_20260609_202936.log`
 
+补充判断：
+
+- 第一版 `stage3_asym_three_5` 虽然已经去掉强对称，但三车同时进入冲突区的程度仍然偏高
+- 因此后续把第二级进一步改成“主冲突双车 + 第三车弱介入”的 softer 版本，再重新训练
+
 ## 当前结论
 
 第三课程后续的重点不应是“必须先解决对称中心交叉”，而应是：
