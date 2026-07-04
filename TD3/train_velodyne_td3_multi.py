@@ -195,18 +195,23 @@ class TD3(object):
         max_action,
         log_dir=None,
         critic_state_dim=None,
+        critic_action_dim=None,
         actor_lr=1e-3,
         critic_lr=1e-3,
     ):
         self.state_dim = state_dim
         self.critic_state_dim = critic_state_dim or state_dim
+        self.action_dim = action_dim
+        self.critic_action_dim = critic_action_dim or action_dim
         self.actor = Actor(state_dim, action_dim).to(device)
         self.actor_target = Actor(state_dim, action_dim).to(device)
         self.actor_target.load_state_dict(self.actor.state_dict())
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=actor_lr)
 
-        self.critic = Critic(self.critic_state_dim, action_dim).to(device)
-        self.critic_target = Critic(self.critic_state_dim, action_dim).to(device)
+        self.critic = Critic(self.critic_state_dim, self.critic_action_dim).to(device)
+        self.critic_target = Critic(self.critic_state_dim, self.critic_action_dim).to(
+            device
+        )
         self.critic_target.load_state_dict(self.critic.state_dict())
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=critic_lr)
 
@@ -215,6 +220,63 @@ class TD3(object):
         self.iter_count = 0
         self.actor_reference = None
         self.actor_anchor_weight = 0.0
+
+    def _joint_actions_to_tensor(self, joint_actions_batch):
+        return torch.tensor(
+            np.stack(
+                [
+                    np.array(joint_actions, dtype=np.float32).reshape(-1)
+                    for joint_actions in joint_actions_batch
+                ]
+            ),
+            dtype=torch.float32,
+            device=device,
+        )
+
+    def _joint_states_to_tensor(self, joint_states_batch):
+        return torch.tensor(
+            np.stack(
+                [
+                    np.array(joint_states, dtype=np.float32)
+                    for joint_states in joint_states_batch
+                ]
+            ),
+            dtype=torch.float32,
+            device=device,
+        )
+
+    def _build_target_joint_actions(self, joint_next_states_batch, next_active_mask_batch):
+        joint_next_states = self._joint_states_to_tensor(joint_next_states_batch)
+        batch_size, num_agents, state_dim = joint_next_states.shape
+        flat_next_states = joint_next_states.reshape(batch_size * num_agents, state_dim)
+        flat_next_actions = self.actor_target(flat_next_states)
+        joint_next_actions = flat_next_actions.reshape(batch_size, num_agents, -1)
+
+        if next_active_mask_batch is not None:
+            next_active_mask = torch.tensor(
+                np.stack(
+                    [
+                        np.array(active_mask, dtype=np.float32)
+                        for active_mask in next_active_mask_batch
+                    ]
+                ),
+                dtype=torch.float32,
+                device=device,
+            ).unsqueeze(-1)
+            joint_next_actions = joint_next_actions * next_active_mask
+
+        return joint_next_actions.reshape(batch_size, -1)
+
+    def _build_actor_joint_actions(self, state, joint_actions_batch, agent_index_batch):
+        joint_actions = self._joint_actions_to_tensor(joint_actions_batch)
+        batch_size = joint_actions.shape[0]
+        actor_action = self.actor(state)
+        joint_actions = joint_actions.view(batch_size, -1, self.action_dim)
+        for batch_idx, agent_idx in enumerate(agent_index_batch):
+            if agent_idx is None:
+                continue
+            joint_actions[batch_idx, int(agent_idx)] = actor_action[batch_idx]
+        return actor_action, joint_actions.reshape(batch_size, -1)
 
     def get_action(self, state):
         state = torch.Tensor(state.reshape(1, -1)).to(device)
@@ -337,15 +399,44 @@ class TD3(object):
         av_loss = 0
         av_actor_anchor_loss = 0
         for it in range(iterations):
-            (
-                batch_states,
-                batch_critic_states,
-                batch_actions,
-                batch_rewards,
-                batch_dones,
-                batch_next_states,
-                batch_next_critic_states,
-            ) = replay_buffer.sample_local_critic_batch(batch_size)
+            if self.critic_action_dim > self.action_dim:
+                (
+                    batch_states,
+                    batch_critic_states,
+                    batch_actions,
+                    batch_rewards,
+                    batch_dones,
+                    batch_next_states,
+                    batch_next_critic_states,
+                    batch_joint_states,
+                    batch_joint_actions,
+                    batch_joint_next_states,
+                    batch_active_masks,
+                    batch_next_active_masks,
+                    batch_agent_indices,
+                ) = replay_buffer.sample_local_critic_joint_batch(batch_size)
+            else:
+                (
+                    batch_states,
+                    batch_critic_states,
+                    batch_actions,
+                    batch_rewards,
+                    batch_dones,
+                    batch_next_states,
+                    batch_next_critic_states,
+                ) = replay_buffer.sample_local_critic_batch(batch_size)
+                batch_joint_actions = None
+                batch_joint_next_states = None
+                batch_next_active_masks = None
+                batch_agent_indices = None
+            has_joint_transition = (
+                batch_joint_actions is not None
+                and batch_joint_next_states is not None
+                and batch_agent_indices is not None
+                and all(item is not None for item in batch_joint_actions)
+                and all(item is not None for item in batch_joint_next_states)
+                and all(item is not None for item in batch_agent_indices)
+            )
             state = torch.Tensor(batch_states).to(device)
             critic_state = torch.Tensor(batch_critic_states).to(device)
             next_state = torch.Tensor(batch_next_states).to(device)
@@ -359,13 +450,27 @@ class TD3(object):
             noise = noise.clamp(-noise_clip, noise_clip)
             next_action = (next_action + noise).clamp(-self.max_action, self.max_action)
 
-            target_Q1, target_Q2 = self.critic_target(next_critic_state, next_action)
+            if self.critic_action_dim > self.action_dim and has_joint_transition:
+                joint_next_action = self._build_target_joint_actions(
+                    batch_joint_next_states, batch_next_active_masks
+                )
+                joint_next_action = joint_next_action.view(next_action.shape[0], -1, self.action_dim)
+                agent_indices = [0 if idx is None else int(idx) for idx in batch_agent_indices]
+                for batch_idx, agent_idx in enumerate(agent_indices):
+                    joint_next_action[batch_idx, agent_idx] = next_action[batch_idx]
+                critic_next_action = joint_next_action.reshape(next_action.shape[0], -1)
+                critic_action = self._joint_actions_to_tensor(batch_joint_actions)
+            else:
+                critic_next_action = next_action
+                critic_action = action
+
+            target_Q1, target_Q2 = self.critic_target(next_critic_state, critic_next_action)
             target_Q = torch.min(target_Q1, target_Q2)
             av_Q += torch.mean(target_Q)
             max_Q = max(max_Q, torch.max(target_Q))
             target_Q = reward + ((1 - done) * discount * target_Q).detach()
 
-            current_Q1, current_Q2 = self.critic(critic_state, action)
+            current_Q1, current_Q2 = self.critic(critic_state, critic_action)
             loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
 
             self.critic_optimizer.zero_grad()
@@ -374,8 +479,14 @@ class TD3(object):
 
             if it % policy_freq == 0:
                 if update_actor:
-                    actor_action = self.actor(state)
-                    actor_grad, _ = self.critic(critic_state, actor_action)
+                    if self.critic_action_dim > self.action_dim and has_joint_transition:
+                        actor_action, actor_joint_action = self._build_actor_joint_actions(
+                            state, batch_joint_actions, batch_agent_indices
+                        )
+                        actor_grad, _ = self.critic(critic_state, actor_joint_action)
+                    else:
+                        actor_action = self.actor(state)
+                        actor_grad, _ = self.critic(critic_state, actor_action)
                     actor_loss = -actor_grad.mean()
                     anchor_loss = torch.tensor(0.0, device=device)
                     if self.actor_reference is not None and self.actor_anchor_weight > 0.0:
@@ -450,15 +561,18 @@ class TD3(object):
             "max_action": self.max_action,
             "state_dim": self.state_dim,
             "critic_state_dim": self.critic_state_dim,
+            "critic_action_dim": self.critic_action_dim,
         }
 
     def load_state_dict(self, state):
         self.actor.load_state_dict(state["actor"])
         self.actor_target.load_state_dict(state["actor_target"])
         self.actor_optimizer.load_state_dict(state["actor_optimizer"])
-        self.critic.load_state_dict(state["critic"])
-        self.critic_target.load_state_dict(state["critic_target"])
-        self.critic_optimizer.load_state_dict(state["critic_optimizer"])
+        saved_critic_action_dim = state.get("critic_action_dim", self.action_dim)
+        if saved_critic_action_dim == self.critic_action_dim:
+            self.critic.load_state_dict(state["critic"])
+            self.critic_target.load_state_dict(state["critic_target"])
+            self.critic_optimizer.load_state_dict(state["critic_optimizer"])
         self.iter_count = state["iter_count"]
 
 
@@ -531,6 +645,7 @@ local_critic_geometry_only = env_flag(
     "DRL_MULTI_LOCAL_CRITIC_GEOMETRY_ONLY", False
 )
 active_neighbors_only = env_flag("DRL_MULTI_ACTIVE_NEIGHBORS_ONLY", False)
+use_joint_action_critic = env_flag("DRL_MULTI_USE_JOINT_ACTION_CRITIC", False)
 local_critic_max_agents = env_int("DRL_MULTI_LOCAL_CRITIC_MAX_AGENTS", 10)
 local_critic_max_neighbors = max(local_critic_max_agents - 1, 1)
 local_critic_feature_dim = 5 if local_critic_geometry_only else 7
@@ -701,6 +816,11 @@ action_dim = 2
 max_action = 1
 critic_context_dim = local_critic_max_neighbors * local_critic_feature_dim
 critic_state_dim = state_dim + critic_context_dim if use_local_critic else state_dim
+critic_action_dim = (
+    action_dim * len(agent_names)
+    if use_local_critic and use_joint_action_critic
+    else action_dim
+)
 
 checkpoint = load_training_checkpoint()
 log_dir = checkpoint["network"]["log_dir"] if checkpoint else make_run_log_dir()
@@ -711,6 +831,7 @@ network = TD3(
     max_action,
     log_dir=log_dir,
     critic_state_dim=critic_state_dim,
+    critic_action_dim=critic_action_dim,
     actor_lr=actor_lr,
     critic_lr=critic_lr,
 )
@@ -799,10 +920,12 @@ print("Local-navigation turn weight:", local_navigation_turn_weight)
 print("Local-navigation near-goal distance:", local_navigation_near_goal_distance)
 print("Local-navigation heading error:", local_navigation_heading_error)
 print("Local critic enabled:", use_local_critic)
+print("Joint-action critic enabled:", use_joint_action_critic)
 print("Local critic geometry only:", local_critic_geometry_only)
 print("Active neighbors only:", active_neighbors_only)
 print("Actor state dim:", state_dim)
 print("Critic state dim:", critic_state_dim)
+print("Critic action dim:", critic_action_dim)
 print("Local critic max neighbors:", local_critic_max_neighbors)
 print("Local critic context dim:", critic_context_dim)
 print("Best metric:", best_metric)
@@ -1404,6 +1527,12 @@ while timestep < max_timesteps:
                 done_bool,
                 next_states[idx],
                 combine_critic_state(next_states[idx], next_neighbor_contexts[idx]),
+                joint_states=np.array(states, dtype=np.float32),
+                joint_actions=np.array(raw_actions, dtype=np.float32),
+                joint_next_states=np.array(next_states, dtype=np.float32),
+                active_mask=np.array(active_mask, dtype=np.float32),
+                next_active_mask=np.array(next_active_mask, dtype=np.float32),
+                agent_index=idx,
             )
         else:
             replay_buffer.add(
