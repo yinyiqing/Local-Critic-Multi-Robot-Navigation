@@ -6,7 +6,7 @@
 - 先确认 critic 这条线有没有改对
 - 看 critic 看到更完整的多车信息后，actor 解冻会不会更稳
 
-## 已完成的短对照
+## 01 短对照
 
 | 实验 | success_rate | collision_rate | full_success_rate |
 | --- | --- | --- | --- |
@@ -15,6 +15,21 @@
 
 - critic 输入改法是有影响的
 - 不是所有 actor 一解冻都会立刻崩
+
+对应日志：
+
+- [01_短对照_critic输入对照](/home/jiutian/Local-Critic-Multi-Robot-Navigation/experiments/多智能体/课程学习/后续计划_集中式Critic核查/01_短对照_critic输入对照)
+
+## 02 中程验证
+
+- 当前正在跑：
+  - 修正后 `joint-action critic`
+  - 同一 warm start
+  - `5 epoch`
+- 目的：
+  - 看短对照里的优势能不能在更长训练里保持
+- 当前运行日志还在根目录 `logs/`，跑完后再归档到：
+  - [02_中程验证_joint_action_critic](/home/jiutian/Local-Critic-Multi-Robot-Navigation/experiments/多智能体/课程学习/后续计划_集中式Critic核查/02_中程验证_joint_action_critic)
 
 ## 已完成的代码核查
 
@@ -33,27 +48,12 @@
   - 不再只给当前车加
   - 而是所有车统一处理
 
-## 当前下一步
-
-- 正在跑一组中程验证：
-  - 同场景
-  - 同 warm start
-  - 用修正后的新版 critic
-  - 跑 `5 epoch`
-- 目的：
-  - 看短期优势能不能在更长训练里保持
-
 ## 目录说明
 
-- [有效日志](/home/jiutian/Local-Critic-Multi-Robot-Navigation/experiments/多智能体/课程学习/后续计划_集中式Critic核查/有效日志)
-  - 已完成的有效短对照日志
 - 这个目录只保留：
   - 一个总 README
-  - 一个有效日志文件夹
-
-无效启动日志已移到：
-
-- [废弃分支/集中式Critic核查_无效启动日志_20260704](/home/jiutian/Local-Critic-Multi-Robot-Navigation/experiments/多智能体/课程学习/废弃分支/集中式Critic核查_无效启动日志_20260704)
+  - `01_短对照_critic输入对照/`
+  - `02_中程验证_joint_action_critic/`
 
 ## 一句话总结
 
