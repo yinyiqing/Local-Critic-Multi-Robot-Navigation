@@ -47,12 +47,13 @@
 
 - [有效日志](/home/jiutian/Local-Critic-Multi-Robot-Navigation/experiments/多智能体/课程学习/后续计划_集中式Critic核查/有效日志)
   - 已完成的有效短对照日志
-- [废弃日志](/home/jiutian/Local-Critic-Multi-Robot-Navigation/experiments/多智能体/课程学习/后续计划_集中式Critic核查/废弃日志)
-  - 启动失败、中断、无效日志
 - 这个目录只保留：
   - 一个总 README
   - 一个有效日志文件夹
-  - 一个废弃日志文件夹
+
+无效启动日志已移到：
+
+- [废弃分支/集中式Critic核查_无效启动日志_20260704](/home/jiutian/Local-Critic-Multi-Robot-Navigation/experiments/多智能体/课程学习/废弃分支/集中式Critic核查_无效启动日志_20260704)
 
 ## 一句话总结
 
