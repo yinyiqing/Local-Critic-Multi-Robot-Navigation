@@ -116,7 +116,33 @@ mkdir -p "$LOG_DIR"
 
 timestamp="$(date +%Y%m%d_%H%M%S)"
 safe_model="${MODEL_NAME//[^A-Za-z0-9_]/_}"
-log_file="$LOG_DIR/test_multi_curriculum_${STAGE}_${safe_model}_detached_${timestamp}.log"
+CUSTOM_LOG_TAG="${DRL_MULTI_TEST_LOG_TAG:-}"
+STATE_PATH="${DRL_MULTI_TEST_STATE_PATH:-./checkpoints/${safe_model}_${STAGE}_test_state.pt}"
+STATS_PATH="${DRL_MULTI_TEST_STATS_PATH:-./results/${safe_model}_${STAGE}_test.npy}"
+
+if [[ -n "$CUSTOM_LOG_TAG" ]]; then
+  MODEL_TAG="$CUSTOM_LOG_TAG"
+else
+  case "$MODEL_NAME" in
+    TD3_velodyne_multi_v4_curriculum_stage2_to_5a_shared_from_3d2_guarded_best)
+      MODEL_TAG="5A"
+      ;;
+    TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best)
+      MODEL_TAG="5D"
+      ;;
+    TD3_velodyne_multi_v4_curriculum_stage3_asym_pair_5_from_5a_cleanstart_v2_best)
+      MODEL_TAG="PAIR"
+      ;;
+    TD3_velodyne_multi_v4_curriculum_stage3_asym_three_5_joint_action_critic_midcheck_from_stage3_pair_cleanstart_v2_best_best)
+      MODEL_TAG="THREE_MID"
+      ;;
+    *)
+      MODEL_TAG="$safe_model"
+      ;;
+  esac
+fi
+
+log_file="$LOG_DIR/test_${STAGE}_${MODEL_TAG}_${timestamp}.log"
 
 if [[ -f "$PID_FILE" ]]; then
   old_pid="$(cat "$PID_FILE" 2>/dev/null || true)"
@@ -147,8 +173,8 @@ setsid bash -lc "
   export DRL_MULTI_TEST_LAUNCHFILE='$LAUNCHFILE'
   export DRL_MULTI_TEST_FILE_NAME='$MODEL_NAME'
   export DRL_MULTI_TEST_TARGET_EPISODES='$TARGET_EPISODES'
-  export DRL_MULTI_TEST_STATE_PATH='./checkpoints/${safe_model}_${STAGE}_test_state.pt'
-  export DRL_MULTI_TEST_STATS_PATH='./results/${safe_model}_${STAGE}_test.npy'
+  export DRL_MULTI_TEST_STATE_PATH='$STATE_PATH'
+  export DRL_MULTI_TEST_STATS_PATH='$STATS_PATH'
   export DRL_MULTI_SCENARIO=curriculum
   export DRL_MULTI_CURRICULUM_CASES='$CASES_PATH'
   export DRL_MULTI_CURRICULUM_SAMPLING='$CURRICULUM_SAMPLING'

@@ -187,6 +187,84 @@ class Critic(nn.Module):
         return q1, q2
 
 
+class LocalAttentionCritic(nn.Module):
+    def __init__(
+        self,
+        state_dim,
+        action_dim,
+        actor_state_dim,
+        neighbor_feature_dim,
+        max_neighbors,
+        attention_hidden_dim=128,
+    ):
+        super(LocalAttentionCritic, self).__init__()
+        self.actor_state_dim = actor_state_dim
+        self.neighbor_feature_dim = neighbor_feature_dim
+        self.max_neighbors = max_neighbors
+        self.context_dim = neighbor_feature_dim * max_neighbors
+
+        self.state_encoder = nn.Linear(actor_state_dim, attention_hidden_dim)
+        self.neighbor_encoder = nn.Linear(neighbor_feature_dim, attention_hidden_dim)
+        self.attn_score = nn.Linear(attention_hidden_dim * 2, 1)
+
+        fused_state_dim = actor_state_dim + attention_hidden_dim
+
+        self.layer_1 = nn.Linear(fused_state_dim, 800)
+        self.layer_2_s = nn.Linear(800, 600)
+        self.layer_2_a = nn.Linear(action_dim, 600)
+        self.layer_3 = nn.Linear(600, 1)
+
+        self.layer_4 = nn.Linear(fused_state_dim, 800)
+        self.layer_5_s = nn.Linear(800, 600)
+        self.layer_5_a = nn.Linear(action_dim, 600)
+        self.layer_6 = nn.Linear(600, 1)
+
+    def _split_state(self, critic_state):
+        state = critic_state[:, : self.actor_state_dim]
+        context = critic_state[:, self.actor_state_dim :]
+        context = context.view(
+            critic_state.shape[0], self.max_neighbors, self.neighbor_feature_dim
+        )
+        return state, context
+
+    def _encode_context(self, state, context):
+        state_feat = F.relu(self.state_encoder(state))
+        neighbor_feat = F.relu(self.neighbor_encoder(context))
+        state_expand = state_feat.unsqueeze(1).expand_as(neighbor_feat)
+        attn_input = torch.cat([state_expand, neighbor_feat], dim=-1)
+        attn_logits = self.attn_score(attn_input).squeeze(-1)
+        neighbor_mask = context[:, :, -1] > 0.5
+        attn_logits = attn_logits.masked_fill(~neighbor_mask, -1e9)
+        attn_weights = torch.softmax(attn_logits, dim=1)
+        attn_weights = attn_weights * neighbor_mask.float()
+        norm = attn_weights.sum(dim=1, keepdim=True).clamp(min=1e-6)
+        attn_weights = attn_weights / norm
+        pooled = torch.sum(neighbor_feat * attn_weights.unsqueeze(-1), dim=1)
+        pooled = pooled * neighbor_mask.any(dim=1, keepdim=True).float()
+        return torch.cat([state, pooled], dim=-1)
+
+    def forward(self, critic_state, action):
+        state, context = self._split_state(critic_state)
+        fused_state = self._encode_context(state, context)
+
+        s1 = F.relu(self.layer_1(fused_state))
+        self.layer_2_s(s1)
+        self.layer_2_a(action)
+        s11 = torch.mm(s1, self.layer_2_s.weight.data.t())
+        s12 = torch.mm(action, self.layer_2_a.weight.data.t())
+        s1 = F.relu(s11 + s12 + self.layer_2_a.bias.data)
+        q1 = self.layer_3(s1)
+
+        s2 = F.relu(self.layer_4(fused_state))
+        self.layer_5_s(s2)
+        self.layer_5_a(action)
+        s21 = torch.mm(s2, self.layer_5_s.weight.data.t())
+        s22 = torch.mm(action, self.layer_5_a.weight.data.t())
+        s2 = F.relu(s21 + s22 + self.layer_5_a.bias.data)
+        q2 = self.layer_6(s2)
+        return q1, q2
+
+
 class TD3(object):
     def __init__(
         self,
@@ -198,6 +276,11 @@ class TD3(object):
         critic_action_dim=None,
         actor_lr=1e-3,
         critic_lr=1e-3,
+        use_attention_critic=False,
+        attention_actor_state_dim=None,
+        attention_neighbor_feature_dim=None,
+        attention_max_neighbors=None,
+        attention_hidden_dim=128,
     ):
         self.state_dim = state_dim
         self.critic_state_dim = critic_state_dim or state_dim
@@ -208,10 +291,30 @@ class TD3(object):
         self.actor_target.load_state_dict(self.actor.state_dict())
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=actor_lr)
 
-        self.critic = Critic(self.critic_state_dim, self.critic_action_dim).to(device)
-        self.critic_target = Critic(self.critic_state_dim, self.critic_action_dim).to(
-            device
-        )
+        if use_attention_critic:
+            self.critic = LocalAttentionCritic(
+                self.critic_state_dim,
+                self.critic_action_dim,
+                attention_actor_state_dim,
+                attention_neighbor_feature_dim,
+                attention_max_neighbors,
+                attention_hidden_dim=attention_hidden_dim,
+            ).to(device)
+            self.critic_target = LocalAttentionCritic(
+                self.critic_state_dim,
+                self.critic_action_dim,
+                attention_actor_state_dim,
+                attention_neighbor_feature_dim,
+                attention_max_neighbors,
+                attention_hidden_dim=attention_hidden_dim,
+            ).to(device)
+        else:
+            self.critic = Critic(self.critic_state_dim, self.critic_action_dim).to(
+                device
+            )
+            self.critic_target = Critic(
+                self.critic_state_dim, self.critic_action_dim
+            ).to(device)
         self.critic_target.load_state_dict(self.critic.state_dict())
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=critic_lr)
 
@@ -656,9 +759,13 @@ local_critic_geometry_only = env_flag(
 )
 active_neighbors_only = env_flag("DRL_MULTI_ACTIVE_NEIGHBORS_ONLY", False)
 use_joint_action_critic = env_flag("DRL_MULTI_USE_JOINT_ACTION_CRITIC", False)
+use_attention_critic = env_flag("DRL_MULTI_USE_ATTENTION_CRITIC", False)
 local_critic_max_agents = env_int("DRL_MULTI_LOCAL_CRITIC_MAX_AGENTS", 10)
 local_critic_max_neighbors = max(local_critic_max_agents - 1, 1)
 local_critic_feature_dim = 5 if local_critic_geometry_only else 7
+attention_hidden_dim = env_int("DRL_MULTI_ATTENTION_HIDDEN_DIM", 128)
+if use_attention_critic and not use_local_critic:
+    raise ValueError("Attention critic currently requires DRL_MULTI_USE_LOCAL_CRITIC=1")
 best_metric = os.environ.get("DRL_MULTI_BEST_METRIC", "success").strip().lower()
 scenario_mode = os.environ.get("DRL_MULTI_SCENARIO", "standard").strip().lower()
 use_distance_weighted_reward = env_flag(
@@ -844,6 +951,11 @@ network = TD3(
     critic_action_dim=critic_action_dim,
     actor_lr=actor_lr,
     critic_lr=critic_lr,
+    use_attention_critic=use_attention_critic,
+    attention_actor_state_dim=state_dim,
+    attention_neighbor_feature_dim=local_critic_feature_dim,
+    attention_max_neighbors=local_critic_max_neighbors,
+    attention_hidden_dim=attention_hidden_dim,
 )
 replay_buffer = ReplayBuffer(buffer_size, seed)
 
@@ -931,6 +1043,7 @@ print("Local-navigation near-goal distance:", local_navigation_near_goal_distanc
 print("Local-navigation heading error:", local_navigation_heading_error)
 print("Local critic enabled:", use_local_critic)
 print("Joint-action critic enabled:", use_joint_action_critic)
+print("Attention critic enabled:", use_attention_critic)
 print("Local critic geometry only:", local_critic_geometry_only)
 print("Active neighbors only:", active_neighbors_only)
 print("Actor state dim:", state_dim)
@@ -938,6 +1051,7 @@ print("Critic state dim:", critic_state_dim)
 print("Critic action dim:", critic_action_dim)
 print("Local critic max neighbors:", local_critic_max_neighbors)
 print("Local critic context dim:", critic_context_dim)
+print("Attention hidden dim:", attention_hidden_dim)
 print("Best metric:", best_metric)
 print("Eval episodes:", eval_ep)
 print("Max epochs:", max_epochs or "unlimited")
@@ -1160,13 +1274,14 @@ while timestep < max_timesteps:
                 if episode_sample_count > 0
                 else 0.0
             )
-            mean_context_neighbors, max_context_neighbors = context_stats(
-                episode_last_neighbor_contexts
-            )
-            mean_context_neighbors_step = (
+            mean_context_neighbors = (
                 episode_context_neighbor_count_sum / episode_sample_count
                 if episode_sample_count > 0
                 else 0.0
+            )
+            max_context_neighbors = episode_context_neighbor_max
+            last_context_neighbors_mean, last_context_neighbors_max = context_stats(
+                episode_last_neighbor_contexts
             )
             coop_active_agents = sum(1 for count in coop_neighbor_counts if count > 0)
             mean_raw_reward = float(np.mean(raw_rewards))
@@ -1186,7 +1301,7 @@ while timestep < max_timesteps:
                 "abs_wall_clear_reward=%.4f | local_nav_reward=%.4f | "
                 "abs_local_nav_reward=%.4f | "
                 "context_neighbors_mean=%.2f | context_neighbors_max=%.0f | "
-                "context_step_mean=%.2f | context_step_max=%.0f | "
+                "last_context_neighbors_mean=%.2f | last_context_neighbors_max=%.0f | "
                 "actor_unlocked=%i | "
                 "expl_noise=%.4f | "
                 "replay=%i | samples/sec=%.3f"
@@ -1225,8 +1340,8 @@ while timestep < max_timesteps:
                     mean_abs_local_navigation_reward_step,
                     mean_context_neighbors,
                     max_context_neighbors,
-                    mean_context_neighbors_step,
-                    episode_context_neighbor_max,
+                    last_context_neighbors_mean,
+                    last_context_neighbors_max,
                     int(timestep >= actor_update_delay_steps),
                     expl_noise,
                     replay_buffer.size(),

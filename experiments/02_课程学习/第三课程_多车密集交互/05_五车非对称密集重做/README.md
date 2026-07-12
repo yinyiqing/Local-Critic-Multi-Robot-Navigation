@@ -40,6 +40,13 @@
 - 说明“过强对称性”确实是旧密集课程的重要问题
 - 但仍然出现后期退化，best 仍在前两轮
 
+补充记录：
+
+- `2026-07-12`：准备补做 `5D -> stage3_asym_pair_5`
+  - 目的不是重复旧 `5A -> PAIR`
+  - 而是验证“带弱交互基础的普通 actor”作为 dense warm start 是否更合理
+  - 由于 `5D` 当时带几何邻域 critic，而当前 `stage3_asym_pair_5` 默认不是同一 critic 结构，这次 warm start 默认采用 `actor-only`
+
 ### 五车非对称三车冲突
 
 失败日志：

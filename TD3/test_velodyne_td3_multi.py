@@ -45,6 +45,64 @@ class TD3(object):
         )
 
 
+class DualActorSwitcher(object):
+    def __init__(
+        self,
+        standard_policy,
+        dense_policy,
+        switch_on_distance,
+        switch_off_distance,
+        switch_on_visible_neighbors,
+    ):
+        self.standard_policy = standard_policy
+        self.dense_policy = dense_policy
+        self.switch_on_distance = float(switch_on_distance)
+        self.switch_off_distance = max(
+            float(switch_off_distance), float(switch_on_distance)
+        )
+        self.switch_on_visible_neighbors = max(int(switch_on_visible_neighbors), 1)
+        self.current_mode = {}
+
+    def reset(self, agent_names):
+        self.current_mode = {name: "standard" for name in agent_names}
+
+    def _nearest_visible_neighbor_distance(self, env, name):
+        visible_neighbors = env._compute_visible_neighbors(name)
+        if not visible_neighbors:
+            return None, 0
+        origin = env.robot_positions[name]
+        distances = [
+            float(np.linalg.norm(env.robot_positions[other_name] - origin))
+            for other_name in visible_neighbors
+        ]
+        return min(distances), len(visible_neighbors)
+
+    def choose_action(self, env, name, state):
+        nearest_distance, visible_count = self._nearest_visible_neighbor_distance(
+            env, name
+        )
+        mode = self.current_mode.get(name, "standard")
+
+        should_switch_dense = (
+            visible_count >= self.switch_on_visible_neighbors
+            and nearest_distance is not None
+            and nearest_distance <= self.switch_on_distance
+        )
+        should_switch_standard = (
+            nearest_distance is None or nearest_distance >= self.switch_off_distance
+        )
+
+        if mode == "standard" and should_switch_dense:
+            mode = "dense"
+        elif mode == "dense" and should_switch_standard:
+            mode = "standard"
+
+        self.current_mode[name] = mode
+        policy = self.dense_policy if mode == "dense" else self.standard_policy
+        action = policy.get_action(np.array(state))
+        return action, mode, nearest_distance, visible_count
+
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -60,6 +118,13 @@ def env_flag(name, default=False):
     if value is None or value.strip() == "":
         return default
     return value.strip().lower() in ("1", "true", "yes", "on")
+
+
+def env_float(name, default):
+    value = os.environ.get(name)
+    if value is None or value.strip() == "":
+        return default
+    return float(value)
 
 
 def make_agent_names():
@@ -82,6 +147,14 @@ target_test_episodes = int(os.environ.get("DRL_MULTI_TEST_TARGET_EPISODES", "0")
 scenario_mode = os.environ.get("DRL_MULTI_SCENARIO", "standard").strip().lower()
 base_file_name = "TD3_velodyne_multi_v4"
 file_name = os.environ.get("DRL_MULTI_TEST_FILE_NAME", base_file_name)
+standard_actor_file = os.environ.get(
+    "DRL_MULTI_STANDARD_ACTOR_FILE", file_name
+).strip()
+dense_actor_file = os.environ.get("DRL_MULTI_DENSE_ACTOR_FILE", "").strip()
+dual_actor_enabled = bool(dense_actor_file)
+switch_on_distance = env_float("DRL_MULTI_SWITCH_ON_DISTANCE", 1.6)
+switch_off_distance = env_float("DRL_MULTI_SWITCH_OFF_DISTANCE", 2.0)
+switch_on_visible_neighbors = env_int("DRL_MULTI_SWITCH_ON_VISIBLE_NEIGHBORS", 1)
 launchfile = os.environ.get(
     "DRL_MULTI_TEST_LAUNCHFILE", "multi_robot_scenario_multi_2.launch"
 )
@@ -322,9 +395,25 @@ action_dim = 2
 
 network = TD3(state_dim, action_dim)
 try:
-    network.load(file_name, "./pytorch_models")
+    network.load(standard_actor_file, "./pytorch_models")
 except Exception:
     raise ValueError("Could not load the stored multi-agent model parameters")
+
+dense_network = None
+switcher = None
+if dual_actor_enabled:
+    dense_network = TD3(state_dim, action_dim)
+    try:
+        dense_network.load(dense_actor_file, "./pytorch_models")
+    except Exception:
+        raise ValueError("Could not load the stored dense-actor parameters")
+    switcher = DualActorSwitcher(
+        standard_policy=network,
+        dense_policy=dense_network,
+        switch_on_distance=switch_on_distance,
+        switch_off_distance=switch_off_distance,
+        switch_on_visible_neighbors=switch_on_visible_neighbors,
+    )
 
 test_state = load_test_state() or {}
 episode_num = test_state.get("episode_num", 0)
@@ -352,6 +441,15 @@ print("Test version: multi-agent-eval-v1-headless")
 print("Test process PID:", os.getpid())
 print("Launchfile:", launchfile)
 print("Model file:", file_name)
+if dual_actor_enabled:
+    print("Dual actor mode: enabled")
+    print("Standard actor file:", standard_actor_file)
+    print("Dense actor file:", dense_actor_file)
+    print("Switch on distance:", switch_on_distance)
+    print("Switch off distance:", switch_off_distance)
+    print("Switch on visible neighbors:", switch_on_visible_neighbors)
+else:
+    print("Dual actor mode: disabled")
 print("Scenario mode:", scenario_mode)
 print("Seed:", seed)
 print("Device:", device)
@@ -375,6 +473,8 @@ print("==============================================")
 
 states = env.reset()
 episode_case_name = current_case_name(env)
+if switcher is not None:
+    switcher.reset(agent_names)
 active_mask = [True] * len(agent_names)
 episode_done = False
 episode_env_steps = 0
@@ -385,6 +485,8 @@ episode_collision_flags = np.zeros(len(agent_names), dtype=np.int32)
 episode_final_distances = {name: None for name in agent_names}
 episode_start_time = time.time()
 episode_trace = deque(maxlen=trace_window_steps) if trace_failures else None
+episode_dense_action_steps = np.zeros(len(agent_names), dtype=np.int32)
+episode_standard_action_steps = np.zeros(len(agent_names), dtype=np.int32)
 
 while True:
     env_actions = []
@@ -394,7 +496,15 @@ while True:
             env_actions.append([0.0, 0.0])
             continue
 
-        action = network.get_action(np.array(state))
+        if switcher is not None:
+            action, mode, _, _ = switcher.choose_action(env, agent_names[idx], state)
+            if mode == "dense":
+                episode_dense_action_steps[idx] += 1
+            else:
+                episode_standard_action_steps[idx] += 1
+        else:
+            action = network.get_action(np.array(state))
+            episode_standard_action_steps[idx] += 1
         env_actions.append([(action[0] + 1) / 2, action[1]])
 
     next_states, rewards, dones, targets, collisions = env.step(env_actions, active_mask)
@@ -518,7 +628,7 @@ while True:
         "Episode %i complete | case=%s | env_steps=%i | agent_samples=%i | episode_env_steps=%i | "
         "episode_agent_samples=%i | mean_reward=%.3f | success=%i/%i | collision=%i/%i | "
         "unresolved=%i/%i | full_success=%i | timeout=%i | "
-        "mean_final_distance=%.3f | samples/sec=%.3f"
+        "mean_final_distance=%.3f | dense_action_share=%.3f | samples/sec=%.3f"
         % (
             episode_num,
             episode_case_name,
@@ -536,6 +646,13 @@ while True:
             full_success,
             timeout_episode,
             mean_final_distance,
+            (
+                float(np.sum(episode_dense_action_steps))
+                / max(
+                    float(np.sum(episode_dense_action_steps + episode_standard_action_steps)),
+                    1.0,
+                )
+            ),
             steps_per_sec,
         )
     )
@@ -628,6 +745,8 @@ while True:
 
     states = env.reset()
     episode_case_name = current_case_name(env)
+    if switcher is not None:
+        switcher.reset(agent_names)
     active_mask = [True] * len(agent_names)
     episode_done = False
     episode_env_steps = 0
@@ -638,3 +757,5 @@ while True:
     episode_final_distances = {name: None for name in agent_names}
     episode_start_time = time.time()
     episode_trace = deque(maxlen=trace_window_steps) if trace_failures else None
+    episode_dense_action_steps = np.zeros(len(agent_names), dtype=np.int32)
+    episode_standard_action_steps = np.zeros(len(agent_names), dtype=np.int32)

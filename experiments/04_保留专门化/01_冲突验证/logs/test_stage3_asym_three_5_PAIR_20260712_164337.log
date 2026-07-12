@@ -1,0 +1,486 @@
+Activated DRL robot navigation Python environment.
+Python: Python 3.8.10
+Venv: /home/jiutian/venvs/drl-robot-nav
+Curriculum scenario enabled: 3 cases loaded
+Roscore launched!
+Unable to register with master node [http://localhost:11368]: master may not be running yet. Will keep trying.
+Gazebo launched!
+INFO: cannot create a symlink to latest log directory: [Errno 2] No such file or directory: '/home/jiutian/.ros/log/latest'
+INFO: cannot create a symlink to latest log directory: [Errno 2] No such file or directory: '/home/jiutian/.ros/log/latest'
+INFO: cannot create a symlink to latest log directory: [Errno 2] No such file or directory: '/home/jiutian/.ros/log/latest'
+[INFO] [1783845820.920089, 0.000000]: Loading model XML from ros parameter robot_description_r2
+[INFO] [1783845820.922493, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1783845821.526445, 0.350000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1783845822.258222, 0.372000]: Spawn status: SpawnModel: Successfully spawned entity
+[WARN] [1783845822.375550912, 0.372000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1
+[INFO] [1783845821.249726293]: Finished loading Gazebo ROS API Plugin.
+[INFO] [1783845821.250718884]: waitForService: Service [/gazebo/set_physics_properties] has not been advertised, waiting...
+[INFO] [1783845821.373983198, 0.203000000]: waitForService: Service [/gazebo/set_physics_properties] is now available.
+[INFO] [1783845821.382427886, 0.211000000]: Physics dynamic reconfigure ready.
+[INFO] [1783845821.653547459, 0.372000000]: Laser Plugin: The 'robotNamespace' param was empty
+[INFO] [1783845821.653565036, 0.372000000]: Starting Laser Plugin (ns = r2)
+[INFO] [1783845821.653930994, 0.372000000]: Laser Plugin (ns = r2)  <tf_prefix_>, set to ""
+[INFO] [1783845822.263957686, 0.372000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping
+[INFO] [1783845822.265293237, 0.372000000]: Velodyne laser plugin ready, 16 lasers
+[INFO] [1783845822.375099918, 0.372000000]: Starting plugin DiffDrive(ns = /r2/)
+[INFO] [1783845822.375136472, 0.372000000]: DiffDrive(ns = /r2/): <rosDebugLevel> = Debug
+[INFO] [1783845822.375409146, 0.372000000]: DiffDrive(ns = /r2/): <tf_prefix> = 
+[DEBUG] [1783845822.375435366, 0.372000000]: DiffDrive(ns = /r2/): <commandTopic> = cmd_vel
+[DEBUG] [1783845822.375440148, 0.372000000]: DiffDrive(ns = /r2/): <odometryTopic> = odom
+[DEBUG] [1783845822.375445069, 0.372000000]: DiffDrive(ns = /r2/): <odometryFrame> = odom
+[DEBUG] [1783845822.375449182, 0.372000000]: DiffDrive(ns = /r2/): <robotBaseFrame> = base_link
+[DEBUG] [1783845822.375463792, 0.372000000]: DiffDrive(ns = /r2/): <publishWheelTF> = false
+[DEBUG] [1783845822.375467367, 0.372000000]: DiffDrive(ns = /r2/): <publishOdomTF> = false
+[DEBUG] [1783845822.375471526, 0.372000000]: DiffDrive(ns = /r2/): <publishWheelJointState> = true
+[DEBUG] [1783845822.375490277, 0.372000000]: DiffDrive(ns = /r2/): <wheelSeparation> = 0.29999999999999999
+[DEBUG] [1783845822.375494878, 0.372000000]: DiffDrive(ns = /r2/): <wheelDiameter> = 0.17999999999999999
+[DEBUG] [1783845822.375499683, 0.372000000]: DiffDrive(ns = /r2/): <wheelAcceleration> = 1.8
+[DEBUG] [1783845822.375504560, 0.372000000]: DiffDrive(ns = /r2/): <wheelTorque> = 20
+[DEBUG] [1783845822.375509367, 0.372000000]: DiffDrive(ns = /r2/): <updateRate> = 50
+[DEBUG] [1783845822.375528600, 0.372000000]: DiffDrive(ns = /r2/): <odometrySource> = world := 1
+[DEBUG] [1783845822.375537842, 0.372000000]: DiffDrive(ns = /r2/): <leftJoint> = left_hub_joint
+[DEBUG] [1783845822.375542712, 0.372000000]: DiffDrive(ns = /r2/): <rightJoint> = right_hub_joint
+[INFO] [1783845822.375735295, 0.372000000]: DiffDrive(ns = /r2/): Advertise joint_states
+[INFO] [1783845822.375869138, 0.372000000]: DiffDrive(ns = /r2/): Try to subscribe to cmd_vel
+[INFO] [1783845822.376349155, 0.372000000]: DiffDrive(ns = /r2/): Subscribe to cmd_vel
+[INFO] [1783845822.376467481, 0.372000000]: DiffDrive(ns = /r2/): Advertise odom on odom 
+[INFO] [1783845822.379583628, 0.372000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint
+[INFO] [1783845822.379589874, 0.372000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint
+[INFO] [1783845822.379594911, 0.372000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint
+[INFO] [1783845822.379598467, 0.372000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint
+[INFO] [1783845822.379603138, 0.372000000]: Starting GazeboRosJointStatePublisher Plugin (ns = /r2/)!, parent name: r2
+[DEBUG] [1783845822.405731677, 0.393000000]: Trying to publish message of type [nav_msgs/Odometry/cd5e73d190d741a2f92e81eda573aca7] on a publisher with type [nav_msgs/Odometry/cd5e73d190d741a2f92e81eda573aca7]
+[DEBUG] [1783845822.405748500, 0.393000000]: Trying to publish message of type [sensor_msgs/JointState/3066dcd76a6cfaef579bd0f34173e9fd] on a publisher with type [sensor_msgs/JointState/3066dcd76a6cfaef579bd0f34173e9fd]
+[INFO] [1783845822.658619074, 0.562000000]: Laser Plugin: The 'robotNamespace' param was empty
+[INFO] [1783845822.658639979, 0.562000000]: Starting Laser Plugin (ns = r1)
+[INFO] [1783845822.659[WARN] [1783845823.264778011, 0.562000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1
+[INFO] [1783845821.019257, 0.000000]: Loading model XML from ros parameter robot_description_r1
+[INFO] [1783845821.022859, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1783845821.625161, 0.372000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1783845823.264156, 0.562000]: Spawn status: SpawnModel: Successfully spawned entity
+062080, 0.562000000]: Laser Plugin (ns = r1)  <tf_prefix_>, set to ""
+[INFO] [1783845823.262434893, 0.562000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping
+[INFO] [1783845823.262927384, 0.562000000]: Velodyne laser plugin ready, 16 lasers
+[INFO] [1783845823.264313461, 0.562000000]: Starting plugin DiffDrive(ns = /r1/)
+[DEBUG] [1783845823.264321801, 0.562000000]: DiffDrive(ns = /r1/): <rosDebugLevel> = Debug
+[INFO] [1783845823.264331235, 0.562000000]: DiffDrive(ns = /r1/): <rosDebugLevel> = Debug
+[INFO] [1783845823.264694866, 0.562000000]: DiffDrive(ns = /r1/): <tf_prefix> = 
+[DEBUG] [1783845823.264704392, 0.562000000]: DiffDrive(ns = /r1/): <commandTopic> = cmd_vel
+[DEBUG] [1783845823.264709033, 0.562000000]: DiffDrive(ns = /r1/): <odometryTopic> = odom
+[DEBUG] [1783845823.264713514, 0.562000000]: DiffDrive(ns = /r1/): <odometryFrame> = odom
+[DEBUG] [1783845823.264717806, 0.562000000]: DiffDrive(ns = /r1/): <robotBaseFrame> = base_link
+[DEBUG] [1783845823.264722437, 0.562000000]: DiffDrive(ns = /r1/): <publishWheelTF> = false
+[DEBUG] [1783845823.264726441, 0.562000000]: DiffDrive(ns = /r1/): <publishOdomTF> = false
+[DEBUG] [1783845823.264730508, 0.562000000]: DiffDrive(ns = /r1/): <publishWheelJointState> = true
+[DEBUG] [1783845823.264738752, 0.562000000]: DiffDrive(ns = /r1/): <wheelSeparation> = 0.29999999999999999
+[DEBUG] [1783845823.264743378, 0.562000000]: DiffDrive(ns = /r1/): <wheelDiameter> = 0.17999999999999999
+[DEBUG] [1783845823.264748429, 0.562000000]: DiffDrive(ns = /r1/): <wheelAcceleration> = 1.8
+[DEBUG] [1783845823.264753357, 0.562000000]: DiffDrive(ns = /r1/): <wheelTorque> = 20
+[DEBUG] [1783845823.264757814, 0.562000000]: DiffDrive(ns = /r1/): <updateRate> = 50
+[DEBUG] [1783845823.264763421, 0.562000000]: DiffDrive(ns = /r1/): <odometrySource> = world := 1
+[DEBUG] [1783845823.264767607, 0.562000000]: DiffDrive(ns = /r1/): <leftJoint> = left_hub_joint
+[DEBUG] [1783845823.264771967, 0.562000000]: DiffDrive(ns = /r1/): <rightJoint> = right_hub_joint
+[INFO] [1783845823.265000130, 0.562000000]: DiffDrive(ns = /r1/): Advertise joint_states
+[INFO] [1783845823.265021505, 0.562000000]: DiffDrive(ns = /r1/): Try to subscribe to cmd_vel
+[INFO] [1783845823.265983462, 0.562000000]: DiffDrive(ns = /r1/): Subscribe to cmd_vel
+[INFO] [1783845823.266163790, 0.562000000]: DiffDrive(ns = /r1/): Advertise odom on odom 
+[INFO] [1783845823.266276148, 0.562000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint
+[INFO] [1783845823.266285835, 0.562000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint
+[INFO] [1783845823.266294010, 0.562000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint
+[INFO] [1783845823.266301857, 0.562000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint
+[INFO] [1783845823.266309470, 0.562000000]: Starting GazeboRosJointStatePublisher Plugin (ns = /r1/)!, parent name: r1
+[INFO] [1783845823.546016851, 0.736000000]: Laser Plugin: The 'robotNamespace' param was empty
+[INFO] [1783845823.546040033, 0.736000000]: Starting Laser Plugin (ns = r3)
+[INFO] [1783845823.546637545, 0.736000000]: Laser Plugin (ns = r3)  <tf_prefix_>, set to ""
+[INFO] [1783845824.153506048, 0.736000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping
+[INFO] [1783845824.154078161, 0.736000000]: Velodyne laser plugin ready, 16 lasers
+[INFO] [1783845824.155582077, 0.736000000]: Starting plugin DiffDrive(ns = /r3/)
+[DEBUG] [1783845824.155590686, 0.736000000]: DiffDrive(ns = /r3/): <rosDebugLevel> = Debug
+[INFO] [1783845824.155600516, 0.736000000]: DiffDrive(ns = /r3/): <rosDebugLevel> = Debug
+[INFO] [1783845824.156092232, 0.736000000]: DiffDrive(ns = /r3/): <tf_prefix> = 
+[DEBUG] [1783845824.156103187, 0.736000000]: DiffDrive(ns = /r3/): <commandTopic> = cmd_vel
+[DEBUG] [1783845824.156113166, 0.736000000]: DiffDrive(ns = /r3/): <odometryTopic> = odom
+[DEBUG] [1783845824.156117332, 0.736000000]: DiffDrive(ns = /r3/): <odometryFrame> = odom
+[DEBUG] [1783845824.156121148, 0.736000000[WARN] [1783845824.156197014, 0.736000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1
+[INFO] [1783845821.020403, 0.000000]: Loading model XML from ros parameter robot_description_r3
+[INFO] [1783845821.023477, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1783845821.625955, 0.372000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1783845824.155444, 0.736000]: Spawn status: SpawnModel: Successfully spawned entity
+test_velodyne_td3_multi.py:44: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  torch.load("%s/%s_actor.pth" % (directory, filename), map_location=device)
+==============================================
+Test version: multi-agent-eval-v1-headless
+Test process PID: 1413496
+Launchfile: multi_robot_scenario_curriculum_test_stage3_asym_three_5_5.launch
+Model file: TD3_velodyne_multi_v4_curriculum_stage3_asym_pair_5_from_5a_cleanstart_v2_best
+Scenario mode: curriculum
+Seed: 0
+Device: cuda
+GPU: NVIDIA GeForce RTX 4090
+Agent names: r1, r2, r3, r4, r5
+TensorBoard log dir: runs/test_TD3_velodyne_multi_v4_curriculum_stage3_asym_pair_5_from_5a_cleanstart_v2_best_Jul12_16-43-44_JiuTian-AI4090
+State path: ./checkpoints/TD3_velodyne_multi_v4_curriculum_stage3_asym_pair_5_from_5a_cleanstart_v2_best_stage3_asym_three_5_test_state.pt
+Resume mode: True
+Starting episode: 0
+Starting env steps: 0
+Starting agent samples: 0
+Target test episodes: 120
+Case-level stats enabled
+==============================================
+]: DiffDrive(ns = /r3/): <robotBaseFrame> = base_link
+[DEBUG] [1783845824.156138899, 0.736000000]: DiffDrive(ns = /r3/): <publishWheelTF> = false
+[DEBUG] [1783845824.156142603, 0.736000000]: DiffDrive(ns = /r3/): <publishOdomTF> = false
+[DEBUG] [1783845824.156146109, 0.736000000]: DiffDrive(ns = /r3/): <publishWheelJointState> = true
+[DEBUG] [1783845824.156156699, 0.736000000]: DiffDrive(ns = /r3/): <wheelSeparation> = 0.29999999999999999
+[DEBUG] [1783845824.156163612, 0.736000000]: DiffDrive(ns = /r3/): <wheelDiameter> = 0.17999999999999999
+[DEBUG] [1783845824.156168748, 0.736000000]: DiffDrive(ns = /r3/): <wheelAcceleration> = 1.8
+[DEBUG] [1783845824.156173340, 0.736000000]: DiffDrive(ns = /r3/): <wheelTorque> = 20
+[DEBUG] [1783845824.156177712, 0.736000000]: DiffDrive(ns = /r3/): <updateRate> = 50
+[DEBUG] [1783845824.156183126, 0.736000000]: DiffDrive(ns = /r3/): <odometrySource> = world := 1
+[DEBUG] [1783845824.156187017, 0.736000000]: DiffDrive(ns = /r3/): <leftJoint> = left_hub_joint
+[DEBUG] [1783845824.156191101, 0.736000000]: DiffDrive(ns = /r3/): <rightJoint> = right_hub_joint
+[INFO] [1783845824.156735205, 0.736000000]: DiffDrive(ns = /r3/): Advertise joint_states
+[INFO] [1783845824.156757293, 0.736000000]: DiffDrive(ns = /r3/): Try to subscribe to cmd_vel
+[INFO] [1783845824.157845810, 0.736000000]: DiffDrive(ns = /r3/): Subscribe to cmd_vel
+[INFO] [1783845824.157964936, 0.736000000]: DiffDrive(ns = /r3/): Advertise odom on odom 
+[INFO] [1783845824.158024311, 0.736000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint
+[INFO] [1783845824.158028625, 0.736000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint
+[INFO] [1783845824.158033228, 0.736000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint
+[INFO] [1783845824.158036696, 0.736000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint
+[INFO] [1783845824.158040185, 0.736000000]: Starting GazeboRosJointStatePublisher Plugin (ns = /r3/)!, parent name: r3
+[INFO] [1783845824.450473250, 0.874000000]: Laser Plugin: The 'robotNamespace' param was empty
+[INFO] [1783845824.450489914, 0.874000000]: Starting Laser Plugin (ns = r5)
+[INFO] [1783845824.451029607, 0.874000000]: Laser Plugin (ns = r5)  <tf_prefix_>, set to ""
+[INFO] [1783845825.069320270, 0.874000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping
+[INFO] [1783845825.069850873, 0.874000000]: Velodyne laser plugin ready, 16 lasers
+[INFO] [1783845825.070742023, 0.874000000]: Starting plugin DiffDrive(ns = /r5/)
+[DEBUG] [1783845825.070754500, 0.874000000]: DiffDrive(ns = /r5/): <rosDebugLevel> = Debug
+[INFO] [1783845825.070764283, 0.874000000]: DiffDrive(ns = /r5/): <rosDebugLevel> = Debug
+[INFO] [1783845825.071103793, 0.874000000]: DiffDrive(ns = /r5/): <tf_prefix> = 
+[DEBUG] [1783845825.071115318, 0.874000000]: DiffDrive(ns = /r5/): <commandTopic> = cmd_vel
+[DEBUG] [1783845825.071119602, 0.874000000]: DiffDrive(ns = /r5/): <odometryTopic> = odom
+[DEBUG] [1783845825.071123992, 0.874000000]: DiffDrive(ns = /r5/): <odometryFrame> = odom
+[DEBUG] [1783845825.071128839, 0.874000000]: DiffDrive(ns = /r5/): <robotBaseFrame> = base_link
+[DEBUG] [1783845825.071133550, 0.874000000]: DiffDrive(ns = /r5/): <publishWheelTF> = false
+[DEBUG] [1783845825.071137977, 0.874000000]: DiffDrive(ns = /r5/): <publishOdomTF> = false
+[DEBUG] [1783845825.071142453, 0.874000000]: DiffDrive(ns = /r5/): <publishWheelJointState> = true
+[DEBUG] [1783845825.071150644, 0.874000000]: DiffDrive(ns = /r5/): <wheelSeparation> = 0.29999999999999999
+[DEBUG] [1783845825.071155773, 0.874000000]: DiffDrive(ns = /r5/): <wheelDiameter> = 0.17999999999999999
+[DEBUG] [1783845825.071162195, 0.874000000]: DiffDrive(ns = /r5/): <wheelAcceleration> = 1.8
+[DEBUG] [1783845825.071167219, 0.874000000]: DiffDrive(ns = /r5/): <wheelTorque> = 20
+[DEBUG] [1783845825.071172765, 0.874000000]: DiffDrive(ns = /r5/): <updateRate> = 50
+[DEBUG] [1783845825.071180058, 0.874000000]: DiffDrive(ns = /r5/): <odometrySource> = world := 1
+[DEBUG] [1783845[WARN] [1783845825.071208290, 0.874000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1
+[INFO] [1783845821.021640, 0.000000]: Loading model XML from ros parameter robot_description_r5
+[INFO] [1783845821.024205, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1783845821.626693, 0.372000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1783845825.070587, 0.874000]: Spawn status: SpawnModel: Successfully spawned entity
+[WARN] [1783845825.984078402, 1.022000000]: GazeboRosDiffDrive Plugin (ns = ) missing <publishTf>, defaults to 1
+[INFO] [1783845821.021386, 0.000000]: Loading model XML from ros parameter robot_description_r4
+[INFO] [1783845821.025305, 0.000000]: Waiting for service /gazebo/spawn_urdf_model
+[INFO] [1783845821.628230, 0.372000]: Calling service /gazebo/spawn_urdf_model
+[INFO] [1783845825.983421, 1.022000]: Spawn status: SpawnModel: Successfully spawned entity
+825.071184600, 0.874000000]: DiffDrive(ns = /r5/): <leftJoint> = left_hub_joint
+[DEBUG] [1783845825.071201280, 0.874000000]: DiffDrive(ns = /r5/): <rightJoint> = right_hub_joint
+[INFO] [1783845825.071412516, 0.874000000]: DiffDrive(ns = /r5/): Advertise joint_states
+[INFO] [1783845825.071427611, 0.874000000]: DiffDrive(ns = /r5/): Try to subscribe to cmd_vel
+[INFO] [1783845825.072707612, 0.874000000]: DiffDrive(ns = /r5/): Subscribe to cmd_vel
+[INFO] [1783845825.072959142, 0.874000000]: DiffDrive(ns = /r5/): Advertise odom on odom 
+[INFO] [1783845825.073022129, 0.874000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint
+[INFO] [1783845825.073027470, 0.874000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint
+[INFO] [1783845825.073032699, 0.874000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint
+[INFO] [1783845825.073037098, 0.874000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint
+[INFO] [1783845825.073040244, 0.874000000]: Starting GazeboRosJointStatePublisher Plugin (ns = /r5/)!, parent name: r5
+[INFO] [1783845825.364147564, 1.022000000]: Laser Plugin: The 'robotNamespace' param was empty
+[INFO] [1783845825.364172707, 1.022000000]: Starting Laser Plugin (ns = r4)
+[INFO] [1783845825.364766282, 1.022000000]: Laser Plugin (ns = r4)  <tf_prefix_>, set to ""
+[INFO] [1783845825.981381389, 1.022000000]: Velodyne laser plugin missing <min_intensity>, defaults to no clipping
+[INFO] [1783845825.982058470, 1.022000000]: Velodyne laser plugin ready, 16 lasers
+[INFO] [1783845825.983526657, 1.022000000]: Starting plugin DiffDrive(ns = /r4/)
+[DEBUG] [1783845825.983537471, 1.022000000]: DiffDrive(ns = /r4/): <rosDebugLevel> = Debug
+[INFO] [1783845825.983546850, 1.022000000]: DiffDrive(ns = /r4/): <rosDebugLevel> = Debug
+[INFO] [1783845825.983983399, 1.022000000]: DiffDrive(ns = /r4/): <tf_prefix> = 
+[DEBUG] [1783845825.983994445, 1.022000000]: DiffDrive(ns = /r4/): <commandTopic> = cmd_vel
+[DEBUG] [1783845825.984000113, 1.022000000]: DiffDrive(ns = /r4/): <odometryTopic> = odom
+[DEBUG] [1783845825.984004101, 1.022000000]: DiffDrive(ns = /r4/): <odometryFrame> = odom
+[DEBUG] [1783845825.984009351, 1.022000000]: DiffDrive(ns = /r4/): <robotBaseFrame> = base_link
+[DEBUG] [1783845825.984015193, 1.022000000]: DiffDrive(ns = /r4/): <publishWheelTF> = false
+[DEBUG] [1783845825.984018803, 1.022000000]: DiffDrive(ns = /r4/): <publishOdomTF> = false
+[DEBUG] [1783845825.984024082, 1.022000000]: DiffDrive(ns = /r4/): <publishWheelJointState> = true
+[DEBUG] [1783845825.984032853, 1.022000000]: DiffDrive(ns = /r4/): <wheelSeparation> = 0.29999999999999999
+[DEBUG] [1783845825.984038021, 1.022000000]: DiffDrive(ns = /r4/): <wheelDiameter> = 0.17999999999999999
+[DEBUG] [1783845825.984042625, 1.022000000]: DiffDrive(ns = /r4/): <wheelAcceleration> = 1.8
+[DEBUG] [1783845825.984048809, 1.022000000]: DiffDrive(ns = /r4/): <wheelTorque> = 20
+[DEBUG] [1783845825.984054527, 1.022000000]: DiffDrive(ns = /r4/): <updateRate> = 50
+[DEBUG] [1783845825.984061678, 1.022000000]: DiffDrive(ns = /r4/): <odometrySource> = world := 1
+[DEBUG] [1783845825.984066514, 1.022000000]: DiffDrive(ns = /r4/): <leftJoint> = left_hub_joint
+[DEBUG] [1783845825.984071085, 1.022000000]: DiffDrive(ns = /r4/): <rightJoint> = right_hub_joint
+[INFO] [1783845825.984232439, 1.022000000]: DiffDrive(ns = /r4/): Advertise joint_states
+[INFO] [1783845825.984244587, 1.022000000]: DiffDrive(ns = /r4/): Try to subscribe to cmd_vel
+[INFO] [1783845825.985348390, 1.022000000]: DiffDrive(ns = /r4/): Subscribe to cmd_vel
+[INFO] [1783845825.986125398, 1.022000000]: DiffDrive(ns = /r4/): Advertise odom on odom 
+[INFO] [1783845825.986186676, 1.022000000]: GazeboRosJointStatePublisher is going to publish joint: chassis_swivel_joint
+[INFO] [1783845825.986190355, 1.022000000]: GazeboRosJointStatePublisher is going to publish joint: swivel_wheel_joint
+[INFO] [1783845825.986193498, 1.022000000]: GazeboRosJointStatePublisher is going to publish joint: left_hub_joint
+[INFO] [1783845825.986196550, 1.Episode 1 complete | case=three_cross_main_pair_with_late_third | env_steps=14 | agent_samples=56 | episode_env_steps=14 | episode_agent_samples=56 | mean_reward=40.655 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.926 | samples/sec=18.067
+Episode 2 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=48 | agent_samples=131 | episode_env_steps=34 | episode_agent_samples=75 | mean_reward=117.294 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.265 | samples/sec=10.221
+Episode 3 complete | case=three_wall_pair_with_far_third | env_steps=141 | agent_samples=281 | episode_env_steps=93 | episode_agent_samples=150 | mean_reward=132.043 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.239 | samples/sec=7.475
+Episode 4 complete | case=three_cross_main_pair_with_late_third | env_steps=180 | agent_samples=366 | episode_env_steps=39 | episode_agent_samples=85 | mean_reward=40.524 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.853 | samples/sec=10.144
+Episode 5 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=193 | agent_samples=415 | episode_env_steps=13 | episode_agent_samples=49 | mean_reward=118.609 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.280 | samples/sec=17.633
+Episode 6 complete | case=three_wall_pair_with_far_third | env_steps=289 | agent_samples=568 | episode_env_steps=96 | episode_agent_samples=153 | mean_reward=133.072 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.234 | samples/sec=7.453
+Episode 7 complete | case=three_cross_main_pair_with_late_third | env_steps=334 | agent_samples=672 | episode_env_steps=45 | episode_agent_samples=104 | mean_reward=89.117 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.470 | samples/sec=10.680
+Episode 8 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=346 | agent_samples=722 | episode_env_steps=12 | episode_agent_samples=50 | mean_reward=118.420 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.255 | samples/sec=19.445
+Episode 9 complete | case=three_wall_pair_with_far_third | env_steps=452 | agent_samples=886 | episode_env_steps=106 | episode_agent_samples=164 | mean_reward=131.759 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.253 | samples/sec=7.212
+Episode 10 complete | case=three_cross_main_pair_with_late_third | env_steps=475 | agent_samples=966 | episode_env_steps=23 | episode_agent_samples=80 | mean_reward=41.413 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.886 | samples/sec=16.189
+Recent 10 episodes | avg_reward=96.291 | success_rate=0.860 | collision_rate=0.140 | unresolved_rate=0.000 | full_success_rate=0.600 | timeout_episode_rate=0.000 | total_success=43 | total_collision=7 | total_unresolved=0 | total_full_success=6 | timeout_episodes=0 | success_hist=[0, 0, 0, 3, 1, 6] | collision_hist=[6, 1, 3, 0, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=4 | success_rate=0.650 | collision_rate=0.350 | unresolved_rate=0.000 | full_success_rate=0.000 | timeout_rate=0.000 | avg_env_steps=30.2 | avg_final_distance=0.784
+  three_goal_merge_main_pair_with_outer_third | episodes=3 | success_rate=1.000 | collision_rate=0.000 | unresolved_rate=0.000 | full_success_rate=1.000 | timeout_rate=0.000 | avg_env_steps=19.7 | avg_final_distance=0.267
+  three_wall_pair_with_far_third | episodes=3 | success_rate=1.000 | collision_rate=0.000 | unresolved_rate=0.000 | full_success_rate=1.000 | timeout_rate=0.000 | avg_env_steps=98.3 | avg_final_distance=0.242
+Episode 11 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=491 | agent_samples=1024 | episode_env_steps=16 | episode_agent_samples=58 | mean_reward=78.694 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.293 | samples/sec=16.969
+Episode 12 complete | case=three_wall_pair_with_far_third | env_steps=647 | agent_samples=1260 | episode_env_steps=156 | episode_agent_samples=236 | mean_reward=71.706 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.861 | samples/sec=7.068
+Episode 13 complete | case=three_cross_main_pair_with_late_third | env_steps=669 | agent_samples=1334 | episode_env_steps=22 | episode_agent_samples=74 | mean_reward=0.083 | success=2/5 | collision=3/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.912 | samples/sec=15.738
+Episode 14 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=682 | agent_samples=1384 | episode_env_steps=13 | episode_agent_samples=50 | mean_reward=118.528 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.253 | samples/sec=17.646
+Episode 15 complete | case=three_wall_pair_with_far_third | env_steps=776 | agent_samples=1536 | episode_env_steps=94 | episode_agent_samples=152 | mean_reward=132.021 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.232 | samples/sec=7.504
+Episode 16 complete | case=three_cross_main_pair_with_late_third | env_steps=874 | agent_samples=1694 | episode_env_steps=98 | episode_agent_samples=158 | mean_reward=131.848 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.264 | samples/sec=7.527
+Episode 17 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=887 | agent_samples=1743 | episode_env_steps=13 | episode_agent_samples=49 | mean_reward=119.000 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.221 | samples/sec=17.353
+Episode 18 complete | case=three_wall_pair_with_far_third | env_steps=947 | agent_samples=1858 | episode_env_steps=60 | episode_agent_samples=115 | mean_reward=80.472 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.785 | samples/sec=8.926
+Episode 19 complete | case=three_cross_main_pair_with_late_third | env_steps=1003 | agent_samples=1960 | episode_env_steps=56 | episode_agent_samples=102 | mean_reward=88.160 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.539 | samples/sec=8.494
+Episode 20 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=1016 | agent_samples=2011 | episode_env_steps=13 | episode_agent_samples=51 | mean_reward=118.543 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.273 | samples/sec=18.244
+Recent 10 episodes | avg_reward=93.905 | success_rate=0.860 | collision_rate=0.140 | unresolved_rate=0.000 | full_success_rate=0.500 | timeout_episode_rate=0.000 | total_success=86 | total_collision=14 | total_unresolved=0 | total_full_success=11 | timeout_episodes=0 | success_hist=[0, 0, 1, 3, 5, 11] | collision_hist=[11, 5, 3, 1, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=7 | success_rate=0.686 | collision_rate=0.314 | unresolved_rate=0.000 | full_success_rate=0.143 | timeout_rate=0.000 | avg_env_steps=42.4 | avg_final_distance=0.693
+  three_goal_merge_main_pair_with_outer_third | episodes=7 | success_rate=0.971 | collision_rate=0.029 | unresolved_rate=0.000 | full_success_rate=0.857 | timeout_rate=0.000 | avg_env_steps=16.3 | avg_final_distance=0.263
+  three_wall_pair_with_far_third | episodes=6 | success_rate=0.933 | collision_rate=0.067 | unresolved_rate=0.000 | full_success_rate=0.667 | timeout_rate=0.000 | avg_env_steps=100.8 | avg_final_distance=0.434
+Episode 21 complete | case=three_wall_pair_with_far_third | env_steps=1078 | agent_samples=2131 | episode_env_steps=62 | episode_agent_samples=120 | mean_reward=79.549 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.815 | samples/sec=9.003
+Episode 22 complete | case=three_cross_main_pair_with_late_third | env_steps=1123 | agent_samples=2245 | episode_env_steps=45 | episode_agent_samples=114 | mean_reward=134.857 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.261 | samples/sec=11.880
+Episode 23 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=1134 | agent_samples=2293 | episode_env_steps=11 | episode_agent_samples=48 | mean_reward=118.545 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.242 | samples/sec=20.253
+Episode 24 complete | case=three_wall_pair_with_far_third | env_steps=1177 | agent_samples=2388 | episode_env_steps=43 | episode_agent_samples=95 | mean_reward=78.243 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.863 | samples/sec=10.251
+Episode 25 complete | case=three_cross_main_pair_with_late_third | env_steps=1222 | agent_samples=2489 | episode_env_steps=45 | episode_agent_samples=101 | mean_reward=134.503 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.244 | samples/sec=10.411
+Episode 26 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=1273 | agent_samples=2582 | episode_env_steps=51 | episode_agent_samples=93 | mean_reward=118.646 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.266 | samples/sec=8.489
+Episode 27 complete | case=three_wall_pair_with_far_third | env_steps=1360 | agent_samples=2725 | episode_env_steps=87 | episode_agent_samples=143 | mean_reward=133.370 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.241 | samples/sec=7.665
+Episode 28 complete | case=three_cross_main_pair_with_late_third | env_steps=1409 | agent_samples=2846 | episode_env_steps=49 | episode_agent_samples=121 | mean_reward=87.802 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.521 | samples/sec=11.520
+Episode 29 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=1452 | agent_samples=2937 | episode_env_steps=43 | episode_agent_samples=91 | mean_reward=117.775 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.257 | samples/sec=9.848
+Episode 30 complete | case=three_wall_pair_with_far_third | env_steps=1539 | agent_samples=3079 | episode_env_steps=87 | episode_agent_samples=142 | mean_reward=133.357 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.235 | samples/sec=7.603
+Recent 10 episodes | avg_reward=113.665 | success_rate=0.940 | collision_rate=0.060 | unresolved_rate=0.000 | full_success_rate=0.700 | timeout_episode_rate=0.000 | total_success=133 | total_collision=17 | total_unresolved=0 | total_full_success=18 | timeout_episodes=0 | success_hist=[0, 0, 1, 3, 8, 18] | collision_hist=[18, 8, 3, 1, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=10 | success_rate=0.760 | collision_rate=0.240 | unresolved_rate=0.000 | full_success_rate=0.300 | timeout_rate=0.000 | avg_env_steps=43.6 | avg_final_distance=0.588
+  three_goal_merge_main_pair_with_outer_third | episodes=10 | success_rate=0.980 | collision_rate=0.020 | unresolved_rate=0.000 | full_success_rate=0.900 | timeout_rate=0.000 | avg_env_steps=21.9 | avg_final_distance=0.260
+  three_wall_pair_with_far_third | episodes=10 | success_rate=0.920 | collision_rate=0.080 | unresolved_rate=0.000 | full_success_rate=0.600 | timeout_rate=0.000 | avg_env_steps=88.4 | avg_final_distance=0.476
+Episode 31 complete | case=three_cross_main_pair_with_late_third | env_steps=1582 | agent_samples=3210 | episode_env_steps=43 | episode_agent_samples=131 | mean_reward=133.513 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.257 | samples/sec=14.093
+Episode 32 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=1609 | agent_samples=3277 | episode_env_steps=27 | episode_agent_samples=67 | mean_reward=119.096 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.244 | samples/sec=11.510
+Episode 33 complete | case=three_wall_pair_with_far_third | env_steps=1645 | agent_samples=3367 | episode_env_steps=36 | episode_agent_samples=90 | mean_reward=77.521 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.901 | samples/sec=11.683
+Episode 34 complete | case=three_cross_main_pair_with_late_third | env_steps=1691 | agent_samples=3452 | episode_env_steps=46 | episode_agent_samples=85 | mean_reward=86.710 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.632 | samples/sec=8.632
+Episode 35 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=1703 | agent_samples=3502 | episode_env_steps=12 | episode_agent_samples=50 | mean_reward=118.808 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.252 | samples/sec=19.340
+Episode 36 complete | case=three_wall_pair_with_far_third | env_steps=1794 | agent_samples=3646 | episode_env_steps=91 | episode_agent_samples=144 | mean_reward=131.973 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.278 | samples/sec=7.367
+Episode 37 complete | case=three_cross_main_pair_with_late_third | env_steps=1881 | agent_samples=3794 | episode_env_steps=87 | episode_agent_samples=148 | mean_reward=47.750 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.569 | samples/sec=7.876
+Episode 38 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=1906 | agent_samples=3873 | episode_env_steps=25 | episode_agent_samples=79 | mean_reward=118.387 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.237 | samples/sec=14.772
+Episode 39 complete | case=three_wall_pair_with_far_third | env_steps=1995 | agent_samples=4017 | episode_env_steps=89 | episode_agent_samples=144 | mean_reward=133.429 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.237 | samples/sec=7.530
+Episode 40 complete | case=three_cross_main_pair_with_late_third | env_steps=2029 | agent_samples=4110 | episode_env_steps=34 | episode_agent_samples=93 | mean_reward=86.676 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.598 | samples/sec=12.773
+Recent 10 episodes | avg_reward=105.386 | success_rate=0.900 | collision_rate=0.100 | unresolved_rate=0.000 | full_success_rate=0.600 | timeout_episode_rate=0.000 | total_success=178 | total_collision=22 | total_unresolved=0 | total_full_success=24 | timeout_episodes=0 | success_hist=[0, 0, 1, 4, 11, 24] | collision_hist=[24, 11, 4, 1, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=14 | success_rate=0.771 | collision_rate=0.229 | unresolved_rate=0.000 | full_success_rate=0.286 | timeout_rate=0.000 | avg_env_steps=46.1 | avg_final_distance=0.567
+  three_goal_merge_main_pair_with_outer_third | episodes=13 | success_rate=0.985 | collision_rate=0.015 | unresolved_rate=0.000 | full_success_rate=0.923 | timeout_rate=0.000 | avg_env_steps=21.8 | avg_final_distance=0.257
+  three_wall_pair_with_far_third | episodes=13 | success_rate=0.923 | collision_rate=0.077 | unresolved_rate=0.000 | full_success_rate=0.615 | timeout_rate=0.000 | avg_env_steps=84.6 | avg_final_distance=0.475
+Episode 41 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=2040 | agent_samples=4158 | episode_env_steps=11 | episode_agent_samples=48 | mean_reward=118.945 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.239 | samples/sec=20.324
+Episode 42 complete | case=three_wall_pair_with_far_third | env_steps=2153 | agent_samples=4323 | episode_env_steps=113 | episode_agent_samples=165 | mean_reward=132.005 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.255 | samples/sec=6.816
+Episode 43 complete | case=three_cross_main_pair_with_late_third | env_steps=2166 | agent_samples=4380 | episode_env_steps=13 | episode_agent_samples=57 | mean_reward=41.064 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.918 | samples/sec=20.211
+Episode 44 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=2178 | agent_samples=4428 | episode_env_steps=12 | episode_agent_samples=48 | mean_reward=118.505 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.251 | samples/sec=18.791
+Episode 45 complete | case=three_wall_pair_with_far_third | env_steps=2204 | agent_samples=4487 | episode_env_steps=26 | episode_agent_samples=59 | mean_reward=38.514 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.829 | samples/sec=10.602
+Episode 46 complete | case=three_cross_main_pair_with_late_third | env_steps=2238 | agent_samples=4572 | episode_env_steps=34 | episode_agent_samples=85 | mean_reward=87.284 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.592 | samples/sec=11.652
+Episode 47 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=2266 | agent_samples=4639 | episode_env_steps=28 | episode_agent_samples=67 | mean_reward=117.632 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.251 | samples/sec=11.166
+Episode 48 complete | case=three_wall_pair_with_far_third | env_steps=2329 | agent_samples=4757 | episode_env_steps=63 | episode_agent_samples=118 | mean_reward=81.003 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.784 | samples/sec=8.705
+Episode 49 complete | case=three_cross_main_pair_with_late_third | env_steps=2358 | agent_samples=4835 | episode_env_steps=29 | episode_agent_samples=78 | mean_reward=84.355 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.773 | samples/sec=12.449
+Episode 50 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=2371 | agent_samples=4888 | episode_env_steps=13 | episode_agent_samples=53 | mean_reward=119.076 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.266 | samples/sec=18.945
+Recent 10 episodes | avg_reward=93.838 | success_rate=0.860 | collision_rate=0.140 | unresolved_rate=0.000 | full_success_rate=0.500 | timeout_episode_rate=0.000 | total_success=221 | total_collision=29 | total_unresolved=0 | total_full_success=29 | timeout_episodes=0 | success_hist=[0, 0, 1, 6, 14, 29] | collision_hist=[29, 14, 6, 1, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=17 | success_rate=0.765 | collision_rate=0.235 | unresolved_rate=0.000 | full_success_rate=0.235 | timeout_rate=0.000 | avg_env_steps=42.5 | avg_final_distance=0.601
+  three_goal_merge_main_pair_with_outer_third | episodes=17 | success_rate=0.988 | collision_rate=0.012 | unresolved_rate=0.000 | full_success_rate=0.941 | timeout_rate=0.000 | avg_env_steps=20.4 | avg_final_distance=0.256
+  three_wall_pair_with_far_third | episodes=16 | success_rate=0.900 | collision_rate=0.100 | unresolved_rate=0.000 | full_success_rate=0.562 | timeout_rate=0.000 | avg_env_steps=81.4 | avg_final_distance=0.503
+Episode 51 complete | case=three_wall_pair_with_far_third | env_steps=2389 | agent_samples=4942 | episode_env_steps=18 | episode_agent_samples=54 | mean_reward=37.187 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.889 | samples/sec=14.089
+Episode 52 complete | case=three_cross_main_pair_with_late_third | env_steps=2418 | agent_samples=5011 | episode_env_steps=29 | episode_agent_samples=69 | mean_reward=86.901 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.627 | samples/sec=11.034
+Episode 53 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=2430 | agent_samples=5060 | episode_env_steps=12 | episode_agent_samples=49 | mean_reward=118.847 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.248 | samples/sec=18.765
+Episode 54 complete | case=three_wall_pair_with_far_third | env_steps=2520 | agent_samples=5204 | episode_env_steps=90 | episode_agent_samples=144 | mean_reward=131.625 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.249 | samples/sec=7.466
+Episode 55 complete | case=three_cross_main_pair_with_late_third | env_steps=2559 | agent_samples=5298 | episode_env_steps=39 | episode_agent_samples=94 | mean_reward=40.725 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.875 | samples/sec=11.204
+Episode 56 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=2605 | agent_samples=5385 | episode_env_steps=46 | episode_agent_samples=87 | mean_reward=118.666 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.251 | samples/sec=8.757
+Episode 57 complete | case=three_wall_pair_with_far_third | env_steps=2651 | agent_samples=5497 | episode_env_steps=46 | episode_agent_samples=112 | mean_reward=77.133 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.961 | samples/sec=11.297
+Episode 58 complete | case=three_cross_main_pair_with_late_third | env_steps=2662 | agent_samples=5546 | episode_env_steps=11 | episode_agent_samples=49 | mean_reward=36.079 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=1.130 | samples/sec=20.794
+Episode 59 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=2675 | agent_samples=5594 | episode_env_steps=13 | episode_agent_samples=48 | mean_reward=118.512 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.240 | samples/sec=17.386
+Episode 60 complete | case=three_wall_pair_with_far_third | env_steps=2713 | agent_samples=5664 | episode_env_steps=38 | episode_agent_samples=70 | mean_reward=82.418 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.662 | samples/sec=8.613
+Recent 10 episodes | avg_reward=84.809 | success_rate=0.820 | collision_rate=0.180 | unresolved_rate=0.000 | full_success_rate=0.400 | timeout_episode_rate=0.000 | total_success=262 | total_collision=38 | total_unresolved=0 | total_full_success=33 | timeout_episodes=0 | success_hist=[0, 0, 1, 9, 17, 33] | collision_hist=[33, 17, 9, 1, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=20 | success_rate=0.750 | collision_rate=0.250 | unresolved_rate=0.000 | full_success_rate=0.200 | timeout_rate=0.000 | avg_env_steps=40.0 | avg_final_distance=0.642
+  three_goal_merge_main_pair_with_outer_third | episodes=20 | success_rate=0.990 | collision_rate=0.010 | unresolved_rate=0.000 | full_success_rate=0.950 | timeout_rate=0.000 | avg_env_steps=20.9 | avg_final_distance=0.254
+  three_wall_pair_with_far_third | episodes=20 | success_rate=0.880 | collision_rate=0.120 | unresolved_rate=0.000 | full_success_rate=0.500 | timeout_rate=0.000 | avg_env_steps=74.7 | avg_final_distance=0.540
+Episode 61 complete | case=three_cross_main_pair_with_late_third | env_steps=2749 | agent_samples=5756 | episode_env_steps=36 | episode_agent_samples=92 | mean_reward=134.715 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.254 | samples/sec=11.954
+Episode 62 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=2790 | agent_samples=5837 | episode_env_steps=41 | episode_agent_samples=81 | mean_reward=118.916 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.241 | samples/sec=9.227
+Episode 63 complete | case=three_wall_pair_with_far_third | env_steps=2845 | agent_samples=5968 | episode_env_steps=55 | episode_agent_samples=131 | mean_reward=80.026 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.789 | samples/sec=11.047
+Episode 64 complete | case=three_cross_main_pair_with_late_third | env_steps=2885 | agent_samples=6084 | episode_env_steps=40 | episode_agent_samples=116 | mean_reward=134.284 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.247 | samples/sec=13.609
+Episode 65 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=2898 | agent_samples=6133 | episode_env_steps=13 | episode_agent_samples=49 | mean_reward=119.030 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.252 | samples/sec=17.556
+Episode 66 complete | case=three_wall_pair_with_far_third | env_steps=2991 | agent_samples=6295 | episode_env_steps=93 | episode_agent_samples=162 | mean_reward=132.300 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.263 | samples/sec=8.106
+Episode 67 complete | case=three_cross_main_pair_with_late_third | env_steps=3027 | agent_samples=6401 | episode_env_steps=36 | episode_agent_samples=106 | mean_reward=133.689 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.252 | samples/sec=13.663
+Episode 68 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=3039 | agent_samples=6449 | episode_env_steps=12 | episode_agent_samples=48 | mean_reward=118.476 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.250 | samples/sec=18.564
+Episode 69 complete | case=three_wall_pair_with_far_third | env_steps=3127 | agent_samples=6596 | episode_env_steps=88 | episode_agent_samples=147 | mean_reward=131.212 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.272 | samples/sec=7.746
+Episode 70 complete | case=three_cross_main_pair_with_late_third | env_steps=3173 | agent_samples=6702 | episode_env_steps=46 | episode_agent_samples=106 | mean_reward=134.673 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.249 | samples/sec=10.684
+Recent 10 episodes | avg_reward=123.732 | success_rate=0.980 | collision_rate=0.020 | unresolved_rate=0.000 | full_success_rate=0.900 | timeout_episode_rate=0.000 | total_success=311 | total_collision=39 | total_unresolved=0 | total_full_success=42 | timeout_episodes=0 | success_hist=[0, 0, 1, 9, 18, 42] | collision_hist=[42, 18, 9, 1, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=24 | success_rate=0.792 | collision_rate=0.208 | unresolved_rate=0.000 | full_success_rate=0.333 | timeout_rate=0.000 | avg_env_steps=40.0 | avg_final_distance=0.577
+  three_goal_merge_main_pair_with_outer_third | episodes=23 | success_rate=0.991 | collision_rate=0.009 | unresolved_rate=0.000 | full_success_rate=0.957 | timeout_rate=0.000 | avg_env_steps=21.0 | avg_final_distance=0.253
+  three_wall_pair_with_far_third | episodes=23 | success_rate=0.887 | collision_rate=0.113 | unresolved_rate=0.000 | full_success_rate=0.522 | timeout_rate=0.000 | avg_env_steps=75.2 | avg_final_distance=0.527
+Episode 71 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=3186 | agent_samples=6750 | episode_env_steps=13 | episode_agent_samples=48 | mean_reward=118.889 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.239 | samples/sec=17.061
+Episode 72 complete | case=three_wall_pair_with_far_third | env_steps=3277 | agent_samples=6898 | episode_env_steps=91 | episode_agent_samples=148 | mean_reward=132.302 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.250 | samples/sec=7.546
+Episode 73 complete | case=three_cross_main_pair_with_late_third | env_steps=3318 | agent_samples=6984 | episode_env_steps=41 | episode_agent_samples=86 | mean_reward=87.696 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.565 | samples/sec=9.846
+Episode 74 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=3331 | agent_samples=7033 | episode_env_steps=13 | episode_agent_samples=49 | mean_reward=118.849 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.241 | samples/sec=17.779
+Episode 75 complete | case=three_wall_pair_with_far_third | env_steps=3423 | agent_samples=7186 | episode_env_steps=92 | episode_agent_samples=153 | mean_reward=133.464 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.240 | samples/sec=7.758
+Episode 76 complete | case=three_cross_main_pair_with_late_third | env_steps=3486 | agent_samples=7373 | episode_env_steps=63 | episode_agent_samples=187 | mean_reward=131.958 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.248 | samples/sec=13.829
+Episode 77 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=3499 | agent_samples=7422 | episode_env_steps=13 | episode_agent_samples=49 | mean_reward=118.784 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.227 | samples/sec=17.624
+Episode 78 complete | case=three_wall_pair_with_far_third | env_steps=3520 | agent_samples=7495 | episode_env_steps=21 | episode_agent_samples=73 | mean_reward=-0.066 | success=2/5 | collision=3/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.748 | samples/sec=16.285
+Episode 79 complete | case=three_cross_main_pair_with_late_third | env_steps=3534 | agent_samples=7554 | episode_env_steps=14 | episode_agent_samples=59 | mean_reward=41.405 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.883 | samples/sec=19.649
+Episode 80 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=3581 | agent_samples=7671 | episode_env_steps=47 | episode_agent_samples=117 | mean_reward=116.706 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.284 | samples/sec=11.560
+Recent 10 episodes | avg_reward=99.999 | success_rate=0.880 | collision_rate=0.120 | unresolved_rate=0.000 | full_success_rate=0.700 | timeout_episode_rate=0.000 | total_success=355 | total_collision=45 | total_unresolved=0 | total_full_success=49 | timeout_episodes=0 | success_hist=[0, 0, 2, 10, 19, 49] | collision_hist=[49, 19, 10, 2, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=27 | success_rate=0.793 | collision_rate=0.207 | unresolved_rate=0.000 | full_success_rate=0.333 | timeout_rate=0.000 | avg_env_steps=39.9 | avg_final_distance=0.576
+  three_goal_merge_main_pair_with_outer_third | episodes=27 | success_rate=0.993 | collision_rate=0.007 | unresolved_rate=0.000 | full_success_rate=0.963 | timeout_rate=0.000 | avg_env_steps=21.1 | avg_final_distance=0.253
+  three_wall_pair_with_far_third | episodes=26 | success_rate=0.877 | collision_rate=0.123 | unresolved_rate=0.000 | full_success_rate=0.538 | timeout_rate=0.000 | avg_env_steps=74.4 | avg_final_distance=0.514
+Episode 81 complete | case=three_wall_pair_with_far_third | env_steps=3706 | agent_samples=7891 | episode_env_steps=125 | episode_agent_samples=220 | mean_reward=80.458 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.875 | samples/sec=8.132
+Episode 82 complete | case=three_cross_main_pair_with_late_third | env_steps=3751 | agent_samples=7995 | episode_env_steps=45 | episode_agent_samples=104 | mean_reward=134.758 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.239 | samples/sec=10.670
+Episode 83 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=3765 | agent_samples=8048 | episode_env_steps=14 | episode_agent_samples=53 | mean_reward=119.335 | success=5/5 | collision=1/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.260 | samples/sec=17.830
+Episode 84 complete | case=three_wall_pair_with_far_third | env_steps=3818 | agent_samples=8157 | episode_env_steps=53 | episode_agent_samples=109 | mean_reward=79.609 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.807 | samples/sec=9.554
+Episode 85 complete | case=three_cross_main_pair_with_late_third | env_steps=3902 | agent_samples=8305 | episode_env_steps=84 | episode_agent_samples=148 | mean_reward=133.718 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.256 | samples/sec=8.216
+Episode 86 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=3915 | agent_samples=8354 | episode_env_steps=13 | episode_agent_samples=49 | mean_reward=118.455 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.262 | samples/sec=17.526
+Episode 87 complete | case=three_wall_pair_with_far_third | env_steps=4007 | agent_samples=8503 | episode_env_steps=92 | episode_agent_samples=149 | mean_reward=132.609 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.228 | samples/sec=7.537
+Episode 88 complete | case=three_cross_main_pair_with_late_third | env_steps=4049 | agent_samples=8633 | episode_env_steps=42 | episode_agent_samples=130 | mean_reward=133.140 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.246 | samples/sec=14.389
+Episode 89 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=4084 | agent_samples=8710 | episode_env_steps=35 | episode_agent_samples=77 | mean_reward=118.987 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.238 | samples/sec=10.230
+Episode 90 complete | case=three_wall_pair_with_far_third | env_steps=4172 | agent_samples=8880 | episode_env_steps=88 | episode_agent_samples=170 | mean_reward=132.402 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.266 | samples/sec=8.986
+Recent 10 episodes | avg_reward=118.347 | success_rate=0.960 | collision_rate=0.060 | unresolved_rate=0.000 | full_success_rate=0.800 | timeout_episode_rate=0.000 | total_success=403 | total_collision=48 | total_unresolved=0 | total_full_success=57 | timeout_episodes=0 | success_hist=[0, 0, 2, 10, 21, 57] | collision_hist=[56, 22, 10, 2, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=30 | success_rate=0.813 | collision_rate=0.187 | unresolved_rate=0.000 | full_success_rate=0.400 | timeout_rate=0.000 | avg_env_steps=41.6 | avg_final_distance=0.543
+  three_goal_merge_main_pair_with_outer_third | episodes=30 | success_rate=0.993 | collision_rate=0.013 | unresolved_rate=0.000 | full_success_rate=0.967 | timeout_rate=0.000 | avg_env_steps=21.1 | avg_final_distance=0.253
+  three_wall_pair_with_far_third | episodes=30 | success_rate=0.880 | collision_rate=0.120 | unresolved_rate=0.000 | full_success_rate=0.533 | timeout_rate=0.000 | avg_env_steps=76.4 | avg_final_distance=0.518
+Episode 91 complete | case=three_cross_main_pair_with_late_third | env_steps=4214 | agent_samples=8991 | episode_env_steps=42 | episode_agent_samples=111 | mean_reward=134.821 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.259 | samples/sec=12.365
+Episode 92 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=4227 | agent_samples=9039 | episode_env_steps=13 | episode_agent_samples=48 | mean_reward=118.849 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.242 | samples/sec=17.096
+Episode 93 complete | case=three_wall_pair_with_far_third | env_steps=4288 | agent_samples=9158 | episode_env_steps=61 | episode_agent_samples=119 | mean_reward=80.726 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.799 | samples/sec=9.054
+Episode 94 complete | case=three_cross_main_pair_with_late_third | env_steps=4325 | agent_samples=9241 | episode_env_steps=37 | episode_agent_samples=83 | mean_reward=88.858 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.523 | samples/sec=10.460
+Episode 95 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=4338 | agent_samples=9291 | episode_env_steps=13 | episode_agent_samples=50 | mean_reward=118.989 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.257 | samples/sec=17.923
+Episode 96 complete | case=three_wall_pair_with_far_third | env_steps=4380 | agent_samples=9393 | episode_env_steps=42 | episode_agent_samples=102 | mean_reward=78.607 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.885 | samples/sec=11.251
+Episode 97 complete | case=three_cross_main_pair_with_late_third | env_steps=4421 | agent_samples=9488 | episode_env_steps=41 | episode_agent_samples=95 | mean_reward=87.850 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.556 | samples/sec=10.692
+Episode 98 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=4434 | agent_samples=9537 | episode_env_steps=13 | episode_agent_samples=49 | mean_reward=119.185 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.233 | samples/sec=17.674
+Episode 99 complete | case=three_wall_pair_with_far_third | env_steps=4525 | agent_samples=9701 | episode_env_steps=91 | episode_agent_samples=164 | mean_reward=132.277 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.238 | samples/sec=8.388
+Episode 100 complete | case=three_cross_main_pair_with_late_third | env_steps=4562 | agent_samples=9796 | episode_env_steps=37 | episode_agent_samples=95 | mean_reward=133.711 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.273 | samples/sec=11.831
+Recent 10 episodes | avg_reward=109.387 | success_rate=0.920 | collision_rate=0.080 | unresolved_rate=0.000 | full_success_rate=0.600 | timeout_episode_rate=0.000 | total_success=449 | total_collision=52 | total_unresolved=0 | total_full_success=63 | timeout_episodes=0 | success_hist=[0, 0, 2, 10, 25, 63] | collision_hist=[62, 26, 10, 2, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=34 | success_rate=0.824 | collision_rate=0.176 | unresolved_rate=0.000 | full_success_rate=0.412 | timeout_rate=0.000 | avg_env_steps=41.3 | avg_final_distance=0.526
+  three_goal_merge_main_pair_with_outer_third | episodes=33 | success_rate=0.994 | collision_rate=0.012 | unresolved_rate=0.000 | full_success_rate=0.970 | timeout_rate=0.000 | avg_env_steps=20.3 | avg_final_distance=0.252
+  three_wall_pair_with_far_third | episodes=33 | success_rate=0.879 | collision_rate=0.121 | unresolved_rate=0.000 | full_success_rate=0.515 | timeout_rate=0.000 | avg_env_steps=75.3 | avg_final_distance=0.529
+Episode 101 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=4574 | agent_samples=9844 | episode_env_steps=12 | episode_agent_samples=48 | mean_reward=118.381 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.259 | samples/sec=18.290
+Episode 102 complete | case=three_wall_pair_with_far_third | env_steps=4664 | agent_samples=9989 | episode_env_steps=90 | episode_agent_samples=145 | mean_reward=133.291 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.228 | samples/sec=7.463
+Episode 103 complete | case=three_cross_main_pair_with_late_third | env_steps=4698 | agent_samples=10079 | episode_env_steps=34 | episode_agent_samples=90 | mean_reward=135.298 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.254 | samples/sec=12.266
+Episode 104 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=4711 | agent_samples=10128 | episode_env_steps=13 | episode_agent_samples=49 | mean_reward=119.225 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.237 | samples/sec=17.150
+Episode 105 complete | case=three_wall_pair_with_far_third | env_steps=4801 | agent_samples=10274 | episode_env_steps=90 | episode_agent_samples=146 | mean_reward=132.170 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.254 | samples/sec=7.540
+Episode 106 complete | case=three_cross_main_pair_with_late_third | env_steps=4814 | agent_samples=10329 | episode_env_steps=13 | episode_agent_samples=55 | mean_reward=40.666 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.911 | samples/sec=19.641
+Episode 107 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=4840 | agent_samples=10395 | episode_env_steps=26 | episode_agent_samples=66 | mean_reward=118.091 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.261 | samples/sec=11.818
+Episode 108 complete | case=three_wall_pair_with_far_third | env_steps=4906 | agent_samples=10513 | episode_env_steps=66 | episode_agent_samples=118 | mean_reward=82.305 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.723 | samples/sec=8.243
+Episode 109 complete | case=three_cross_main_pair_with_late_third | env_steps=4951 | agent_samples=10605 | episode_env_steps=45 | episode_agent_samples=92 | mean_reward=88.454 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.540 | samples/sec=9.511
+Episode 110 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=4975 | agent_samples=10668 | episode_env_steps=24 | episode_agent_samples=63 | mean_reward=118.017 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.261 | samples/sec=12.276
+Recent 10 episodes | avg_reward=108.590 | success_rate=0.920 | collision_rate=0.080 | unresolved_rate=0.000 | full_success_rate=0.700 | timeout_episode_rate=0.000 | total_success=495 | total_collision=56 | total_unresolved=0 | total_full_success=70 | timeout_episodes=0 | success_hist=[0, 0, 2, 11, 27, 70] | collision_hist=[69, 28, 11, 2, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=37 | success_rate=0.822 | collision_rate=0.178 | unresolved_rate=0.000 | full_success_rate=0.405 | timeout_rate=0.000 | avg_env_steps=40.5 | avg_final_distance=0.530
+  three_goal_merge_main_pair_with_outer_third | episodes=37 | success_rate=0.995 | collision_rate=0.011 | unresolved_rate=0.000 | full_success_rate=0.973 | timeout_rate=0.000 | avg_env_steps=20.2 | avg_final_distance=0.252
+  three_wall_pair_with_far_third | episodes=36 | success_rate=0.883 | collision_rate=0.117 | unresolved_rate=0.000 | full_success_rate=0.528 | timeout_rate=0.000 | avg_env_steps=75.9 | avg_final_distance=0.519
+Episode 111 complete | case=three_wall_pair_with_far_third | env_steps=5070 | agent_samples=10819 | episode_env_steps=95 | episode_agent_samples=151 | mean_reward=133.769 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.251 | samples/sec=7.399
+Episode 112 complete | case=three_cross_main_pair_with_late_third | env_steps=5114 | agent_samples=10919 | episode_env_steps=44 | episode_agent_samples=100 | mean_reward=134.704 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.264 | samples/sec=10.581
+Episode 113 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=5127 | agent_samples=10968 | episode_env_steps=13 | episode_agent_samples=49 | mean_reward=118.860 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.241 | samples/sec=17.695
+Episode 114 complete | case=three_wall_pair_with_far_third | env_steps=5197 | agent_samples=11088 | episode_env_steps=70 | episode_agent_samples=120 | mean_reward=32.220 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=1.000 | samples/sec=7.936
+Episode 115 complete | case=three_cross_main_pair_with_late_third | env_steps=5212 | agent_samples=11145 | episode_env_steps=15 | episode_agent_samples=57 | mean_reward=40.876 | success=3/5 | collision=2/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.909 | samples/sec=17.808
+Episode 116 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=5226 | agent_samples=11199 | episode_env_steps=14 | episode_agent_samples=54 | mean_reward=118.862 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.240 | samples/sec=18.095
+Episode 117 complete | case=three_wall_pair_with_far_third | env_steps=5316 | agent_samples=11343 | episode_env_steps=90 | episode_agent_samples=144 | mean_reward=132.255 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.258 | samples/sec=7.439
+Episode 118 complete | case=three_cross_main_pair_with_late_third | env_steps=5345 | agent_samples=11430 | episode_env_steps=29 | episode_agent_samples=87 | mean_reward=89.086 | success=4/5 | collision=1/5 | unresolved=0/5 | full_success=0 | timeout=0 | mean_final_distance=0.520 | samples/sec=13.998
+Episode 119 complete | case=three_goal_merge_main_pair_with_outer_third | env_steps=5363 | agent_samples=11486 | episode_env_steps=18 | episode_agent_samples=56 | mean_reward=118.283 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.266 | samples/sec=14.516
+Episode 120 complete | case=three_wall_pair_with_far_third | env_steps=5452 | agent_samples=11631 | episode_env_steps=89 | episode_agent_samples=145 | mean_reward=132.678 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.261 | samples/sec=7.570
+Recent 10 episodes | avg_reward=105.159 | success_rate=0.900 | collision_rate=0.100 | unresolved_rate=0.000 | full_success_rate=0.700 | timeout_episode_rate=0.000 | total_success=540 | total_collision=61 | total_unresolved=0 | total_full_success=77 | timeout_episodes=0 | success_hist=[0, 0, 2, 13, 28, 77] | collision_hist=[76, 29, 13, 2, 0, 0]
+Case summary:
+  three_cross_main_pair_with_late_third | episodes=40 | success_rate=0.820 | collision_rate=0.180 | unresolved_rate=0.000 | full_success_rate=0.400 | timeout_rate=0.000 | avg_env_steps=39.6 | avg_final_distance=0.532
+  three_goal_merge_main_pair_with_outer_third | episodes=40 | success_rate=0.995 | collision_rate=0.010 | unresolved_rate=0.000 | full_success_rate=0.975 | timeout_rate=0.000 | avg_env_steps=19.8 | avg_final_distance=0.252
+  three_wall_pair_with_far_third | episodes=40 | success_rate=0.885 | collision_rate=0.115 | unresolved_rate=0.000 | full_success_rate=0.550 | timeout_rate=0.000 | avg_env_steps=76.9 | avg_final_distance=0.511
+Target test episodes reached | episode_num=120 | target=120
+... logging to /home/jiutian/.ros/log/c7968c36-7dcd-11f1-a718-79b7e70ca52d/roslaunch-JiuTian-AI4090-1413606.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/jiutian/Local-Critic-Multi-Robot-Navigation/TD3/assets/multi_robot_scenario_curriculum_test_stage3_asym_three_5_5.launch
+[1mstarted roslaunch server http://localhost:46131/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /robot_description_r1: <?xml version="1....
+ * /robot_description_r2: <?xml version="1....
+ * /robot_description_r3: <?xml version="1....
+ * /robot_description_r4: <?xml version="1....
+ * /robot_description_r5: <?xml version="1....
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+ * /use_sim_time: True
+
+NODES
+  /
+    gazebo (gazebo_ros/gzserver)
+    urdf_spawner_r1 (gazebo_ros/spawn_model)
+    urdf_spawner_r2 (gazebo_ros/spawn_model)
+    urdf_spawner_r3 (gazebo_ros/spawn_model)
+    urdf_spawner_r4 (gazebo_ros/spawn_model)
+    urdf_spawner_r5 (gazebo_ros/spawn_model)
+
+[1mROS_MASTER_URI=http://localhost:11368/[0m
+]2;/home/jiutian/Local-Critic-Multi-Robot-Navigation/TD3/assets/multi_robot_scenario_curriculum_test_stage3_asym_three_5_5.launch http://localhost:11368/
+[1mprocess[gazebo-1]: started with pid [1413791][0m
+[1mprocess[urdf_spawner_r1-2]: started with pid [1413794][0m
+[1mprocess[urdf_spawner_r2-3]: started with pid [1413797][0m
+[1mprocess[urdf_spawner_r3-4]: started with pid [1413798][0m
+[1mprocess[urdf_spawner_r4-5]: started with pid [1413799][0m
+[1mprocess[urdf_spawner_r5-6]: started with pid [1413800][0m
+[1m[urdf_spawner_r2-3] process has finished cleanly
+log file: /home/jiutian/.ros/log/c7968c36-7dcd-11f1-a718-79b7e70ca52d/urdf_spawner_r2-3*.log[0m
+[1m[urdf_spawner_r1-2] process has finished cleanly
+log file: /home/jiutian/.ros/log/c7968c36-7dcd-11f1-a718-79b7e70ca52d/urdf_spawner_r1-2*.log[0m
+[1m[urdf_spawner_r3-4] process has finished cleanly
+log file: /home/jiutian/.ros/log/c7968c36-7dcd-11f1-a718-79b7e70ca52d/urdf_spawner_r3-4*.log[0m
+[1m[urdf_spawner_r5-6] process has finished cleanly
+log file: /home/jiutian/.ros/log/c7968c36-7dcd-11f1-a718-79b7e70ca52d/urdf_spawner_r5-6*.log[0m
+[1m[urdf_spawner_r4-5] process has finished cleanly
+log file: /home/jiutian/.ros/log/c7968c36-7dcd-11f1-a718-79b7e70ca52d/urdf_spawner_r4-5*.log[0m
+[gazebo-1] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
+... logging to /home/jiutian/.ros/log/c7968c36-7dcd-11f1-a718-79b7e70ca52d/roslaunch-JiuTian-AI4090-1413581.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;roscore
+[1mstarted roslaunch server http://localhost:42841/[0m
+ros_comm version 1.17.4
+
+
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+
+NODES
+
+auto-starting new master
+[1mprocess[master]: started with pid [1413591][0m
+[1mROS_MASTER_URI=http://localhost:11368/[0m
+]2;roscore http://localhost:11368/
+[1msetting /run_id to c7968c36-7dcd-11f1-a718-79b7e70ca52d[0m
+[1mprocess[rosout-1]: started with pid [1413601][0m
+started core service [/rosout]
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
