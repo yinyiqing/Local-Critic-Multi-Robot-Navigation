@@ -26,6 +26,13 @@
 
 **主问题不再只是 critic，而是单一 actor 在普通导航和密集协同之间可能存在能力冲突。**
 
+补充一个容易混的点：
+
+- 我们不是没做过“纯 dense 五车”主线
+- 旧线里已经直接试过 `stage2_dense_gentle` 和 `stage2_dense_bridge`
+- 结果都不理想：同步五车中心强交互太难，课程起点不顺，actor 继续更新后还会退化
+- 现在的 `PAIR / THREE_5` 不是换题，而是把原来那条纯 dense 死路拆成更可学的渐进交互版本
+
 ## 现在的主线收敛
 
 目前这条线不再把“两个 actor 切换”当最终目标。
@@ -120,6 +127,12 @@
   - `PAIR(from_5d)`
 - 备用强基线 / 过渡 actor：
   - `5D`
+
+额外约定：
+
+- `PAIR(from_5d)` 是当前 dense 主线 baseline
+- `THREE_5` 是更难一级的扩展场景，不作为当前 baseline
+- 旧 `stage2_dense` / `stage2_dense_gentle` 保留为失败前史和压力边界，不再当主线训练入口
 
 补充：
 
