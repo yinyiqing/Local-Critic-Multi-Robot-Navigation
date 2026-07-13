@@ -1,0 +1,61 @@
+{
+  "comparison": {
+    "three_cross_main_pair_with_late_third": {
+      "chosen_mode": "dense",
+      "left": {
+        "collision_rate": 0.22,
+        "episodes": 40,
+        "full_success_rate": 0.3,
+        "success_rate": 0.78,
+        "unresolved_rate": 0.0
+      },
+      "right": {
+        "collision_rate": 0.17,
+        "episodes": 40,
+        "full_success_rate": 0.475,
+        "success_rate": 0.83,
+        "unresolved_rate": 0.0
+      }
+    },
+    "three_goal_merge_main_pair_with_outer_third": {
+      "chosen_mode": "dense",
+      "left": {
+        "collision_rate": 0.025,
+        "episodes": 40,
+        "full_success_rate": 0.95,
+        "success_rate": 0.99,
+        "unresolved_rate": 0.0
+      },
+      "right": {
+        "collision_rate": 0.005,
+        "episodes": 40,
+        "full_success_rate": 1.0,
+        "success_rate": 1.0,
+        "unresolved_rate": 0.0
+      }
+    },
+    "three_wall_pair_with_far_third": {
+      "chosen_mode": "dense",
+      "left": {
+        "collision_rate": 0.11,
+        "episodes": 40,
+        "full_success_rate": 0.45,
+        "success_rate": 0.885,
+        "unresolved_rate": 0.005
+      },
+      "right": {
+        "collision_rate": 0.115,
+        "episodes": 40,
+        "full_success_rate": 0.475,
+        "success_rate": 0.875,
+        "unresolved_rate": 0.01
+      }
+    }
+  },
+  "oracle_map": {
+    "default": "dense",
+    "three_cross_main_pair_with_late_third": "dense",
+    "three_goal_merge_main_pair_with_outer_third": "dense",
+    "three_wall_pair_with_far_third": "dense"
+  }
+}

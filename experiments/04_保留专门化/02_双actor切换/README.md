@@ -125,6 +125,66 @@
    - 先看理论上界有没有明显提升空间
 4. 只有 oracle 确认“两个 actor 确实互补”后，再继续做 learned gate
 
+## 第二轮结果
+
+### `5A + 5D hard_switch -> stage3_asym_three_5`
+
+- 120 episodes
+- `success_rate=0.893`
+- `collision_rate=0.107`
+- `unresolved_rate=0.002`
+- `full_success_rate=0.583`
+- `timeout_episode_rate=0.008`
+
+分 case：
+
+- `three_cross_main_pair_with_late_third`
+  - `success_rate=0.800`
+  - `collision_rate=0.200`
+  - `full_success_rate=0.300`
+- `three_goal_merge_main_pair_with_outer_third`
+  - `success_rate=0.990`
+  - `collision_rate=0.015`
+  - `full_success_rate=0.950`
+- `three_wall_pair_with_far_third`
+  - `success_rate=0.890`
+  - `collision_rate=0.105`
+  - `unresolved_rate=0.005`
+  - `full_success_rate=0.500`
+
+结论：
+
+- 比 `PAIR(from_5d)` 略好
+- 但没有超过 `5D`
+- 说明 `5A + 5D` 不是完全没区别，但硬切换没有把它们变成更强组合
+
+### `5A vs 5D oracle -> stage3_asym_three_5`
+
+结果文件：
+
+- `oracle_maps/stage3_asym_three_5_5A_vs_5D_oracle.json`
+
+结论很直接：
+
+- 三个 case 的 oracle 选择全部都是 `dense`
+- 也就是按 case 最优选，最终仍然是每个 case 都选 `5D`
+- 说明 `5A` 没有提供出一个稳定优于 `5D` 的 case 区域
+
+这一步的意义：
+
+- 基本排除了“只差一个更聪明 gate 就能把 `5A + 5D` 做好”这种乐观判断
+- 当前更合理的判断是：
+  - `5A` 和 `5D` 不够专
+  - 两者有偏移，但互补性还不够强
+  - 直接训练 `5A + 5D` gate 的意义有限
+
+## 当前主判断
+
+- `hard_switch` 这条线到这里可以先收住
+- `5A + 5D` 这对 expert 的互补性不足，暂时不值得直接继续 gate 训练
+- 如果还想做 gate，更合理的是先换一对更“分工明确”的 expert
+- 如果还想做 attention，也更适合放到“新 expert / 新 gate”那条线里，而不是继续堆在这对 `5A + 5D` 上
+
 ## 当前一句话
 
 - 这一步不再证明“两个 actor 能不能切”
