@@ -4,6 +4,7 @@ set -eo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TD3_DIR="$PROJECT_ROOT/TD3"
 LOG_DIR="$PROJECT_ROOT/logs"
+CUSTOM_LOG_DIR="${DRL_MULTI_TEST_LOG_DIR:-}"
 PID_FILE="$PROJECT_ROOT/.test_multi_stage2_to_5a_shared_guarded_best_detached.pid"
 NUM_AGENTS=5
 LAUNCHFILE="multi_robot_scenario_stage2_to_5a_shared_guarded_test_${NUM_AGENTS}.launch"
@@ -39,6 +40,10 @@ else
   esac
 fi
 
+mkdir -p "$LOG_DIR"
+if [[ -n "$CUSTOM_LOG_DIR" ]]; then
+  LOG_DIR="$CUSTOM_LOG_DIR"
+fi
 mkdir -p "$LOG_DIR"
 
 timestamp="$(date +%Y%m%d_%H%M%S)"

@@ -4,6 +4,7 @@ set -eo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TD3_DIR="$PROJECT_ROOT/TD3"
 LOG_DIR="$PROJECT_ROOT/logs"
+CUSTOM_LOG_DIR="${DRL_MULTI_TEST_LOG_DIR:-}"
 STAGE="${1:-stage1_single}"
 MODEL_NAME="${2:-}"
 ROS_PORT="${DRL_MULTI_TEST_ROS_PORT:-11368}"
@@ -112,6 +113,10 @@ LAUNCH_PATH="$TD3_DIR/assets/$LAUNCHFILE"
 PID_FILE="$PROJECT_ROOT/.test_multi_curriculum_${STAGE}_detached.pid"
 CURRICULUM_SAMPLING="${DRL_MULTI_CURRICULUM_SAMPLING:-cycle}"
 
+mkdir -p "$LOG_DIR"
+if [[ -n "$CUSTOM_LOG_DIR" ]]; then
+  LOG_DIR="$CUSTOM_LOG_DIR"
+fi
 mkdir -p "$LOG_DIR"
 
 timestamp="$(date +%Y%m%d_%H%M%S)"
