@@ -125,6 +125,14 @@
   - Epoch 3：`0.921 / 0.079 / 0.750`
 - 其中 Epoch 3 已明显优于旧 `PAIR(from_5a)`，所以后续主口径切到 `PAIR(from_5d)`。
 
+同时保留一个重要区分：
+
+- `5D` 不是失败候选，而是当前最强的 bridge baseline
+- `PAIR(from_5d)` 才是 bridge baseline 继续专门化后的 dense actor
+- 因此后面如果做 attention / gate：
+  - `5D` 适合作为“未专门化但已具 dense 泛化”的对照
+  - `PAIR(from_5d)` 适合作为“当前 dense 主基线”
+
 overwrite actor 当前先保留：
 
 1. `joint_action_critic_midcheck best`
@@ -248,6 +256,9 @@ overwrite actor 当前先保留：
      - 前两轮与旧 `PAIR(from_5a)` 持平
      - 第三轮明显更好
      - 当前应把它作为新的优先 dense actor 候选
+   - 但补充说明：
+     - 这一条目前还是训练内 eval
+     - 在作为后续 attention 基线前，最好先补正式 test
 
 ### 当前横向对比
 

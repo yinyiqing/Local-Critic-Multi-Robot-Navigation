@@ -123,14 +123,20 @@
 
 - 普通 actor：
   - `5A`
+- 过渡 / 桥接 actor：
+  - `5D`
 - 密集 actor：
   - `PAIR(from_5d)`
-- 备用强基线 / 过渡 actor：
-  - `5D`
 
 额外约定：
 
-- `PAIR(from_5d)` 是当前 dense 主线 baseline
+- `5D` 不是被淘汰，而是当前最强的 bridge baseline
+  - 它在 `stage3_asym_three_5` 测试里已经达到 `0.902 / 0.097 / 0.650`
+  - 说明它本身已经具备较强 dense 泛化
+- `PAIR(from_5d)` 是当前 dense specialized baseline
+  - 它代表“在 bridge actor 基础上继续做密集专门化”后的版本
+  - 训练内 eval 已达到 `0.921 / 0.079 / 0.750`
+  - 但后续仍应补正式 test，不能只凭训练内 eval 当最终口径
 - `THREE_5` 是更难一级的扩展场景，不作为当前 baseline
 - 旧 `stage2_dense` / `stage2_dense_gentle` 保留为失败前史和压力边界，不再当主线训练入口
 
