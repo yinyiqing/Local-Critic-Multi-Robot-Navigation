@@ -1,6 +1,6 @@
 # 多智能体动态 Reward 实验计划
 
-> 历史记录：本文档记录早期两车 RewardOnly 机制验证。当前实验主线的三车 RewardOnly 对照请以 `experiments/多智能体/3智能体/B_RewardOnly动态奖励对照/README.md`、`三车RewardOnly/` 和 `experiments/多智能体/3智能体/三车主线对照总表.md` 为准。
+> 历史记录：本文档记录早期两车 RewardOnly 机制验证。三车 RewardOnly 历史对照请以 `experiments/01_第一次尝试/多智能体/3智能体/B_RewardOnly动态奖励对照/README.md`、`三车RewardOnly/` 和 `experiments/01_第一次尝试/多智能体/3智能体/三车主线对照总表.md` 为准。
 
 ## 目标
 

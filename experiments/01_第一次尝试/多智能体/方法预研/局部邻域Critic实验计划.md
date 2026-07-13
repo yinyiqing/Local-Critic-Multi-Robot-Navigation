@@ -1,6 +1,6 @@
 # 局部邻域 Critic 实验计划
 
-> 历史记录：本文档记录局部邻域 Critic 从两车机制验证到三车局部邻域 Critic 验证的设计过程。当前主线方法定义、D/D2 区分和最新结果请以 `experiments/多智能体/README.md` 与 `experiments/多智能体/3智能体/三车主线对照总表.md` 为准。
+> 历史记录：本文档记录局部邻域 Critic 从两车机制验证到三车局部邻域 Critic 验证的设计过程。D/D2 区分和三车历史结果请以 `experiments/01_第一次尝试/多智能体/README.md` 与 `experiments/01_第一次尝试/多智能体/3智能体/三车主线对照总表.md` 为准。
 
 ## 研究问题
 

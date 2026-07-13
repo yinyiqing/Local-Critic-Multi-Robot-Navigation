@@ -2,13 +2,15 @@
 
 本目录归档五车规模下的 test-only done-agent relocation 诊断实验。
 
+该实验的一次性入口和环境实现已经在代码精简中删除；以下内容仅记录当时的方法与结果，当前代码不能直接重跑该干预。
+
 ## 方法定义
 
 - 基础模型：`TD3_velodyne_multi_v4_individual_active_probe_5_best`
 - 来源：J 组 Individual Active Probe epoch 3 best checkpoint
 - 训练：不重新训练
 - 测试阶段 reward：individual reward，仅用于统计
-- 环境改动：开启 `DRL_MULTI_RELOCATE_SUCCESSFUL_DONE_AGENTS=1`
+- 历史环境改动：当时启用了成功机器人移出场景的测试干预
 - 具体行为：某机器人成功到点后，本 step 统计完成，然后被移动到 `(20, 20)` 附近 holding area，不再作为场景内静态障碍
 - 目的：验证“已成功机器人停在目标附近，物理阻挡后续机器人”是否是五车 full-success 长尾的主要瓶颈
 

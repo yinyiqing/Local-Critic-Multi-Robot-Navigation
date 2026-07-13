@@ -3,7 +3,6 @@ import os
 import random
 import socket
 import time
-from collections import deque
 from datetime import datetime
 
 import numpy as np
@@ -221,13 +220,6 @@ test_stats_path = os.environ.get(
     "DRL_MULTI_TEST_STATS_PATH",
     default_test_stats_path,
 )
-trace_failures = env_flag("DRL_MULTI_TRACE_FAILURES", False)
-trace_failure_mode = os.environ.get("DRL_MULTI_TRACE_FAILURE_MODE", "timeout").strip().lower()
-trace_window_steps = max(env_int("DRL_MULTI_TRACE_WINDOW_STEPS", 100), 1)
-trace_dir = os.environ.get(
-    "DRL_MULTI_TRACE_DIR",
-    os.path.join("./results", f"{file_name}_failure_traces"),
-)
 print_every_episodes = 10
 environment_dim = 20
 robot_dim = 4
@@ -330,12 +322,6 @@ def print_case_stats(case_stats):
         )
 
 
-def scalar_or_none(value):
-    if value is None:
-        return None
-    return float(value)
-
-
 def load_case_oracle_map():
     if actor_selection_mode != "case_oracle":
         return {}
@@ -357,91 +343,6 @@ def load_case_oracle_map():
             )
         normalized[str(key)] = mode
     return normalized
-
-
-def should_trace_episode(timeout_episode, full_success, episode_unresolved_count):
-    if not trace_failures:
-        return False
-    if trace_failure_mode == "all":
-        return True
-    if trace_failure_mode == "non_full_success":
-        return not bool(full_success)
-    if trace_failure_mode == "unresolved":
-        return bool(episode_unresolved_count)
-    return bool(timeout_episode)
-
-
-def build_trace_step(step_idx, env_actions, active_mask, next_states, rewards, step_agents):
-    agents = {}
-    for idx, name in enumerate(agent_names):
-        state = next_states[idx]
-        info = step_agents[name]
-        agents[name] = {
-            "active": bool(active_mask[idx]),
-            "action_linear": float(env_actions[idx][0]),
-            "action_angular": float(env_actions[idx][1]),
-            "reward": float(rewards[idx]),
-            "target": bool(info["target"]),
-            "collision": bool(info["collision"]),
-            "distance": scalar_or_none(info["distance"]),
-            "state_distance": float(state[-4]),
-            "theta": float(state[-3]),
-            "progress": float(info["progress"]),
-            "min_laser": scalar_or_none(info["min_laser"]),
-            "nearest_robot_distance": scalar_or_none(
-                info["nearest_robot_distance"]
-            ),
-        }
-    return {"step": int(step_idx), "agents": agents}
-
-
-def write_failure_trace(
-    episode_num,
-    episode_env_steps,
-    episode_agent_samples,
-    mean_reward,
-    episode_success_flags,
-    episode_collision_flags,
-    episode_final_distances,
-    episode_unresolved_count,
-    full_success,
-    timeout_episode,
-    trace_steps,
-):
-    os.makedirs(trace_dir, exist_ok=True)
-    reason = "timeout" if timeout_episode else "failure"
-    output_path = os.path.join(trace_dir, f"episode_{episode_num:04d}_{reason}.json")
-    agent_summaries = {}
-    for idx, name in enumerate(agent_names):
-        agent_summaries[name] = {
-            "success": int(episode_success_flags[idx]),
-            "collision": int(episode_collision_flags[idx]),
-            "final_distance": scalar_or_none(episode_final_distances[name]),
-        }
-    payload = {
-        "episode_num": int(episode_num),
-        "trace_window_steps": int(trace_window_steps),
-        "trace_failure_mode": trace_failure_mode,
-        "summary": {
-            "episode_env_steps": int(episode_env_steps),
-            "episode_agent_samples": int(episode_agent_samples),
-            "mean_reward": float(mean_reward),
-            "success_count": int(np.sum(episode_success_flags)),
-            "collision_count": int(np.sum(episode_collision_flags)),
-            "unresolved_count": int(episode_unresolved_count),
-            "full_success": int(full_success),
-            "timeout": int(timeout_episode),
-        },
-        "agents": agent_summaries,
-        "steps": list(trace_steps),
-    }
-    with open(output_path, "w", encoding="utf-8") as fh:
-        json.dump(payload, fh, indent=2, sort_keys=True)
-        fh.write("\n")
-    summary_path = os.path.join(trace_dir, "summary.jsonl")
-    with open(summary_path, "a", encoding="utf-8") as fh:
-        fh.write(json.dumps(payload["summary"], sort_keys=True) + "\n")
-    print("Failure trace saved:", output_path)
 
 
 env = MultiAgentGazeboEnv(
@@ -545,10 +446,6 @@ print("Starting agent samples:", total_agent_samples)
 print("Target test episodes:", target_test_episodes or "unlimited")
 if scenario_mode == "curriculum":
     print("Case-level stats enabled")
-if trace_failures:
-    print("Failure trace mode:", trace_failure_mode)
-    print("Failure trace window steps:", trace_window_steps)
-    print("Failure trace dir:", trace_dir)
 print("==============================================")
 
 states = env.reset()
@@ -564,7 +461,6 @@ episode_success_flags = np.zeros(len(agent_names), dtype=np.int32)
 episode_collision_flags = np.zeros(len(agent_names), dtype=np.int32)
 episode_final_distances = {name: None for name in agent_names}
 episode_start_time = time.time()
-episode_trace = deque(maxlen=trace_window_steps) if trace_failures else None
 episode_dense_action_steps = np.zeros(len(agent_names), dtype=np.int32)
 episode_standard_action_steps = np.zeros(len(agent_names), dtype=np.int32)
 
@@ -592,17 +488,6 @@ while True:
     next_states, rewards, dones, targets, collisions = env.step(env_actions, active_mask)
     total_env_steps += 1
     step_agents = env.last_step_info["agents"]
-    if trace_failures:
-        episode_trace.append(
-            build_trace_step(
-                episode_env_steps + 1,
-                env_actions,
-                active_mask,
-                next_states,
-                rewards,
-                step_agents,
-            )
-        )
 
     truncated = episode_env_steps + 1 == max_ep
     for idx in range(len(agent_names)):
@@ -690,21 +575,6 @@ while True:
     avg_timeout_episode = float(
         np.mean(recent_timeout_episodes[-print_every_episodes:])
     )
-
-    if should_trace_episode(timeout_episode, full_success, episode_unresolved_count):
-        write_failure_trace(
-            episode_num,
-            episode_env_steps,
-            episode_agent_samples,
-            mean_reward,
-            episode_success_flags,
-            episode_collision_flags,
-            episode_final_distances,
-            episode_unresolved_count,
-            full_success,
-            timeout_episode,
-            episode_trace,
-        )
 
     print(
         "Episode %i complete | case=%s | env_steps=%i | agent_samples=%i | episode_env_steps=%i | "
@@ -838,6 +708,5 @@ while True:
     episode_collision_flags = np.zeros(len(agent_names), dtype=np.int32)
     episode_final_distances = {name: None for name in agent_names}
     episode_start_time = time.time()
-    episode_trace = deque(maxlen=trace_window_steps) if trace_failures else None
     episode_dense_action_steps = np.zeros(len(agent_names), dtype=np.int32)
     episode_standard_action_steps = np.zeros(len(agent_names), dtype=np.int32)

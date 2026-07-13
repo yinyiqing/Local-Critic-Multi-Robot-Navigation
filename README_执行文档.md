@@ -2,7 +2,7 @@
 
 本文档整理了本项目在当前机器上的实际可用执行流程，覆盖从开机检查、环境准备、训练启动，到 TensorBoard 监控与效果判断的完整步骤。
 
-当前实验主线以三车实验为准。单车脚本和早期两车脚本仍可用于复现、排错和历史对照，但不要把它们当作当前三车主线的默认入口。
+当前实验主线为 `冻结 5D -> 时空 Attention 门控残差`。PAIR、THREE、双 Actor 和早期二/三车脚本仅用于复现、排错和历史对照，不再作为当前默认入口。
 
 适用环境：
 
@@ -50,13 +50,49 @@
 - `README.md`
   - 说明这份仓库和原始开源项目的关系，以及当前改动主线。
 - `experiments/实验总览.md`
-  - 汇总当前三车主线、阶段性结论和缺口。
-- `experiments/多智能体/三车主线对照总表.md`
-  - 汇总 A/B/C/D/D2 五组三车对照实验。
-- `experiments/多智能体/README.md`
-  - 说明多智能体 baseline、动态 reward、weighted08、局部邻域 critic 的产物位置。
+  - 汇总当前课程主线、阶段性结论和缺口。
+- `experiments/04_保留专门化/README.md`
+  - 说明为什么当前主线从覆盖训练转为冻结 `5D`。
+- `experiments/04_保留专门化/03_门控注意力增强/README.md`
+  - 说明当前时空 Attention 残差结构和唯一训练配置。
+- `experiments/04_保留专门化/02_双actor切换/README.md`
+  - 历史诊断：记录 `5A + 5D` hard switch 和 oracle 结论。
+- `experiments/01_第一次尝试/多智能体/3智能体/三车主线对照总表.md`
+  - 历史 A/B/C/D/D2 三车对照，不是当前主线。
 
 ### 1.2 当前正式多智能体实验入口
+
+当前唯一的新训练入口：
+
+```bash
+bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_training_detached_spatiotemporal_attention_5d.sh
+bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/stop_training_detached_spatiotemporal_attention_5d.sh
+```
+
+该入口默认从冻结的 `5D best` 新建
+`TD3_velodyne_multi_v5_attention_residual_from_5d_balanced_v2`，不会恢复旧版 Attention
+latest。默认训练机制为三组分层回放、`0.1` reward scale、gate/residual 约束、Actor
+warmup 后余弦衰减，以及固定种子双基准评估；连续 8 次评估没有更新 dual-benchmark
+best 时自动早停。
+
+关键可调项：
+
+- `DRL_ATTENTION_REPLAY_STANDARD_RATIO`、`DRL_ATTENTION_REPLAY_PAIR_RATIO`、`DRL_ATTENTION_REPLAY_THREE_RATIO`
+- `DRL_ATTENTION_REWARD_SCALE`
+- `DRL_ATTENTION_GATE_PENALTY`、`DRL_ATTENTION_RESIDUAL_PENALTY`、`DRL_ATTENTION_STANDARD_RESIDUAL_PENALTY`
+- `DRL_ATTENTION_ACTOR_DECAY_STEPS`、`DRL_ATTENTION_ACTOR_MIN_LR_RATIO`
+- `DRL_ATTENTION_EVAL_EPISODES_PER_CASE`、`DRL_ATTENTION_STANDARD_EVAL_EPISODES`、`DRL_ATTENTION_EVAL_SEED`
+- `DRL_ATTENTION_EARLY_STOPPING_PATIENCE`
+
+当前测试入口：
+
+```bash
+# 5D 的 standard_5 测试
+bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_test_detached_multi_stage2_to_5d_geo_critic_from_5a_guarded_best.sh
+
+```
+
+以下三车入口是历史复现实验：
 
 三车共享 Policy Baseline：
 
@@ -93,7 +129,7 @@ DRL_MULTI_MAX_EPOCHS=20 bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/s
 
 - 2/3/5/10 车容量检查：`bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_capacity_check_multi.sh 5`
 - 停止容量检查：`bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/stop_capacity_check_multi.sh 5`
-- 详细说明：`experiments/多智能体/D_局部邻域Critic方法与消融/环境容量验证.md`
+- 详细说明：`experiments/01_第一次尝试/多智能体/容量验证/环境容量验证.md`
 
 补充说明：
 
@@ -197,7 +233,7 @@ xclock
 
 ## 5. 单车基础复现流程
 
-本节用于单车基础复现和环境排错。当前三车主线训练请优先使用 1.2 中列出的 `*_multi_*_3.sh` 脚本。
+本节用于单车基础复现和环境排错。当前多车主线训练请优先使用 1.2 中列出的五车课程脚本。
 
 进入支持 X11 的 MobaXterm 会话后，可执行：
 
@@ -685,24 +721,17 @@ sudo bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/install_ros_
 bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/build_readme_workspace.sh
 ```
 
-当前三车主线训练：
+当前时空 Attention 主线训练：
 
 ```bash
-bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_training_detached_multi_baseline_3.sh
-bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_training_detached_multi_reward_only_3.sh
-bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_training_detached_multi_weighted08_3.sh
-bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_training_detached_multi_local_critic_3.sh
-bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_training_detached_multi_local_critic_geo_3.sh
+bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_training_detached_spatiotemporal_attention_5d.sh
+bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/stop_training_detached_spatiotemporal_attention_5d.sh
 ```
 
-当前三车主线测试：
+当前测试入口：
 
 ```bash
-bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_test_detached_multi_baseline_3_best.sh
-bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_test_detached_multi_reward_only_3_best.sh
-bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_test_detached_multi_weighted08_3_best.sh
-bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_test_detached_multi_local_critic_3_best.sh
-bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_test_detached_multi_local_critic_geo_3_best.sh
+bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/start_test_detached_multi_stage2_to_5d_geo_critic_from_5a_guarded_best.sh
 ```
 
 单车基础复现训练：

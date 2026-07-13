@@ -1,6 +1,6 @@
 # 多智能体动态 Reward 实验总结
 
-> 历史记录：本文档主要总结早期两车 RewardOnly 实验。当前三车 RewardOnly 对照和 20 epoch 扩展状态请以 `experiments/多智能体/3智能体/B_RewardOnly动态奖励对照/README.md`、`experiments/多智能体/3智能体/B_RewardOnly动态奖励对照/三车RewardOnly/` 和 `experiments/多智能体/3智能体/三车主线对照总表.md` 为准。
+> 历史记录：本文档主要总结早期两车 RewardOnly 实验。三车 RewardOnly 对照和 20 epoch 扩展状态请以 `experiments/01_第一次尝试/多智能体/3智能体/B_RewardOnly动态奖励对照/README.md`、`experiments/01_第一次尝试/多智能体/3智能体/B_RewardOnly动态奖励对照/三车RewardOnly/` 和 `experiments/01_第一次尝试/多智能体/3智能体/三车主线对照总表.md` 为准。
 
 ## 结论
 

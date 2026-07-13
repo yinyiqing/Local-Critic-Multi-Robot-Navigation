@@ -1,6 +1,6 @@
 # 局部邻域 Critic 实验总结
 
-> 历史记录：本文档主要总结原始 D：三车局部邻域 Critic + Weighted08。当前主方法候选 D2：几何邻域 Critic + Weighted08 已另行归档，最新横向比较请以 `experiments/多智能体/3智能体/三车主线对照总表.md` 为准。
+> 历史记录：本文档主要总结原始 D：三车局部邻域 Critic + Weighted08。D2：几何邻域 Critic + Weighted08 已另行归档，三车历史横向比较请以 `experiments/01_第一次尝试/多智能体/3智能体/三车主线对照总表.md` 为准。
 
 ## 实验目的
 

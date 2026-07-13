@@ -46,6 +46,6 @@
 ## 注意事项
 
 - `logs/` 只保留正在运行的临时日志。
-- 已完成实验应归档到对应 `experiments/多智能体/...` 子目录。
+- 已完成实验应归档到对应 `experiments/01_第一次尝试/多智能体/...` 子目录。
 - 若扩展训练没有更新 best checkpoint，不需要重复执行 300 episodes test。
 - 若正式改用 20 epoch 预算，应保证所有主线方法从各自 10 epoch `latest` checkpoint 继续到 20，而不是重新初始化。

@@ -43,13 +43,6 @@ def _env_float(name, default):
     return float(value)
 
 
-def _env_bool(name, default=False):
-    value = os.environ.get(name)
-    if value is None or value.strip() == "":
-        return default
-    return value.strip().lower() in ("1", "true", "yes", "on")
-
-
 def _env_range(name, default):
     value = os.environ.get(name)
     if value is None or value.strip() == "":
@@ -151,23 +144,6 @@ class MultiAgentGazeboEnv:
         self.curriculum_cases = []
         self.curriculum_case_index = 0
         self.current_curriculum_case = None
-        self.relocate_successful_done_agents = _env_bool(
-            "DRL_MULTI_RELOCATE_SUCCESSFUL_DONE_AGENTS", False
-        )
-        self.done_agent_holding_x = _env_float("DRL_MULTI_DONE_AGENT_HOLDING_X", 20.0)
-        self.done_agent_holding_y = _env_float("DRL_MULTI_DONE_AGENT_HOLDING_Y", 20.0)
-        self.done_agent_holding_spacing = _env_float(
-            "DRL_MULTI_DONE_AGENT_HOLDING_SPACING", 2.0
-        )
-        if self.relocate_successful_done_agents:
-            print(
-                "Successful done-agent relocation enabled: holding_origin=(%.2f, %.2f), spacing=%.2f"
-                % (
-                    self.done_agent_holding_x,
-                    self.done_agent_holding_y,
-                    self.done_agent_holding_spacing,
-                )
-            )
 
         self.upper = 5.0
         self.lower = -5.0
@@ -235,8 +211,6 @@ class MultiAgentGazeboEnv:
         self.last_active_visible_neighbor_counts = {
             name: 0 for name in self.agent_names
         }
-        self.success_relocated_agents = set()
-
         self.gaps = [[-np.pi / 2 - 0.03, -np.pi / 2 + np.pi / self.environment_dim]]
         for m in range(self.environment_dim - 1):
             self.gaps.append(
@@ -326,11 +300,47 @@ class MultiAgentGazeboEnv:
             cases_path = os.path.join(os.getcwd(), cases_path)
         with open(cases_path, "r", encoding="utf-8") as fh:
             payload = json.load(fh)
-        cases = payload.get("cases", payload) if isinstance(payload, dict) else payload
+        cases = []
+        if isinstance(payload, dict):
+            base_dir = os.path.dirname(cases_path)
+            for source in payload.get("case_files", []):
+                source = {"path": source} if isinstance(source, str) else source
+                source_path = source.get("path", "").strip()
+                if not source_path:
+                    raise ValueError("Each curriculum case_files entry needs a path")
+                if not os.path.isabs(source_path):
+                    source_path = os.path.join(base_dir, source_path)
+                with open(source_path, "r", encoding="utf-8") as source_fh:
+                    source_payload = json.load(source_fh)
+                source_cases = (
+                    source_payload.get("cases", source_payload)
+                    if isinstance(source_payload, dict)
+                    else source_payload
+                )
+                if not isinstance(source_cases, list):
+                    raise ValueError(f"Curriculum source must contain cases: {source_path}")
+                weight_scale = float(source.get("weight_scale", 1.0))
+                for source_case in source_cases:
+                    case = dict(source_case)
+                    if source.get("group"):
+                        case["group"] = source["group"]
+                    case["weight"] = float(case.get("weight", 1.0)) * weight_scale
+                    cases.append(case)
+            cases.extend(payload.get("cases", []))
+        else:
+            cases = payload
         if not isinstance(cases, list) or not cases:
             raise ValueError("Curriculum case file must contain a non-empty case list")
         normalized = []
         for idx, case in enumerate(cases):
+            layout = str(case.get("layout", "fixed")).strip().lower()
+            if layout == "standard":
+                normalized.append(case)
+                continue
+            if layout != "fixed":
+                raise ValueError(
+                    f"Curriculum case {idx} layout must be fixed or standard"
+                )
             if "agents" not in case or not isinstance(case["agents"], dict):
                 raise ValueError(f"Curriculum case {idx} must define an agents object")
             missing = [name for name in self.agent_names if name not in case["agents"]]
@@ -351,6 +361,14 @@ class MultiAgentGazeboEnv:
                         )
             normalized.append(case)
         return normalized
+
+    def _current_case_uses_standard_layout(self):
+        return bool(
+            self.scenario_mode == "curriculum"
+            and self.current_curriculum_case
+            and str(self.current_curriculum_case.get("layout", "fixed")).lower()
+            == "standard"
+        )
 
     def _select_curriculum_case(self):
         mode = os.environ.get("DRL_MULTI_CURRICULUM_SAMPLING", "cycle").strip().lower()
@@ -375,6 +393,9 @@ class MultiAgentGazeboEnv:
         return np.array([float(value[0]), float(value[1])])
 
     def _apply_curriculum_boxes(self):
+        if self._current_case_uses_standard_layout():
+            self.random_box()
+            return
         boxes = self.current_curriculum_case.get("boxes")
         if boxes is None:
             self.random_box()
@@ -397,38 +418,6 @@ class MultiAgentGazeboEnv:
             box_state.pose.orientation.z = 0.0
             box_state.pose.orientation.w = 1.0
             self.set_state.publish(box_state)
-
-    def _holding_position(self, idx):
-        return np.array(
-            [
-                self.done_agent_holding_x + idx * self.done_agent_holding_spacing,
-                self.done_agent_holding_y,
-            ],
-            dtype=np.float32,
-        )
-
-    def _relocate_successful_agent(self, name, idx):
-        if name in self.success_relocated_agents:
-            return
-        holding_position = self._holding_position(idx)
-        state = self.set_self_states[name]
-        state.pose.position.x = float(holding_position[0])
-        state.pose.position.y = float(holding_position[1])
-        state.pose.position.z = 0.0
-        state.pose.orientation.x = 0.0
-        state.pose.orientation.y = 0.0
-        state.pose.orientation.z = 0.0
-        state.pose.orientation.w = 1.0
-        state.twist.linear.x = 0.0
-        state.twist.linear.y = 0.0
-        state.twist.linear.z = 0.0
-        state.twist.angular.x = 0.0
-        state.twist.angular.y = 0.0
-        state.twist.angular.z = 0.0
-        self.set_state.publish(state)
-        self.robot_positions[name] = holding_position
-        self.last_odom[name] = None
-        self.success_relocated_agents.add(name)
 
     def _make_velodyne_callback(self, name):
         def callback(msg):
@@ -477,15 +466,12 @@ class MultiAgentGazeboEnv:
                     "reward_neighbors": [],
                     "active_visible_neighbor_count": 0,
                     "nearest_active_visible_neighbor_distance": None,
-                    "relocated_to_holding": False,
                 }
                 for name in self.agent_names
             },
             "mean_reward": 0.0,
             "success_count": 0,
             "collision_count": 0,
-            "relocated_successful_count": 0,
-            "relocated_successful_agents": [],
             "active_neighbor_agent_count": 0,
             "mean_active_visible_neighbors": 0.0,
             "max_active_visible_neighbors": 0,
@@ -878,7 +864,10 @@ class MultiAgentGazeboEnv:
 
     def _uses_capacity_layout(self):
         return (
-            self.scenario_mode == "standard"
+            (
+                self.scenario_mode == "standard"
+                or self._current_case_uses_standard_layout()
+            )
             and self.weak_coupling_layout
             and self.num_agents >= 5
         )
@@ -962,7 +951,10 @@ class MultiAgentGazeboEnv:
             return candidate
 
     def _sample_start_heading(self, name):
-        if self.scenario_mode == "curriculum":
+        if (
+            self.scenario_mode == "curriculum"
+            and not self._current_case_uses_standard_layout()
+        ):
             agent_case = self.current_curriculum_case["agents"][name]
             if "heading" in agent_case:
                 return float(agent_case["heading"])
@@ -1070,7 +1062,6 @@ class MultiAgentGazeboEnv:
                 "reward_neighbors": [],
                 "active_visible_neighbor_count": 0,
                 "nearest_active_visible_neighbor_distance": None,
-                "relocated_to_holding": False,
             }
 
         if self.cooperative_reward:
@@ -1127,21 +1118,11 @@ class MultiAgentGazeboEnv:
             for idx, name in enumerate(self.agent_names)
             if idx < len(active_mask) and active_mask[idx]
         ]
-        relocated_successful_agents = []
-        if self.relocate_successful_done_agents:
-            for idx, name in enumerate(self.agent_names):
-                if idx < len(active_mask) and active_mask[idx] and targets[idx]:
-                    self._relocate_successful_agent(name, idx)
-                    step_agents_info[name]["relocated_to_holding"] = True
-                    relocated_successful_agents.append(name)
-
         self.last_step_info = {
             "agents": step_agents_info,
             "mean_reward": float(np.mean(rewards)) if rewards else 0.0,
             "success_count": int(sum(int(flag) for flag in targets)),
             "collision_count": int(sum(int(flag) for flag in collisions)),
-            "relocated_successful_count": len(relocated_successful_agents),
-            "relocated_successful_agents": relocated_successful_agents,
             "active_neighbor_agent_count": int(
                 sum(1 for count in active_neighbor_counts if count > 0)
             ),
@@ -1187,7 +1168,6 @@ class MultiAgentGazeboEnv:
 
         self.last_odom = {name: None for name in self.agent_names}
         self.previous_distances = {name: None for name in self.agent_names}
-        self.success_relocated_agents = set()
         self.last_step_info = self._empty_last_step_info()
 
         last_error = None
@@ -1256,7 +1236,10 @@ class MultiAgentGazeboEnv:
         return initial_states
 
     def _sample_robot_positions(self, min_clearance=1.2):
-        if self.scenario_mode == "curriculum":
+        if (
+            self.scenario_mode == "curriculum"
+            and not self._current_case_uses_standard_layout()
+        ):
             return {
                 name: self._curriculum_agent_position(name, "start")
                 for name in self.agent_names
@@ -1293,7 +1276,10 @@ class MultiAgentGazeboEnv:
         return positions
 
     def _sample_goal_positions(self, min_clearance=1.2):
-        if self.scenario_mode == "curriculum":
+        if (
+            self.scenario_mode == "curriculum"
+            and not self._current_case_uses_standard_layout()
+        ):
             return {
                 name: self._curriculum_agent_position(name, "goal")
                 for name in self.agent_names

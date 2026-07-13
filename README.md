@@ -1,99 +1,77 @@
 # Local-Critic-Multi-Robot-Navigation
 
-本仓库基于开源项目 `reiniscimurs/DRL-robot-navigation` 做复现和多机器人导航研究。当前工作重点是：在 TD3 + ROS/Gazebo 导航框架上，研究共享 policy、动态 reward 和局部邻域 critic 对多机器人协同导航的影响。
+本仓库基于 `reiniscimurs/DRL-robot-navigation`，研究 TD3 在 ROS/Gazebo 多机器人局部导航中的训练与泛化。机器人执行时只使用本车 24 维观测；训练阶段可以通过局部 Critic 使用邻居信息。
 
-## 项目定位
+## 当前研究主线
 
-本项目不是从零重写导航系统，而是在原始单机器人 TD3 导航框架上逐步扩展：
+历史实验收敛出的能力链路是：
 
-- 单智能体 TD3 导航复现。
-- 多机器人共享 actor/critic policy。
-- RewardOnly 与 Weighted08 动态 reward 对照。
-- 局部邻域 critic：actor 执行时仍只看自身观测，邻居几何信息只进入训练期 critic。
+```text
+5A（普通五车 Actor）
+  -> 5D（几何邻域 Critic 训练得到的桥接 Actor）
+  -> PAIR(from_5d) / THREE_5（证明继续覆盖训练会退化）
+  -> 5D + 时空 Attention 残差（当前主线）
+```
 
-## 当前主线
+现有结果支持以下判断：
 
-当前主线是三车对照实验：
+- `5A` 是普通导航主干。
+- `5D` 在当前正式 dense 测试中表现最好，是桥接基线。
+- `PAIR(from_5d)` 的训练过程更顺，但正式 dense 测试没有超过 `5D`；继续训练到 `THREE_5` 后逐轮退化。
+- `5A + 5D` 的 hard switch 和 case-level oracle 都没有超过单独使用 `5D`，二者暂时缺乏足够的专家互补性。
 
-- warm-start：`TD3_velodyne_multi_v4`
-- actor 输入：本车 24 维 observation
-- 执行阶段：无通信，不使用邻居信息
-- 测试规模：best actor 300 episodes
+因此当前不再覆盖训练完整 Actor，也不再训练双 Actor gate。新主线冻结 `5D`，只训练使用本车观测历史的时空 Attention 残差和 Attention Critic。
 
-核心实验：
+## 方法结构
 
-| 方法 | 简述 |
-| --- | --- |
-| A. 三车共享 Policy Baseline | 共享 actor/critic，不使用动态 reward 和局部 critic |
-| B. 三车 RewardOnly | 只改变训练 reward |
-| C. 三车 Weighted08 | `0.8 * own + 0.2 * distance-weighted neighbor` |
-| D. 三车局部邻域 Critic | critic 看邻居几何和邻居动作 |
-| D2. 三车几何邻域 Critic | critic 只看邻居几何信息 |
+Actor 在所有主要实验中保持分散执行：
 
-当前表现较好的结果是 D2：三车几何邻域 Critic 在 20 epoch 扩展验证中达到 `full_success_rate=0.827`，高于三车 baseline、RewardOnly、Weighted08 和原始局部邻域 Critic。
+```text
+20 维激光 + 目标距离/方向 + 上一步动作
+  -> 共享 Actor
+  -> 线速度与角速度
+```
 
-完整横向对比见：
+主要 Critic 变体包括：
 
-- [experiments/实验总览.md](experiments/实验总览.md)
-- [experiments/多智能体/3智能体/三车主线对照总表.md](experiments/多智能体/3智能体/三车主线对照总表.md)
+- 共享 Critic：只使用本车状态和动作。
+- 局部 Critic：训练时加入邻居几何及可选动作信息。
+- 几何邻域 Critic：只加入邻居几何，不依赖邻居动作。
+- 时空 Attention：使用本车激光扇区和最近观测历史，输出对冻结 `5D` 的门控残差动作。
+- Attention Critic：与 Actor 使用相同的本地序列输入，不使用其他机器人的仿真真值。
 
 ## 建议阅读顺序
 
-1. [experiments/实验总览.md](experiments/实验总览.md)
-2. [experiments/多智能体/3智能体/三车主线对照总表.md](experiments/多智能体/3智能体/三车主线对照总表.md)
-3. [experiments/多智能体/README.md](experiments/多智能体/README.md)
+1. [实验总览](experiments/实验总览.md)
+2. [课程学习](experiments/02_课程学习/README.md)
+3. [五车非对称密集重做](experiments/02_课程学习/第三课程_多车密集交互/05_五车非对称密集重做/README.md)
+4. [保留专门化](experiments/04_保留专门化/README.md)
+5. [时空 Attention 残差主线](experiments/04_保留专门化/03_门控注意力增强/README.md)
+6. [双 Actor 切换与 Oracle（历史诊断）](experiments/04_保留专门化/02_双actor切换/README.md)
+7. [执行文档](README_执行文档.md)
 
-## 快速入口
+早期三车 A/B/C/D/D2 对照仍保留为历史实验，见 [第一次尝试](experiments/01_第一次尝试/多智能体/3智能体/三车主线对照总表.md)，不再作为当前主线入口。
 
-### 三车共享 Policy Baseline
-
-```bash
-bash scripts/start_training_detached_multi_baseline_3.sh
-bash scripts/start_test_detached_multi_baseline_3_best.sh
-```
-
-### 三车 RewardOnly
+## 当前执行入口
 
 ```bash
-bash scripts/start_training_detached_multi_reward_only_3.sh
-bash scripts/start_test_detached_multi_reward_only_3_best.sh
+# 当前唯一的新训练主线
+bash scripts/start_training_detached_spatiotemporal_attention_5d.sh
+
+# 5D standard_5 正式测试
+bash scripts/start_test_detached_multi_stage2_to_5d_geo_critic_from_5a_guarded_best.sh
+
 ```
 
-### 三车 Weighted08
-
-```bash
-bash scripts/start_training_detached_multi_weighted08_3.sh
-bash scripts/start_test_detached_multi_weighted08_3_best.sh
-```
-
-### 三车局部邻域 Critic
-
-```bash
-bash scripts/start_training_detached_multi_local_critic_3.sh
-bash scripts/start_test_detached_multi_local_critic_3_best.sh
-```
-
-### 三车几何邻域 Critic
-
-```bash
-bash scripts/start_training_detached_multi_local_critic_geo_3.sh
-bash scripts/start_test_detached_multi_local_critic_geo_3_best.sh
-```
-
-
-## 实验记录与日志
-
-- 正式归档放在 `experiments/`。
-- 三车主线结果以各实验目录中的 `*_summary.md` 为准。
+具体环境变量、后台进程和 ROS/Gazebo 操作见 [README_执行文档.md](README_执行文档.md)。
 
 ## 仓库结构
 
 ```text
 Local-Critic-Multi-Robot-Navigation/
-├── TD3/                      # 训练、测试、模型、checkpoint、结果
-├── catkin_ws/                # ROS 工作区
-├── scripts/                  # detached 启停脚本
-├── experiments/              # 实验归档、总结、正式 train/test 日志
-├── README.md                 # 项目首页
-└── README_执行文档.md         # 当前机器上的执行手册
+├── TD3/              # 训练、测试、环境、模型与 checkpoint
+├── catkin_ws/        # ROS 工作区、机器人模型和 Gazebo 插件
+├── scripts/          # 训练、测试、停止与观察脚本
+├── experiments/      # 实验设计、正式结果和结论
+└── README_执行文档.md # 当前机器执行手册
 ```

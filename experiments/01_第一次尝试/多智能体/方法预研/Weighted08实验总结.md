@@ -1,6 +1,6 @@
 # 多智能体动态 Reward 加权版实验总结
 
-> 历史记录：本文档主要总结早期两车 Weighted08 实验。当前三车 Weighted08 对照和 20 epoch 扩展检查请以 `experiments/多智能体/3智能体/C_Weighted08距离加权奖励对照/README.md`、`experiments/多智能体/3智能体/C_Weighted08距离加权奖励对照/三车Weighted08/` 和 `experiments/多智能体/3智能体/三车主线对照总表.md` 为准。
+> 历史记录：本文档主要总结早期两车 Weighted08 实验。三车 Weighted08 对照和 20 epoch 扩展检查请以 `experiments/01_第一次尝试/多智能体/3智能体/C_Weighted08距离加权奖励对照/README.md`、`experiments/01_第一次尝试/多智能体/3智能体/C_Weighted08距离加权奖励对照/三车Weighted08/` 和 `experiments/01_第一次尝试/多智能体/3智能体/三车主线对照总表.md` 为准。
 
 ## 结论
 
@@ -111,8 +111,8 @@ reward_i = 0.8 * own_reward_i + 0.2 * mean(visible_neighbor_rewards)
 
 - 训练日志：`logs/train_multi_coop_weighted08_detached_20260516_105748.log`
 - 测试日志：`logs/test_multi_coop_weighted08_best_detached_20260516_151805.log`
-- 归档训练日志：`experiments/多智能体/3智能体/C_Weighted08距离加权奖励对照/train_multi_coop_weighted08_detached_20260516_105748.log`
-- 归档测试日志：`experiments/多智能体/3智能体/C_Weighted08距离加权奖励对照/test_multi_coop_weighted08_best_detached_20260516_151805.log`
+- 归档训练日志：`experiments/01_第一次尝试/多智能体/3智能体/C_Weighted08距离加权奖励对照/train_multi_coop_weighted08_detached_20260516_105748.log`
+- 归档测试日志：`experiments/01_第一次尝试/多智能体/3智能体/C_Weighted08距离加权奖励对照/test_multi_coop_weighted08_best_detached_20260516_151805.log`
 - best checkpoint：`TD3/checkpoints/TD3_velodyne_multi_v4_coop_weighted08_best.pt`
 - latest checkpoint：`TD3/checkpoints/TD3_velodyne_multi_v4_coop_weighted08_latest.pt`
 - best actor：`TD3/pytorch_models/TD3_velodyne_multi_v4_coop_weighted08_best_actor.pth`

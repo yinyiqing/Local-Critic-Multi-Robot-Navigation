@@ -8,6 +8,7 @@ TD3/assets/multi_robot_scenario_curriculum_test_*.launch
 TD3/assets/multi_robot_scenario_dense_*.launch
 TD3/assets/multi_robot_scenario_individual_*.launch
 TD3/assets/multi_robot_scenario_interaction_*.launch
+TD3/assets/multi_robot_scenario_attention_*.launch
 TD3/assets/multi_robot_scenario_weighted09*.launch
 TD3/assets/multi_robot_scenario_reward_only_5.launch
 TD3/assets/multi_robot_scenario_local_critic_geo_5.launch

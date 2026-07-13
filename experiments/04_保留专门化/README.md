@@ -41,7 +41,7 @@
 
 一句话：
 
-**先保留普通 actor，再单独增强 dense 交互能力，不再继续硬改同一个 actor。当前优先方向是冻结双 actor，只训练门控网络。**
+**冻结当前最稳的 `5D` Actor，只训练使用本车时空观测的门控残差和 Attention Critic，不再覆盖完整 Actor。**
 
 ## 这一目录后面准备怎么放
 
@@ -50,7 +50,7 @@
 - `02_双actor切换/`
   - 作为中间验证：能力偏向存在，但粗切换不够
 - `03_门控注意力增强/`
-  - 主线收敛方向：局部交互感知 + 轻量注意力增强
+  - 当前唯一新主线：`5D + 时空 Attention 残差`
 - `04_安全兜底/`
   - 如果主线有效，再把传统规划或安全控制并进来
 
@@ -59,17 +59,17 @@
 ## 当前一句话记录
 
 - 旧主线卡点：actor 解冻后退化
-- critic 核查结论：有帮助，但不够
-- 新主线：保留旧 actor，不再覆盖式训练单一 actor
+- 旧 Attention / 联合动作 Critic 实现已精简，不复用旧结构
+- 新主线：冻结 `5D`，只学习本地可观测的时空残差
 
 ## 当前故事
 
 1. 直接继续训练单一 actor，容易退化。
 2. `5A` 更像普通导航 actor。
 3. `5D` 更像普通到 dense 的桥接 actor。
-4. `PAIR(from_5d)` 更像当前最好的 dense 专门化 actor。
-5. 下一步不是硬切换两个策略，而是在保留主干能力的前提下先做门控。
-6. 注意力可以作为后续增强，但不是当前第一主线。
+4. `PAIR(from_5d)` 是当前 dense 专门化基线，但正式 dense 测试没有超过 `5D`。
+5. `5A + 5D` 的 hard switch 和 oracle 显示互补不足，不能直接进入 learned gate 训练。
+6. 当前改用单 Actor 残差 Attention，不再依赖两个专家互补。
 
 ## 当前测试口径
 
@@ -80,14 +80,11 @@
 - `stage2_dense`
   - 只作为压力测试，不作为当前主 benchmark
 
-### 5. 当前先定的候选组合
+### 当前模型角色
 
-- 普通 actor：
-  - `5A`
-- 过渡 / 桥接 actor：
-  - `5D`
-- 密集 actor：
-  - `PAIR(from_5d)`
+- 冻结基础 Actor：`5D`
+- 新训练模型：`5D + spatiotemporal attention residual`
+- `5A`、`PAIR(from_5d)`、`THREE_5`：历史对照，不进入新训练图
 
 额外约定：
 
@@ -97,15 +94,20 @@
 - `PAIR(from_5d)` 是当前 dense specialized baseline
   - 它代表“在 bridge actor 基础上继续做密集专门化”后的版本
   - 训练内 eval 已达到 `0.921 / 0.079 / 0.750`
-  - 但后续仍应补正式 test，不能只凭训练内 eval 当最终口径
+  - 正式测试为：`standard_5` 的 `0.891 / 0.085 / 0.573`，`stage3_asym_three_5` 的 `0.880 / 0.122 / 0.575`
+  - 正式 dense 测试没有超过 `5D`，因此暂不能直接定为 dense expert
 - `THREE_5` 是更难一级的扩展场景，不作为当前 baseline
 - 旧 `stage2_dense` / `stage2_dense_gentle` 保留为失败前史和压力边界，不再当主线训练入口
 
 补充：
 
-- `2026-07-13`：`5D -> stage3_asym_pair_5` 已完成 3 epoch，第三轮达到 `0.921 / 0.079 / 0.750`，当前主线使用 `PAIR(from_5d)`。
+- `2026-07-13`：`5D -> stage3_asym_pair_5` 已完成 3 epoch，第三轮达到 `0.921 / 0.079 / 0.750`，但正式测试未超过 `5D`。
 
 ## 当前简单记录
 
 - `2026-07-12`：进入 `02_双actor切换`，先做最小推理版：默认 `5A`，交互变强时切到 `PAIR`。
 - `2026-07-12`：粗双 actor 切换两边都没赢，主线开始从“策略硬切换”收敛到“局部交互感知的门控注意力增强”。
+- `2026-07-13`：`5A + 5D` case-level oracle 三个 case 全选 `5D`，确认二者互补不足；learned gate 暂缓，先寻找更专门化的专家组合。
+- `2026-07-13`：停止双 Actor gate 路线，建立冻结 `5D` 的本地时空 Attention 残差主线。
+- `2026-07-13`：旧 Attention run 在约 670 episode 停止。best 在 episode 300，后续 gate/residual 退化为近常量且角速度残差翻转；该结果只说明旧目标不稳定，不能证明时空 Attention 有效。
+- `2026-07-13`：建立 balanced v2：三组分层回放、reward scale、非饱和 gate/residual 约束、固定评估、Actor 衰减和无提升早停。

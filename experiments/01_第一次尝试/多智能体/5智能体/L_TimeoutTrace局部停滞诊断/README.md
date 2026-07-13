@@ -8,8 +8,8 @@
 - 来源：J 组 Individual Active Probe epoch 3 best checkpoint
 - 训练：不重新训练
 - 测试阶段 reward：individual reward，仅用于统计
-- 测试脚本：`scripts/start_test_detached_multi_individual_active_probe_5_best_trace_timeout.sh`
-- trace 设置：
+- 当时使用一次性测试封装和 trace 实现运行；二者均已在代码精简中删除，以下参数仅用于记录历史配置，当前代码不再接受这些开关
+- 历史 trace 设置：
   - `DRL_MULTI_TRACE_FAILURES=1`
   - `DRL_MULTI_TRACE_FAILURE_MODE=timeout`
   - `DRL_MULTI_TRACE_WINDOW_STEPS=100`
