@@ -8,15 +8,9 @@
 
 ## 现在要验证什么
 
-我们想验证的不是“dense actor 更强”这么简单，而是下面这件事：
+一句话：
 
-1. 普通 actor 在普通五车场景里更稳
-2. 往密集场景继续训练后，模型会更偏向密集交互
-3. 但这种继续训练，可能会损伤它在普通场景里的原有能力
-
-如果这三点成立，就可以把问题正式定义成：
-
-**单一共享 actor 在普通导航能力和密集协同能力之间存在冲突。**
+**普通能力和 dense 能力不能只靠继续硬训同一个 actor 来兼顾。**
 
 ## 第一轮先用现成模型
 
@@ -52,50 +46,20 @@
 
 后面如果需要，再补别的 `stage3_asym_three_5` 版本做对照。
 
-## 第一轮测试矩阵
+## 当前测试口径
 
-### 普通场景
+- `standard_5`
+  - 普通场景主测试
+- `stage3_asym_three_5`
+  - dense 场景主测试
+- `stage2_dense`
+  - 只作为压力测试，不作为当前主 benchmark
 
-先测标准五车普通场景：
+## 现在的简单判断标准
 
-- 普通 actor -> 普通场景
-- 密集 actor -> 普通场景
-- overwrite actor -> 普通场景
-
-这里主要看：
-
-- success_rate
-- collision_rate
-- full_success_rate
-
-### 密集场景
-
-再测 `stage3_asym_three_5`：
-
-- 普通 actor -> 密集场景
-- 密集 actor -> 密集场景
-- overwrite actor -> 密集场景
-
-这里主要看：
-
-- success_rate
-- collision_rate
-- full_success_rate
-- timeout_episode_rate
-
-## 怎样算“冲突成立”
-
-如果出现下面这种格局，就说明这个问题基本成立：
-
-1. 普通 actor 在普通场景最好或最稳
-2. 密集 actor / overwrite actor 在密集场景更强
-3. 但 overwrite actor 在普通场景明显差于普通 actor
-
-这就说明：
-
-- 往 dense 继续训练不是“纯增益”
-- 它会带来能力偏移
-- 也就是我们想说的 preserve-and-specialize 动机
+- `5A` 在 `standard_5` 更稳
+- dense actor 在 `stage3_asym_three_5` 应该更强
+- 如果继续训练后的单一 actor 两边都没赢，就说明 overwrite 路线不划算
 
 ## 当前记录
 
