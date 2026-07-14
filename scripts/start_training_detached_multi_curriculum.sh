@@ -262,12 +262,12 @@ case "$STAGE" in
     VERSION="dense5-from-5d-geo-v2"
     DEFAULT_LOAD_ACTOR_ONLY=0
     DEFAULT_MAX_EPOCHS=20
-    DEFAULT_EVAL_EPISODES=60
-    DEFAULT_EXPL_NOISE=0.018
-    DEFAULT_EXPL_MIN=0.006
+    DEFAULT_EVAL_EPISODES=40
+    DEFAULT_EXPL_NOISE=0.025
+    DEFAULT_EXPL_MIN=0.012
     DEFAULT_ACTOR_LR=0.000001
-    DEFAULT_CRITIC_LR=0.00002
-    DEFAULT_ACTOR_UPDATE_DELAY_STEPS=18000
+    DEFAULT_CRITIC_LR=0.00008
+    DEFAULT_ACTOR_UPDATE_DELAY_STEPS=20000
     ;;
   stage2_three_dense)
     NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-3}"
@@ -326,6 +326,8 @@ WALL_CLEARANCE_SPEED_WEIGHT="${DRL_MULTI_WALL_CLEARANCE_SPEED_WEIGHT:-$DEFAULT_W
 WALL_CLEARANCE_TURN_WEIGHT="${DRL_MULTI_WALL_CLEARANCE_TURN_WEIGHT:-$DEFAULT_WALL_CLEARANCE_TURN_WEIGHT}"
 if [[ "$STAGE" == "stage1e_single_rescue" || "$STAGE" == "stage1f_wall_parallel_rescue" || "$STAGE" == "stage1g_collision_guard" || "$STAGE" == "stage1h_separated_reverse_guard" || "$STAGE" == "stage1i_yaw_reverse_collision_guard" ]]; then
   LOCAL_NAVIGATION_REWARD="${DRL_MULTI_USE_LOCAL_NAVIGATION_REWARD:-1}"
+elif [[ "$STAGE" == "stage4_asym_dense_5" ]]; then
+  LOCAL_NAVIGATION_REWARD="${DRL_MULTI_USE_LOCAL_NAVIGATION_REWARD:-0}"
 elif [[ "$STAGE" == "stage2a_manual_dense_crossing" || "$STAGE" == "stage2_pre_pairwise_warmup" || "$STAGE" == "stage2_main_pairwise_repair" || "$STAGE" == "stage2b_three_transition" || "$STAGE" == "stage2b_three_light_dense" || "$STAGE" == "stage2_pairwise_to_dense" || "$STAGE" == "stage2_dense_gentle" || "$STAGE" == "stage2_dense_bridge" || "$STAGE" == "stage3_asym_pair_5" || "$STAGE" == "stage3_asym_three_5" || "$STAGE" == "stage4_asym_dense_5" ]]; then
   LOCAL_NAVIGATION_REWARD="${DRL_MULTI_USE_LOCAL_NAVIGATION_REWARD:-1}"
 else
@@ -337,6 +339,12 @@ if [[ "$STAGE" == "stage2_pre_pairwise_warmup" ]]; then
   DEFAULT_INTERACTION_SAFE_DISTANCE=0.9
   DEFAULT_INTERACTION_CLOSE_PENALTY=0.25
   DEFAULT_INTERACTION_STAGNATION_PENALTY=0.02
+elif [[ "$STAGE" == "stage4_asym_dense_5" ]]; then
+  DEFAULT_DYNAMIC_REWARD=1
+  DEFAULT_REWARD_MODE="average"
+  DEFAULT_INTERACTION_SAFE_DISTANCE=1.2
+  DEFAULT_INTERACTION_CLOSE_PENALTY=0.5
+  DEFAULT_INTERACTION_STAGNATION_PENALTY=0.05
 elif [[ "$STAGE" == "stage2_main_pairwise_repair" || "$STAGE" == "stage2b_three_transition" || "$STAGE" == "stage2b_three_light_dense" || "$STAGE" == "stage2_pairwise_to_dense" || "$STAGE" == "stage2_dense_gentle" || "$STAGE" == "stage2_dense_bridge" || "$STAGE" == "stage3_asym_pair_5" || "$STAGE" == "stage3_asym_three_5" || "$STAGE" == "stage4_asym_dense_5" ]]; then
   DEFAULT_DYNAMIC_REWARD=1
   DEFAULT_INTERACTION_SAFE_DISTANCE=0.9
@@ -366,7 +374,7 @@ if [[ "$STAGE" == "stage2_main_pairwise_repair" || "$STAGE" == "stage2b_three_tr
   DEFAULT_LOCAL_CRITIC_GEOMETRY_ONLY=0
 elif [[ "$STAGE" == "stage4_asym_dense_5" ]]; then
   DEFAULT_DISTANCE_WEIGHTED_REWARD=1
-  DEFAULT_REWARD_SELF_WEIGHT=0.85
+  DEFAULT_REWARD_SELF_WEIGHT=0.8
   DEFAULT_LOCAL_CRITIC=1
   DEFAULT_LOCAL_CRITIC_GEOMETRY_ONLY=1
 elif [[ "$STAGE" == "stage2_pairwise_to_dense" || "$STAGE" == "stage2_dense_gentle" || "$STAGE" == "stage2_dense_bridge" || "$STAGE" == "stage3_asym_pair_5" || "$STAGE" == "stage3_asym_three_5" || "$STAGE" == "stage4_asym_dense_5" ]]; then
@@ -388,6 +396,7 @@ LOAD_ACTOR_ONLY="${DRL_MULTI_LOAD_ACTOR_ONLY:-${DEFAULT_LOAD_ACTOR_ONLY:-0}}"
 ACTOR_UPDATE_DELAY_STEPS="${DRL_MULTI_ACTOR_UPDATE_DELAY_STEPS:-${DEFAULT_ACTOR_UPDATE_DELAY_STEPS:-0}}"
 POLICY_FREQ="${DRL_MULTI_POLICY_FREQ:-2}"
 ACTOR_ANCHOR_WEIGHT="${DRL_MULTI_ACTOR_ANCHOR_WEIGHT:-0}"
+RESUME_TRAINING="${DRL_MULTI_RESUME_TRAINING:-1}"
 LOCAL_CRITIC_MAX_AGENTS="${DRL_MULTI_LOCAL_CRITIC_MAX_AGENTS:-10}"
 LOCAL_NAV_HEADING_WEIGHT="${DRL_MULTI_LOCAL_NAV_HEADING_WEIGHT:-0.35}"
 LOCAL_NAV_WRONG_WAY_PENALTY="${DRL_MULTI_LOCAL_NAV_WRONG_WAY_PENALTY:-0.25}"
@@ -479,6 +488,7 @@ setsid bash -lc "
   export DRL_MULTI_ACTOR_UPDATE_DELAY_STEPS='$ACTOR_UPDATE_DELAY_STEPS'
   export DRL_MULTI_POLICY_FREQ='$POLICY_FREQ'
   export DRL_MULTI_ACTOR_ANCHOR_WEIGHT='$ACTOR_ANCHOR_WEIGHT'
+  export DRL_MULTI_RESUME_TRAINING='$RESUME_TRAINING'
   export DRL_MULTI_TRAINING_VERSION='${DRL_MULTI_TRAINING_VERSION:-$VERSION}'
   export DRL_MULTI_TRAIN_FILE_NAME='$MODEL_NAME'
   export DRL_MULTI_LOAD_MODEL=1
@@ -511,6 +521,7 @@ echo "Critic LR: $CRITIC_LR"
 echo "Actor update delay steps: $ACTOR_UPDATE_DELAY_STEPS"
 echo "Policy freq: $POLICY_FREQ"
 echo "Actor anchor weight: $ACTOR_ANCHOR_WEIGHT"
+echo "Resume training: $RESUME_TRAINING"
 echo "Dynamic reward: $DYNAMIC_REWARD"
 echo "Reward mode: $REWARD_MODE"
 echo "Distance-weighted reward: $DISTANCE_WEIGHTED_REWARD"

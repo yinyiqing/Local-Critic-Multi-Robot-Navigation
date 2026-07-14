@@ -584,7 +584,7 @@ save_model = True
 load_model = env_flag("DRL_MULTI_LOAD_MODEL", False)
 load_actor_only = env_flag("DRL_MULTI_LOAD_ACTOR_ONLY", False)
 load_model_name = os.environ.get("DRL_MULTI_LOAD_MODEL_NAME", file_name)
-resume_training = True
+resume_training = env_flag("DRL_MULTI_RESUME_TRAINING", True)
 launchfile = os.environ.get(
     "DRL_MULTI_TRAIN_LAUNCHFILE", "multi_robot_scenario_multi_2.launch"
 )
@@ -652,6 +652,14 @@ def load_training_checkpoint():
     if not (resume_training and os.path.exists(checkpoint_path)):
         return None
     return torch.load(checkpoint_path, map_location="cpu")
+
+
+def can_fallback_to_actor_only(exc):
+    message = str(exc).lower()
+    return (
+        "size mismatch" in message
+        and "critic" in message
+    )
 
 
 environment_dim = 20
@@ -727,8 +735,8 @@ elif load_model:
             try:
                 network.load(load_model_name, "./pytorch_models")
                 print("Loaded initial model parameters from:", load_model_name)
-            except Exception:
-                if use_local_critic:
+            except Exception as exc:
+                if use_local_critic and can_fallback_to_actor_only(exc):
                     network.load_actor(load_model_name, "./pytorch_models")
                     print("Loaded initial actor parameters from:", load_model_name)
                     print(
@@ -744,8 +752,9 @@ elif load_model:
                 "| weight=",
                 actor_anchor_weight,
             )
-    except Exception:
+    except Exception as exc:
         print("Could not load the stored model parameters, initializing randomly")
+        print("Load error:", exc)
 
 evaluations = checkpoint["evaluations"] if checkpoint else []
 timestep = checkpoint["timestep"] if checkpoint else 0
@@ -1026,15 +1035,21 @@ while timestep < max_timesteps:
                 if episode_sample_count > 0
                 else 0.0
             )
-            mean_context_neighbors = (
-                episode_context_neighbor_count_sum / episode_sample_count
-                if episode_sample_count > 0
-                else 0.0
-            )
-            max_context_neighbors = episode_context_neighbor_max
-            last_context_neighbors_mean, last_context_neighbors_max = context_stats(
-                episode_last_neighbor_contexts
-            )
+            if use_local_critic:
+                mean_context_neighbors = (
+                    episode_context_neighbor_count_sum / episode_sample_count
+                    if episode_sample_count > 0
+                    else 0.0
+                )
+                max_context_neighbors = episode_context_neighbor_max
+                last_context_neighbors_mean, last_context_neighbors_max = context_stats(
+                    episode_last_neighbor_contexts
+                )
+            else:
+                mean_context_neighbors = -1.0
+                max_context_neighbors = -1.0
+                last_context_neighbors_mean = -1.0
+                last_context_neighbors_max = -1.0
             coop_active_agents = sum(1 for count in coop_neighbor_counts if count > 0)
             mean_raw_reward = float(np.mean(raw_rewards))
             mean_adjusted_reward = float(np.mean(adjusted_rewards))
