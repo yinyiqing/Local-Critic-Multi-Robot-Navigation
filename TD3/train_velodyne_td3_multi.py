@@ -719,16 +719,23 @@ if checkpoint:
     print("Resumed multi-agent training from checkpoint:", checkpoint_path)
 elif load_model:
     try:
-        if use_local_critic or load_actor_only:
+        if load_actor_only:
             network.load_actor(load_model_name, "./pytorch_models")
             print("Loaded initial actor parameters from:", load_model_name)
-            if use_local_critic:
-                print("Local critic is newly initialized because critic input dim changed.")
-            else:
-                print("Critic is newly initialized because actor-only warm start was requested.")
+            print("Critic is newly initialized because actor-only warm start was requested.")
         else:
-            network.load(load_model_name, "./pytorch_models")
-            print("Loaded initial model parameters from:", load_model_name)
+            try:
+                network.load(load_model_name, "./pytorch_models")
+                print("Loaded initial model parameters from:", load_model_name)
+            except Exception:
+                if use_local_critic:
+                    network.load_actor(load_model_name, "./pytorch_models")
+                    print("Loaded initial actor parameters from:", load_model_name)
+                    print(
+                        "Full model warm start failed; critic was reinitialized because stored critic shape did not match."
+                    )
+                else:
+                    raise
         if actor_anchor_weight > 0.0:
             network.set_actor_reference(network.actor.state_dict(), actor_anchor_weight)
             print(

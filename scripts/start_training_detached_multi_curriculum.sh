@@ -256,11 +256,11 @@ case "$STAGE" in
     ;;
   stage4_asym_dense_5)
     NUM_AGENTS="${DRL_MULTI_NUM_AGENTS:-5}"
-    MODEL_NAME="${DRL_MULTI_TRAIN_FILE_NAME:-TD3_multi_dense5_from_5d}"
+    MODEL_NAME="${DRL_MULTI_TRAIN_FILE_NAME:-TD3_multi_dense5_from_5d_geo}"
     LOAD_MODEL_NAME="${DRL_MULTI_LOAD_MODEL_NAME:-TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best}"
     CASES_PATH="$PROJECT_ROOT/experiments/02_课程学习/cases/stage4_asym_dense_5_cases.json"
-    VERSION="dense5-from-5d-v1"
-    DEFAULT_LOAD_ACTOR_ONLY=1
+    VERSION="dense5-from-5d-geo-v2"
+    DEFAULT_LOAD_ACTOR_ONLY=0
     DEFAULT_MAX_EPOCHS=20
     DEFAULT_EVAL_EPISODES=60
     DEFAULT_EXPL_NOISE=0.018
@@ -364,6 +364,11 @@ if [[ "$STAGE" == "stage2_main_pairwise_repair" || "$STAGE" == "stage2b_three_tr
   DEFAULT_REWARD_SELF_WEIGHT=0.8
   DEFAULT_LOCAL_CRITIC=1
   DEFAULT_LOCAL_CRITIC_GEOMETRY_ONLY=0
+elif [[ "$STAGE" == "stage4_asym_dense_5" ]]; then
+  DEFAULT_DISTANCE_WEIGHTED_REWARD=1
+  DEFAULT_REWARD_SELF_WEIGHT=0.85
+  DEFAULT_LOCAL_CRITIC=1
+  DEFAULT_LOCAL_CRITIC_GEOMETRY_ONLY=1
 elif [[ "$STAGE" == "stage2_pairwise_to_dense" || "$STAGE" == "stage2_dense_gentle" || "$STAGE" == "stage2_dense_bridge" || "$STAGE" == "stage3_asym_pair_5" || "$STAGE" == "stage3_asym_three_5" || "$STAGE" == "stage4_asym_dense_5" ]]; then
   DEFAULT_DISTANCE_WEIGHTED_REWARD=1
   DEFAULT_REWARD_SELF_WEIGHT=0.85
