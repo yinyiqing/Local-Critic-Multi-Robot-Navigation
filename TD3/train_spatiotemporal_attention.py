@@ -13,9 +13,6 @@ from multi_agent_velodyne_env import MultiAgentGazeboEnv
 from sequence_replay_buffer import SequenceReplayBuffer
 from spatiotemporal_attention import SpatioTemporalTD3
 
-TD3_ROOT = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.dirname(TD3_ROOT)
-
 
 def env_int(name, default):
     value = os.environ.get(name)
@@ -164,39 +161,18 @@ actor_lr_min_ratio = env_float("DRL_ATTENTION_ACTOR_MIN_LR_RATIO", 0.1)
 exploration_noise = env_float("DRL_ATTENTION_EXPLORATION_NOISE", 0.01)
 gradient_clip = env_float("DRL_ATTENTION_GRADIENT_CLIP", 1.0)
 reward_scale = env_float("DRL_ATTENTION_REWARD_SCALE", 0.1)
-correction_budget = env_float("DRL_ATTENTION_CORRECTION_BUDGET", 0.4)
-correction_budget_penalty_weight = env_float(
-    "DRL_ATTENTION_CORRECTION_BUDGET_PENALTY", 0.1
-)
-standard_correction_penalty_weight = env_float(
-    "DRL_ATTENTION_STANDARD_CORRECTION_PENALTY", 0.25
+gate_penalty_weight = env_float("DRL_ATTENTION_GATE_PENALTY", 0.1)
+residual_penalty_weight = env_float("DRL_ATTENTION_RESIDUAL_PENALTY", 0.05)
+standard_residual_penalty_weight = env_float(
+    "DRL_ATTENTION_STANDARD_RESIDUAL_PENALTY", 1.0
 )
 batch_size = env_int("DRL_ATTENTION_BATCH_SIZE", 64)
 replay_capacity = env_int("DRL_ATTENTION_REPLAY_CAPACITY", 200000)
-standard_group = os.environ.get("DRL_ATTENTION_STANDARD_GROUP", "standard").strip()
-dense_group = os.environ.get("DRL_ATTENTION_DENSE_GROUP", "dense").strip()
-if not 0.0 <= correction_budget <= 1.0:
-    raise ValueError("DRL_ATTENTION_CORRECTION_BUDGET must be between 0 and 1")
-if correction_budget_penalty_weight < 0.0:
-    raise ValueError("DRL_ATTENTION_CORRECTION_BUDGET_PENALTY must be non-negative")
-if standard_correction_penalty_weight < 0.0:
-    raise ValueError("DRL_ATTENTION_STANDARD_CORRECTION_PENALTY must be non-negative")
-if not standard_group or not dense_group or standard_group == dense_group:
-    raise ValueError("Attention standard and dense groups must be distinct and non-empty")
-replay_group_ratios = {}
-for group, env_name, default in (
-    (standard_group, "DRL_ATTENTION_REPLAY_STANDARD_RATIO", 1.0),
-    (dense_group, "DRL_ATTENTION_REPLAY_DENSE_RATIO", 1.0),
-):
-    replay_group_ratios[group] = replay_group_ratios.get(group, 0.0) + env_float(
-        env_name, default
-    )
-legacy_pair_ratio = env_float("DRL_ATTENTION_REPLAY_PAIR_RATIO", 0.0)
-legacy_three_ratio = env_float("DRL_ATTENTION_REPLAY_THREE_RATIO", 0.0)
-if legacy_pair_ratio > 0.0:
-    replay_group_ratios["pair"] = replay_group_ratios.get("pair", 0.0) + legacy_pair_ratio
-if legacy_three_ratio > 0.0:
-    replay_group_ratios["three"] = replay_group_ratios.get("three", 0.0) + legacy_three_ratio
+replay_group_ratios = {
+    "standard": env_float("DRL_ATTENTION_REPLAY_STANDARD_RATIO", 1.0),
+    "pair": env_float("DRL_ATTENTION_REPLAY_PAIR_RATIO", 1.0),
+    "three": env_float("DRL_ATTENTION_REPLAY_THREE_RATIO", 1.0),
+}
 learning_starts = env_int("DRL_ATTENTION_LEARNING_STARTS", 2000)
 max_episodes = env_int("DRL_ATTENTION_MAX_EPISODES", 1000)
 max_episode_steps = env_int("DRL_ATTENTION_MAX_EPISODE_STEPS", 300)
@@ -217,13 +193,11 @@ base_model = os.environ.get(
 )
 model_name = os.environ.get(
     "DRL_ATTENTION_MODEL_NAME",
-    "TD3_velodyne_multi_v5_attention_residual_from_5d_asym_dense_correction_v2",
+    "TD3_velodyne_multi_v5_attention_residual_from_5d_balanced_v2",
 )
-if not os.path.isabs(launchfile):
-    launchfile = os.path.join(TD3_ROOT, "assets", launchfile)
-base_actor_path = os.path.join(TD3_ROOT, "pytorch_models", f"{base_model}_actor.pth")
-checkpoint_path = os.path.join(TD3_ROOT, "checkpoints", f"{model_name}_latest.pt")
-best_checkpoint_path = os.path.join(TD3_ROOT, "checkpoints", f"{model_name}_best.pt")
+base_actor_path = os.path.join("pytorch_models", f"{base_model}_actor.pth")
+checkpoint_path = os.path.join("checkpoints", f"{model_name}_latest.pt")
+best_checkpoint_path = os.path.join("checkpoints", f"{model_name}_best.pt")
 
 random.seed(seed)
 np.random.seed(seed)
@@ -260,7 +234,7 @@ time.sleep(5)
 
 timestamp = datetime.now().strftime("%b%d_%H-%M-%S")
 writer = SummaryWriter(
-    log_dir=os.path.join(TD3_ROOT, "runs", f"attention_{timestamp}_{socket.gethostname()}")
+    log_dir=os.path.join("runs", f"attention_{timestamp}_{socket.gethostname()}")
 )
 episode = 0
 environment_steps = 0
@@ -280,7 +254,7 @@ def save_checkpoint(path):
             "best_metrics": best_metrics,
             "evaluations_without_improvement": evaluations_without_improvement,
             "config": {
-                "training_version": 3,
+                "training_version": 2,
                 "history_len": history_len,
                 "model_dim": model_dim,
                 "num_heads": num_heads,
@@ -288,14 +262,6 @@ def save_checkpoint(path):
                 "base_model": base_model,
                 "reward_scale": reward_scale,
                 "replay_group_ratios": replay_group_ratios,
-                "standard_group": standard_group,
-                "correction_budget": correction_budget,
-                "correction_budget_penalty_weight": (
-                    correction_budget_penalty_weight
-                ),
-                "standard_correction_penalty_weight": (
-                    standard_correction_penalty_weight
-                ),
             },
         },
         path,
@@ -306,7 +272,7 @@ if os.path.exists(checkpoint_path):
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     config = checkpoint["config"]
     expected = (
-        3,
+        2,
         history_len,
         model_dim,
         num_heads,
@@ -314,10 +280,6 @@ if os.path.exists(checkpoint_path):
         base_model,
         reward_scale,
         replay_group_ratios,
-        standard_group,
-        correction_budget,
-        correction_budget_penalty_weight,
-        standard_correction_penalty_weight,
     )
     restored = (
         config.get("training_version"),
@@ -328,10 +290,6 @@ if os.path.exists(checkpoint_path):
         config["base_model"],
         config.get("reward_scale"),
         config.get("replay_group_ratios"),
-        config.get("standard_group"),
-        config.get("correction_budget"),
-        config.get("correction_budget_penalty_weight"),
-        config.get("standard_correction_penalty_weight"),
     )
     if restored != expected:
         raise ValueError(f"Checkpoint config mismatch: {restored} != {expected}")
@@ -351,7 +309,7 @@ print("Training: 5D frozen actor + spatiotemporal attention residual")
 print("Base model:", base_model)
 print("History length:", history_len)
 print("Attention model dim / heads:", model_dim, "/", num_heads)
-print("Mixed curriculum groups:", standard_group, "+", dense_group)
+print("Mixed curriculum groups: standard, pair, three")
 print("Reward: base individual reward only")
 print(
     "Actor start / LR warmup / decay:",
@@ -364,12 +322,12 @@ print(
 print("Replay group ratios:", replay_group_ratios)
 print("Critic reward scale:", reward_scale)
 print(
-    "Correction budget / budget penalty / standard penalty:",
-    correction_budget,
+    "Gate / residual / standard residual penalties:",
+    gate_penalty_weight,
     "/",
-    correction_budget_penalty_weight,
+    residual_penalty_weight,
     "/",
-    standard_correction_penalty_weight,
+    standard_residual_penalty_weight,
 )
 print(
     "Fixed evaluation: standard=%d, dense=%d per case, seed=%d"
@@ -451,14 +409,11 @@ try:
                     actor_lr_decay_steps=actor_lr_decay_steps,
                     actor_lr_min_ratio=actor_lr_min_ratio,
                     reward_scale=reward_scale,
-                    correction_budget=correction_budget,
-                    correction_budget_penalty_weight=(
-                        correction_budget_penalty_weight
+                    gate_penalty_weight=gate_penalty_weight,
+                    residual_penalty_weight=residual_penalty_weight,
+                    standard_residual_penalty_weight=(
+                        standard_residual_penalty_weight
                     ),
-                    standard_correction_penalty_weight=(
-                        standard_correction_penalty_weight
-                    ),
-                    standard_group=standard_group,
                     gradient_clip=gradient_clip,
                     environment_step=agent_samples,
                 )
@@ -489,12 +444,7 @@ try:
                 if value is not None:
                     namespace = (
                         "diagnostic"
-                        if "_gate_" in name
-                        or "_residual_" in name
-                        or any(
-                            name.startswith(f"{group}_correction_")
-                            for group in replay_group_ratios
-                        )
+                        if "_gate_" in name or "_residual_" in name
                         else "optimization"
                     )
                     writer.add_scalar(
@@ -525,7 +475,7 @@ try:
         standard_metrics = evaluate_group(
             agent,
             env,
-            standard_group,
+            "standard",
             history_len,
             standard_eval_episodes,
             max_episode_steps,
@@ -534,31 +484,25 @@ try:
         dense_metrics = evaluate_group(
             agent,
             env,
-            dense_group,
+            "three",
             history_len,
             eval_episodes_per_case,
             max_episode_steps,
             evaluation_seed + 1000,
         )
-        print(f"Eval {standard_group}:", standard_metrics)
-        print(f"Eval {dense_group}:", dense_metrics)
-        for group, metrics in (
-            (standard_group, standard_metrics),
-            (dense_group, dense_metrics),
-        ):
+        print("Eval standard:", standard_metrics)
+        print("Eval three:", dense_metrics)
+        for group, metrics in (("standard", standard_metrics), ("three", dense_metrics)):
             for name, value in metrics.items():
                 writer.add_scalar(f"eval/{group}_{name}", value, episode)
 
-        candidate = {standard_group: standard_metrics, dense_group: dense_metrics}
+        candidate = {"standard": standard_metrics, "three": dense_metrics}
         if best_metrics is None or best_key(standard_metrics, dense_metrics) > best_key(
-            best_metrics[standard_group], best_metrics[dense_group]
+            best_metrics["standard"], best_metrics["three"]
         ):
             best_metrics = candidate
             evaluations_without_improvement = 0
-            torch.save(
-                agent.actor.state_dict(),
-                os.path.join(TD3_ROOT, "pytorch_models", f"{model_name}_actor.pth"),
-            )
+            torch.save(agent.actor.state_dict(), f"pytorch_models/{model_name}_actor.pth")
             save_checkpoint(best_checkpoint_path)
             print("Updated dual-benchmark best:", best_checkpoint_path)
         else:

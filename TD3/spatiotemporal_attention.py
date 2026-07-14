@@ -270,20 +270,12 @@ class SpatioTemporalTD3:
         actor_lr_decay_steps=100000,
         actor_lr_min_ratio=0.1,
         reward_scale=0.1,
-        correction_budget=0.4,
-        correction_budget_penalty_weight=0.1,
-        standard_correction_penalty_weight=0.25,
-        standard_group="standard",
+        gate_penalty_weight=0.1,
+        residual_penalty_weight=0.05,
+        standard_residual_penalty_weight=1.0,
         gradient_clip=1.0,
         environment_step=0,
     ):
-        if not 0.0 <= correction_budget <= 1.0:
-            raise ValueError("correction_budget must be between 0 and 1")
-        if correction_budget_penalty_weight < 0.0:
-            raise ValueError("correction_budget_penalty_weight must be non-negative")
-        if standard_correction_penalty_weight < 0.0:
-            raise ValueError("standard_correction_penalty_weight must be non-negative")
-
         (
             histories,
             actions,
@@ -340,26 +332,29 @@ class SpatioTemporalTD3:
                 actor_q = self.critic.first(history, actor_action)
                 q_normalizer = actor_q.detach().abs().mean().clamp(min=1.0)
                 policy_loss = -actor_q.mean() / q_normalizer
-                correction = gate * residual
-                normalized_correction = correction / self.actor.max_residual
-                correction_budget_penalty = F.relu(
-                    normalized_correction.abs() - correction_budget
-                ).pow(2).mean()
+                normalized_residual = residual / self.actor.max_residual
+                residual_logits = torch.atanh(
+                    normalized_residual.clamp(-0.999999, 0.999999)
+                )
+                gate_penalty = -torch.log1p(
+                    -gate.clamp(max=1.0 - 1e-6)
+                ).mean()
+                residual_penalty = residual_logits.pow(2).mean()
                 standard_mask = torch.as_tensor(
-                    groups == standard_group, device=self.device, dtype=torch.bool
+                    groups == "standard", device=self.device, dtype=torch.bool
                 )
                 if standard_mask.any():
-                    standard_correction_penalty = normalized_correction[
+                    standard_residual_penalty = residual_logits[
                         standard_mask
                     ].pow(2).mean()
                 else:
-                    standard_correction_penalty = correction.new_zeros(())
+                    standard_residual_penalty = residual.new_zeros(())
                 actor_loss = (
                     policy_loss
-                    + correction_budget_penalty_weight
-                    * correction_budget_penalty
-                    + standard_correction_penalty_weight
-                    * standard_correction_penalty
+                    + gate_penalty_weight * gate_penalty
+                    + residual_penalty_weight * residual_penalty
+                    + standard_residual_penalty_weight
+                    * standard_residual_penalty
                 )
                 self.actor_optimizer.zero_grad()
                 actor_loss.backward()
@@ -373,20 +368,15 @@ class SpatioTemporalTD3:
             actor_loss_value = float(actor_loss.detach().cpu())
             actor_metrics = {
                 "policy_loss": float(policy_loss.detach().cpu()),
-                "correction_budget_penalty": float(
-                    correction_budget_penalty.detach().cpu()
+                "gate_penalty": float(gate_penalty.detach().cpu()),
+                "residual_penalty": float(residual_penalty.detach().cpu()),
+                "standard_residual_penalty": float(
+                    standard_residual_penalty.detach().cpu()
                 ),
-                "standard_correction_penalty": float(
-                    standard_correction_penalty.detach().cpu()
-                ),
-                "correction_abs_mean": float(correction.detach().abs().mean().cpu()),
-                "correction_abs_max": float(correction.detach().abs().max().cpu()),
                 "actor_q_abs_mean": float(actor_q.detach().abs().mean().cpu()),
                 "actor_lr": actor_lr,
             }
-            actor_metrics.update(
-                self._group_actor_metrics(gate, residual, correction, groups)
-            )
+            actor_metrics.update(self._group_actor_metrics(gate, residual, groups))
 
             self._soft_update(self.actor, self.actor_target, tau)
 
@@ -421,12 +411,11 @@ class SpatioTemporalTD3:
         return self.actor_lr * (min_ratio + (1.0 - min_ratio) * cosine)
 
     @staticmethod
-    def _group_actor_metrics(gate, residual, correction, groups):
+    def _group_actor_metrics(gate, residual, groups):
         metrics = {}
         gate = gate.detach()
         residual = residual.detach()
-        correction = correction.detach()
-        for group in dict.fromkeys(groups.tolist()):
+        for group in ("standard", "pair", "three"):
             mask = torch.as_tensor(groups == group, device=gate.device)
             if not mask.any():
                 continue
@@ -448,16 +437,6 @@ class SpatioTemporalTD3:
                 ):
                     metrics[
                         f"{group}_residual_{action_name}_{statistic}"
-                    ] = float(value.cpu())
-                values = correction[mask, index]
-                for statistic, value in (
-                    ("mean", values.mean()),
-                    ("std", values.std(unbiased=False)),
-                    ("min", values.min()),
-                    ("max", values.max()),
-                ):
-                    metrics[
-                        f"{group}_correction_{action_name}_{statistic}"
                     ] = float(value.cpu())
         return metrics
 

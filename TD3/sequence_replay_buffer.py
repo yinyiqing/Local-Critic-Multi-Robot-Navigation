@@ -5,6 +5,8 @@ import numpy as np
 
 
 class SequenceReplayBuffer:
+    GROUPS = ("standard", "pair", "three")
+
     def __init__(self, capacity, seed=0, group_ratios=None):
         self.capacity = int(capacity)
         self.rng = random.Random(seed)
@@ -111,8 +113,9 @@ class SequenceReplayBuffer:
     def _sample_counts(self, batch_size):
         available_groups = [
             group
-            for group, ratio in self.group_ratios.items()
-            if ratio > 0.0 and len(self.group_ids.get(group, ())) > 0
+            for group in self.GROUPS
+            if self.group_ratios.get(group, 0.0) > 0.0
+            and len(self.group_ids.get(group, ())) > 0
         ]
         if not available_groups:
             return {}
@@ -158,9 +161,9 @@ class SequenceReplayBuffer:
     @classmethod
     def _normalize_ratios(cls, ratios):
         if ratios is None:
-            ratios = {"standard": 1.0, "dense": 1.0}
+            ratios = {group: 1.0 for group in cls.GROUPS}
         normalized = {
-            str(group): max(float(value), 0.0) for group, value in ratios.items()
+            group: max(float(ratios.get(group, 0.0)), 0.0) for group in cls.GROUPS
         }
         if sum(normalized.values()) <= 0.0:
             raise ValueError("At least one replay group ratio must be positive")
