@@ -1,0 +1,50 @@
+{
+  "name": "stage3_asym_dense_full_5_cases",
+  "description": "Five-agent asymmetric dense interaction cases. Every robot participates in the conflict, but arrivals, angles, and goal pressures are deliberately staggered instead of perfectly symmetric.",
+  "cases": [
+    {
+      "name": "dense_offset_cross_with_diagonal_pressure",
+      "weight": 1.4,
+      "agents": {
+        "r1": {"start": [-1.15, -0.28], "goal": [1.95, -0.05]},
+        "r2": {"start": [0.28, -1.62], "goal": [0.15, 1.95]},
+        "r3": {"start": [1.88, 0.92], "goal": [-0.72, -0.42]},
+        "r4": {"start": [-0.18, 1.58], "goal": [0.62, 0.42]},
+        "r5": {"start": [1.42, -1.28], "goal": [-0.18, 0.86]}
+      }
+    },
+    {
+      "name": "dense_goal_funnel_with_staggered_arrivals",
+      "weight": 1.3,
+      "agents": {
+        "r1": {"start": [-1.05, -0.72], "goal": [-0.22, 0.08]},
+        "r2": {"start": [1.92, 0.78], "goal": [0.40, 0.12]},
+        "r3": {"start": [0.12, 1.98], "goal": [0.18, 0.82]},
+        "r4": {"start": [-0.22, 1.22], "goal": [0.02, 0.42]},
+        "r5": {"start": [1.15, -1.62], "goal": [0.58, -0.18]}
+      }
+    },
+    {
+      "name": "dense_wall_channel_with_inner_cut_in",
+      "weight": 1.1,
+      "agents": {
+        "r1": {"start": [1.02, -0.42], "goal": [4.12, -0.12]},
+        "r2": {"start": [4.08, 0.18], "goal": [1.22, -0.32]},
+        "r3": {"start": [0.78, 1.18], "goal": [2.18, 0.26]},
+        "r4": {"start": [2.65, 1.42], "goal": [1.38, 0.86]},
+        "r5": {"start": [-0.92, -1.08], "goal": [0.35, -0.28]}
+      }
+    },
+    {
+      "name": "dense_staggered_merge_with_far_side_pressure",
+      "weight": 1.2,
+      "agents": {
+        "r1": {"start": [-1.18, 0.10], "goal": [0.82, 0.16]},
+        "r2": {"start": [1.72, 0.98], "goal": [0.18, 0.48]},
+        "r3": {"start": [0.18, -1.72], "goal": [0.32, 1.65]},
+        "r4": {"start": [-0.22, 1.82], "goal": [0.12, 0.92]},
+        "r5": {"start": [1.95, -1.48], "goal": [0.88, -0.24]}
+      }
+    }
+  ]
+}

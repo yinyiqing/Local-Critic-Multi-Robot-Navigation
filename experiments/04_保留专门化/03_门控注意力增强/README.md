@@ -24,18 +24,21 @@
 
 - 冻结基础模型：`5D best`
 - reward：基础 individual reward
-- curriculum：`standard / pair / three` 混合采集
-- ReplayBuffer：固定长度序列，按 `standard / pair / three = 1:1:1` 分层采样
+- curriculum：`standard / dense` 混合采集
+- dense 课程改为新的五车非对称强交互集，不再混入 `pair`
+- ReplayBuffer：固定长度序列，按 `standard / dense = 1:1` 分层采样
 - Critic：独立时空 Attention Twin Critic
 - reward：进入 Critic target 前乘 `0.1`，降低终止奖励造成的 Q 梯度冲击
 - Actor：Critic 预热后线性 warmup，再进行余弦学习率衰减
-- Actor 约束：Q 项归一化；惩罚 gate 开启、残差饱和，并要求 standard 残差回到零
+- Actor 约束：Q 项归一化；不再分别惩罚 gate 和 residual，只约束实际修正 `gate * residual`
+- correction budget：修正超过最大 residual 的 `40%`（每维约 `0.1`）后才施加全局 hinge penalty
+- standard 约束：直接惩罚 standard 样本上的实际修正，不把 dense residual 一起压零
 - 稳定措施：TD3 target、delayed policy update、gradient clipping、无提升早停
-- eval：固定随机种子；standard 固定 12 局；three 每个 case 固定 4 局
-- best：同时比较 `standard` 与 `three`，优先提高两者中较差的 full success
+- eval：固定随机种子；standard 固定 12 局；dense 每个 case 固定 4 局
+- best：同时比较 `standard` 与 `dense`，优先提高两者中较差的 full success
 
 默认新模型名为
-`TD3_velodyne_multi_v5_attention_residual_from_5d_balanced_v2`。它不会续接旧
+`TD3_velodyne_multi_v5_attention_residual_from_5d_asym_dense_correction_v2`。它不会续接旧
 `TD3_velodyne_multi_v5_attention_residual_from_5d_latest.pt`，因为 replay 格式、reward
 尺度和优化目标已经不兼容；旧 checkpoint 和 best 文件仍保留用于对照。
 
@@ -55,11 +58,11 @@
 
 ## 必做消融
 
-新 v2 得到 best 后，需要在同一组固定种子、同一组 standard/three case 上比较：
+新 correction v2 得到 best 后，需要在同一组固定种子、同一组 standard/dense case 上比较：
 
 1. 冻结的原始 `5D`；
 2. `5D + fixed residual`，固定值取自 Attention best 的全局均值；
-3. `5D + Attention v2 best`。
+3. `5D + Attention correction v2 best`。
 
 只有第 3 项稳定超过第 2 项，且 gate/residual 在不同 group 和样本间存在有效方差，
 才能把增益归因于时空 Attention，而不是固定减速或转向偏置。
@@ -78,6 +81,7 @@ bash scripts/stop_training_detached_spatiotemporal_attention_5d.sh
 - `TD3/spatiotemporal_attention.py`
 - `TD3/sequence_replay_buffer.py`
 - `TD3/train_spatiotemporal_attention.py`
-- `experiments/02_课程学习/cases/stage4_spatiotemporal_attention_mixed_5_cases.json`
+- `experiments/02_课程学习/cases/stage3_asym_dense_full_5_cases.json`
+- `experiments/02_课程学习/cases/stage4_spatiotemporal_attention_mixed_asym_dense_5_cases.json`
 
 旧 Attention、联合动作 Critic 和 `5A + 5D` 双 Actor 只保留为历史结论，不复用其实现。

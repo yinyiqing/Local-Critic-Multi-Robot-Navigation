@@ -70,16 +70,16 @@ bash /home/jiutian/Local-Critic-Multi-Robot-Navigation/scripts/stop_training_det
 ```
 
 该入口默认从冻结的 `5D best` 新建
-`TD3_velodyne_multi_v5_attention_residual_from_5d_balanced_v2`，不会恢复旧版 Attention
-latest。默认训练机制为三组分层回放、`0.1` reward scale、gate/residual 约束、Actor
+`TD3_velodyne_multi_v5_attention_residual_from_5d_asym_dense_correction_v2`，不会恢复旧版 Attention
+latest。默认训练机制为 standard/dense 分层回放、`0.1` reward scale、实际 correction 约束、Actor
 warmup 后余弦衰减，以及固定种子双基准评估；连续 8 次评估没有更新 dual-benchmark
 best 时自动早停。
 
 关键可调项：
 
-- `DRL_ATTENTION_REPLAY_STANDARD_RATIO`、`DRL_ATTENTION_REPLAY_PAIR_RATIO`、`DRL_ATTENTION_REPLAY_THREE_RATIO`
+- `DRL_ATTENTION_REPLAY_STANDARD_RATIO`、`DRL_ATTENTION_REPLAY_DENSE_RATIO`
 - `DRL_ATTENTION_REWARD_SCALE`
-- `DRL_ATTENTION_GATE_PENALTY`、`DRL_ATTENTION_RESIDUAL_PENALTY`、`DRL_ATTENTION_STANDARD_RESIDUAL_PENALTY`
+- `DRL_ATTENTION_CORRECTION_BUDGET`、`DRL_ATTENTION_CORRECTION_BUDGET_PENALTY`、`DRL_ATTENTION_STANDARD_CORRECTION_PENALTY`
 - `DRL_ATTENTION_ACTOR_DECAY_STEPS`、`DRL_ATTENTION_ACTOR_MIN_LR_RATIO`
 - `DRL_ATTENTION_EVAL_EPISODES_PER_CASE`、`DRL_ATTENTION_STANDARD_EVAL_EPISODES`、`DRL_ATTENTION_EVAL_SEED`
 - `DRL_ATTENTION_EARLY_STOPPING_PATIENCE`
