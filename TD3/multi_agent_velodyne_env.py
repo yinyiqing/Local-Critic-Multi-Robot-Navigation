@@ -390,7 +390,25 @@ class MultiAgentGazeboEnv:
         value = self.current_curriculum_case["agents"][name][key]
         if len(value) != 2:
             raise ValueError(f"{name}.{key} must contain [x, y]")
-        return np.array([float(value[0]), float(value[1])])
+        base = np.array([float(value[0]), float(value[1])])
+        jitter_key = f"{key}_jitter"
+        jitter = self.current_curriculum_case["agents"][name].get(jitter_key)
+        if jitter is None:
+            return base
+        if not isinstance(jitter, list) or len(jitter) != 2:
+            raise ValueError(f"{name}.{jitter_key} must contain [dx, dy]")
+        dx = float(jitter[0])
+        dy = float(jitter[1])
+        for _ in range(20):
+            candidate = np.array(
+                [
+                    base[0] + np.random.uniform(-dx, dx),
+                    base[1] + np.random.uniform(-dy, dy),
+                ]
+            )
+            if check_pos(float(candidate[0]), float(candidate[1])):
+                return candidate
+        return base
 
     def _apply_curriculum_boxes(self):
         if self._current_case_uses_standard_layout():
