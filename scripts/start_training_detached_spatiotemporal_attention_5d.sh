@@ -3,13 +3,13 @@ set -eo pipefail
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TD3_DIR="$PROJECT_ROOT/TD3"
-LOG_DIR="$PROJECT_ROOT/logs"
+LOG_DIR="${DRL_ATTENTION_LOG_DIR:-$PROJECT_ROOT/experiments/04_保留专门化/03_门控注意力增强/logs/train}"
 PID_FILE="$PROJECT_ROOT/.train_spatiotemporal_attention_5d_detached.pid"
 LAUNCHFILE="multi_robot_scenario_attention_5.launch"
 LAUNCH_PATH="$TD3_DIR/assets/$LAUNCHFILE"
 CASES_PATH="$PROJECT_ROOT/experiments/02_课程学习/cases/stage4_spatiotemporal_attention_mixed_5_cases.json"
 BASE_MODEL="${DRL_ATTENTION_BASE_MODEL:-TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best}"
-MODEL_NAME="${DRL_ATTENTION_MODEL_NAME:-TD3_velodyne_multi_v5_attention_residual_from_5d_balanced_v2}"
+MODEL_NAME="${DRL_ATTENTION_MODEL_NAME:-TD3_velodyne_multi_v5_attention_residual_from_5d_risk_modulated_v6}"
 ROS_PORT="${DRL_ATTENTION_ROS_PORT:-12821}"
 GAZEBO_PORT="${DRL_ATTENTION_GAZEBO_PORT:-12921}"
 

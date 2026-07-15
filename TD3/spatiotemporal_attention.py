@@ -6,6 +6,21 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+def observable_interaction_risk(
+    history,
+    laser_dim=20,
+    risk_distance=1.5,
+    risk_closing_scale=1.25,
+):
+    current_laser = history[:, -1, :laser_dim]
+    oldest_laser = history[:, 0, :laser_dim]
+    proximity = ((risk_distance - current_laser) / risk_distance).clamp(0.0, 1.0)
+    closing = ((oldest_laser - current_laser) / risk_closing_scale).clamp(
+        0.0, 1.0
+    )
+    return (proximity * closing).amax(dim=1, keepdim=True).detach()
+
+
 class BaseActor(nn.Module):
     def __init__(self, state_dim=24, action_dim=2):
         super().__init__()
@@ -119,8 +134,15 @@ class ResidualAttentionActor(nn.Module):
         model_dim=96,
         num_heads=4,
         max_residual=0.25,
+        initial_gate=0.2,
+        risk_distance=1.5,
+        risk_closing_scale=1.25,
     ):
         super().__init__()
+        if not 0.0 < initial_gate < 1.0:
+            raise ValueError("initial_gate must be between 0 and 1")
+        if risk_distance <= 0.0 or risk_closing_scale <= 0.0:
+            raise ValueError("attention risk scales must be positive")
         self.base_actor = base_actor
         self.encoder = SpatioTemporalEncoder(
             history_len=history_len,
@@ -133,11 +155,16 @@ class ResidualAttentionActor(nn.Module):
             nn.Linear(model_dim, action_dim),
             nn.Tanh(),
         )
+        nn.init.zeros_(self.residual_head[2].weight)
+        nn.init.zeros_(self.residual_head[2].bias)
         self.gate_head = nn.Linear(model_dim, 1)
         nn.init.zeros_(self.gate_head.weight)
-        nn.init.constant_(self.gate_head.bias, -4.0)
+        gate_logit = math.log(initial_gate / (1.0 - initial_gate))
+        nn.init.constant_(self.gate_head.bias, gate_logit)
         self.max_residual = float(max_residual)
         self.state_dim = int(state_dim)
+        self.risk_distance = float(risk_distance)
+        self.risk_closing_scale = float(risk_closing_scale)
         self.freeze_base_actor()
 
     def freeze_base_actor(self):
@@ -154,7 +181,13 @@ class ResidualAttentionActor(nn.Module):
         base_action = self.base_actor(history[:, -1, : self.state_dim])
         features = self.encoder(history)
         residual = self.max_residual * self.residual_head(features)
-        gate = torch.sigmoid(self.gate_head(features))
+        learned_gate = torch.sigmoid(self.gate_head(features))
+        interaction_risk = observable_interaction_risk(
+            history,
+            risk_distance=self.risk_distance,
+            risk_closing_scale=self.risk_closing_scale,
+        )
+        gate = learned_gate * interaction_risk
         action = torch.clamp(base_action + gate * residual, -1.0, 1.0)
         if return_details:
             return action, gate, residual
@@ -211,6 +244,9 @@ class SpatioTemporalTD3:
         model_dim=96,
         num_heads=4,
         max_residual=0.25,
+        initial_gate=0.2,
+        risk_distance=1.5,
+        risk_closing_scale=1.25,
         actor_lr=1e-5,
         critic_lr=2e-5,
         device=None,
@@ -228,6 +264,9 @@ class SpatioTemporalTD3:
             model_dim=model_dim,
             num_heads=num_heads,
             max_residual=max_residual,
+            initial_gate=initial_gate,
+            risk_distance=risk_distance,
+            risk_closing_scale=risk_closing_scale,
         ).to(self.device)
         self.actor_target = copy.deepcopy(self.actor).to(self.device)
         self.critic = TwinAttentionCritic(
@@ -259,7 +298,7 @@ class SpatioTemporalTD3:
     def train_step(
         self,
         replay_buffer,
-        batch_size=64,
+        batch_size=96,
         discount=0.999,
         tau=0.005,
         policy_noise=0.1,
@@ -270,12 +309,16 @@ class SpatioTemporalTD3:
         actor_lr_decay_steps=100000,
         actor_lr_min_ratio=0.1,
         reward_scale=0.1,
-        gate_penalty_weight=0.1,
-        residual_penalty_weight=0.05,
-        standard_residual_penalty_weight=1.0,
+        correction_budget=0.5,
+        correction_budget_penalty_weight=0.1,
         gradient_clip=1.0,
         environment_step=0,
     ):
+        if not 0.0 <= correction_budget <= 1.0:
+            raise ValueError("correction_budget must be between 0 and 1")
+        if correction_budget_penalty_weight < 0.0:
+            raise ValueError("attention penalty weights must be non-negative")
+
         (
             histories,
             actions,
@@ -332,29 +375,20 @@ class SpatioTemporalTD3:
                 actor_q = self.critic.first(history, actor_action)
                 q_normalizer = actor_q.detach().abs().mean().clamp(min=1.0)
                 policy_loss = -actor_q.mean() / q_normalizer
-                normalized_residual = residual / self.actor.max_residual
-                residual_logits = torch.atanh(
-                    normalized_residual.clamp(-0.999999, 0.999999)
+                correction = gate * residual
+                normalized_correction = correction / self.actor.max_residual
+                correction_budget_penalty = F.relu(
+                    normalized_correction.abs() - correction_budget
+                ).pow(2).mean()
+                interaction_risk = self._interaction_risk(
+                    history,
+                    risk_distance=self.actor.risk_distance,
+                    risk_closing_scale=self.actor.risk_closing_scale,
                 )
-                gate_penalty = -torch.log1p(
-                    -gate.clamp(max=1.0 - 1e-6)
-                ).mean()
-                residual_penalty = residual_logits.pow(2).mean()
-                standard_mask = torch.as_tensor(
-                    groups == "standard", device=self.device, dtype=torch.bool
-                )
-                if standard_mask.any():
-                    standard_residual_penalty = residual_logits[
-                        standard_mask
-                    ].pow(2).mean()
-                else:
-                    standard_residual_penalty = residual.new_zeros(())
                 actor_loss = (
                     policy_loss
-                    + gate_penalty_weight * gate_penalty
-                    + residual_penalty_weight * residual_penalty
-                    + standard_residual_penalty_weight
-                    * standard_residual_penalty
+                    + correction_budget_penalty_weight
+                    * correction_budget_penalty
                 )
                 self.actor_optimizer.zero_grad()
                 actor_loss.backward()
@@ -368,15 +402,25 @@ class SpatioTemporalTD3:
             actor_loss_value = float(actor_loss.detach().cpu())
             actor_metrics = {
                 "policy_loss": float(policy_loss.detach().cpu()),
-                "gate_penalty": float(gate_penalty.detach().cpu()),
-                "residual_penalty": float(residual_penalty.detach().cpu()),
-                "standard_residual_penalty": float(
-                    standard_residual_penalty.detach().cpu()
+                "correction_budget_penalty": float(
+                    correction_budget_penalty.detach().cpu()
                 ),
+                "interaction_risk_mean": float(interaction_risk.mean().cpu()),
+                "interaction_risk_min": float(interaction_risk.min().cpu()),
+                "interaction_risk_max": float(interaction_risk.max().cpu()),
+                "correction_abs_mean": float(
+                    correction.detach().abs().mean().cpu()
+                ),
+                "correction_abs_max": float(correction.detach().abs().max().cpu()),
                 "actor_q_abs_mean": float(actor_q.detach().abs().mean().cpu()),
                 "actor_lr": actor_lr,
             }
-            actor_metrics.update(self._group_actor_metrics(gate, residual, groups))
+            actor_metrics.update(
+                self._group_actor_metrics(gate, residual, correction, groups)
+            )
+            actor_metrics.update(
+                self._risk_actor_metrics(gate, correction, interaction_risk)
+            )
 
             self._soft_update(self.actor, self.actor_target, tau)
 
@@ -411,10 +455,42 @@ class SpatioTemporalTD3:
         return self.actor_lr * (min_ratio + (1.0 - min_ratio) * cosine)
 
     @staticmethod
-    def _group_actor_metrics(gate, residual, groups):
+    def _interaction_risk(
+        history,
+        laser_dim=20,
+        risk_distance=1.5,
+        risk_closing_scale=1.25,
+    ):
+        return observable_interaction_risk(
+            history,
+            laser_dim=laser_dim,
+            risk_distance=risk_distance,
+            risk_closing_scale=risk_closing_scale,
+        )
+
+    @staticmethod
+    def _risk_actor_metrics(gate, correction, interaction_risk):
+        metrics = {}
+        risk = interaction_risk.detach().reshape(-1)
+        gate = gate.detach().reshape(-1)
+        correction = correction.detach().abs().mean(dim=1)
+        for name, mask in (
+            ("low_risk", risk < 0.1),
+            ("high_risk", risk > 0.4),
+        ):
+            if mask.any():
+                metrics[f"{name}_gate_mean"] = float(gate[mask].mean().cpu())
+                metrics[f"{name}_correction_abs_mean"] = float(
+                    correction[mask].mean().cpu()
+                )
+        return metrics
+
+    @staticmethod
+    def _group_actor_metrics(gate, residual, correction, groups):
         metrics = {}
         gate = gate.detach()
         residual = residual.detach()
+        correction = correction.detach()
         for group in ("standard", "pair", "three"):
             mask = torch.as_tensor(groups == group, device=gate.device)
             if not mask.any():
@@ -437,6 +513,16 @@ class SpatioTemporalTD3:
                 ):
                     metrics[
                         f"{group}_residual_{action_name}_{statistic}"
+                    ] = float(value.cpu())
+                values = correction[mask, index]
+                for statistic, value in (
+                    ("mean", values.mean()),
+                    ("std", values.std(unbiased=False)),
+                    ("min", values.min()),
+                    ("max", values.max()),
+                ):
+                    metrics[
+                        f"{group}_correction_{action_name}_{statistic}"
                     ] = float(value.cpu())
         return metrics
 

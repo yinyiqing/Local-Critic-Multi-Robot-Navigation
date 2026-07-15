@@ -10,7 +10,9 @@
   + 门控残差动作
 ```
 
-它不再训练两个完整 Actor，也不再使用 hard switch。门控只控制残差修正强度，初始值接近零，因此训练起点等价于原始 `5D`。
+它不再训练两个完整 Actor，也不再使用 hard switch。门控只控制残差修正强度；v3
+将初始 gate 设为 `0.2`，并把残差输出层初始化为零。因此训练起点严格等价于原始
+`5D`，同时残差输出层能获得足够的首步策略梯度。
 
 ## 输入与执行边界
 
@@ -25,19 +27,48 @@
 - 冻结基础模型：`5D best`
 - reward：基础 individual reward
 - curriculum：`standard / pair / three` 混合采集
-- ReplayBuffer：固定长度序列，按 `standard / pair / three = 1:1:1` 分层采样
+- ReplayBuffer：固定长度序列，按 `standard / pair / three = 1:1:1` 分层采样；默认
+  batch 为 `96`，三组样本充足时每组 `32`
 - Critic：独立时空 Attention Twin Critic
 - reward：进入 Critic target 前乘 `0.1`，降低终止奖励造成的 Q 梯度冲击
 - Actor：Critic 预热后线性 warmup，再进行余弦学习率衰减
-- Actor 约束：Q 项归一化；惩罚 gate 开启、残差饱和，并要求 standard 残差回到零
+- Actor 约束：Q 项归一化；不单独惩罚 gate 和 residual，只约束实际修正量
+  `gate * residual`
+- 局部风险：只使用现有 6 帧激光中“1.5 米内且持续接近”这一项连续信号；实际
+  correction 连续乘以 risk，风险为零时严格回到冻结 5D，不输入场景标签或增加离散切换
 - 稳定措施：TD3 target、delayed policy update、gradient clipping、无提升早停
-- eval：固定随机种子；standard 固定 12 局；three 每个 case 固定 4 局
+- eval：固定随机种子；standard 固定 `30` 局；three 每个 case 固定 `10` 局，共
+  `30` 局
 - best：同时比较 `standard` 与 `three`，优先提高两者中较差的 full success
 
 默认新模型名为
-`TD3_velodyne_multi_v5_attention_residual_from_5d_balanced_v2`。它不会续接旧
+`TD3_velodyne_multi_v5_attention_residual_from_5d_risk_modulated_v6`。它不会续接旧
 `TD3_velodyne_multi_v5_attention_residual_from_5d_latest.pt`，因为 replay 格式、reward
 尺度和优化目标已经不兼容；旧 checkpoint 和 best 文件仍保留用于对照。
+
+当前先验证同一个动态风险直接调制 correction 后能否兼顾 standard 与 dense。不加入让行 reward、停滞
+信号或新网络结构；只有这一轮失败后才逐项尝试。
+
+## v3 阶段结论
+
+`correction_gate_v3` 已证明 Gate 不再归零，并将 three full success 从冻结 5D 的
+`40.0%` 提高到最高 `53.3%`；但对应 standard 从 `70.0%` 降到 `63.3%`。其约束按
+`standard / dense` group 施加，与单车实际看到的局部风险不完全一致，因此 v4 改为
+仅依赖可观测动态风险。v3 checkpoint 和日志保留作为对照，不再续训。
+
+`observable_risk_v4` 尝试只惩罚低风险 correction。100 episode、9738 samples 后，
+全 replay 上 risk 与 correction 的相关系数为 `-0.069`；约束梯度已经足够强，继续增加
+权重只会压制 Actor，因此该策略停止。v5 改为让 Gate 以小权重回归同一连续风险目标。
+
+`risk_aligned_gate_v5` 在 100 episode、10555 samples 后将 risk 与 Gate 的相关性提高到
+`0.086`，但 residual 反向补偿，risk 与实际 correction 仍为 `-0.098`，因此不做性能
+评估。v6 直接连续调制实际 correction，避免 Gate 与 residual 互相抵消。
+
+`risk_modulated_v6` 在 100 episode、9542 samples 后，risk 与 effective Gate、实际
+correction 的相关性分别达到 `0.9997` 和 `0.9962`；高风险 correction 约为低风险的
+38 倍。固定种子评估结果为：standard success/full `94.0% / 73.3%`，three
+success/full `86.7% / 53.3%`。它保持了 v3 的最高 three full，同时将 standard full
+从 v3 best 的 `63.3%` 恢复到 `73.3%`，因此停止继续增加因素，保留 v6 为当前候选。
 
 ## 旧 run 的波动诊断
 
@@ -55,11 +86,11 @@
 
 ## 必做消融
 
-新 v2 得到 best 后，需要在同一组固定种子、同一组 standard/three case 上比较：
+新 v6 得到 best 后，需要在同一组固定种子、同一组 standard/three case 上比较：
 
 1. 冻结的原始 `5D`；
 2. `5D + fixed residual`，固定值取自 Attention best 的全局均值；
-3. `5D + Attention v2 best`。
+3. `5D + Attention v6 best`。
 
 只有第 3 项稳定超过第 2 项，且 gate/residual 在不同 group 和样本间存在有效方差，
 才能把增益归因于时空 Attention，而不是固定减速或转向偏置。

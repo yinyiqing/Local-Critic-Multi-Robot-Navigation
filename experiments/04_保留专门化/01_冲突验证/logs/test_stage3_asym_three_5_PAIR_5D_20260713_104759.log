@@ -401,3 +401,108 @@ Case summary:
   three_goal_merge_main_pair_with_outer_third | episodes=40 | success_rate=0.985 | collision_rate=0.020 | unresolved_rate=0.000 | full_success_rate=0.925 | timeout_rate=0.000 | avg_env_steps=19.9 | avg_final_distance=0.256
   three_wall_pair_with_far_third | episodes=40 | success_rate=0.885 | collision_rate=0.115 | unresolved_rate=0.000 | full_success_rate=0.500 | timeout_rate=0.000 | avg_env_steps=77.9 | avg_final_distance=0.532
 Target test episodes reached | episode_num=120 | target=120
+179000000]: GazeboRosJointStatePublisher is going to publish joint: right_hub_joint
+[INFO] [1783910886.559227042, 1.179000000]: Starting GazeboRosJointStatePublisher Plugin (ns = /r4/)!, parent name: r4
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+... logging to /home/jiutian/.ros/log/42a0c300-7e65-11f1-a718-79b7e70ca52d/roslaunch-JiuTian-AI4090-2623242.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;roscore
+[1mstarted roslaunch server http://localhost:37343/[0m
+ros_comm version 1.17.4
+
+
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+
+NODES
+
+auto-starting new master
+[1mprocess[master]: started with pid [2623252][0m
+[1mROS_MASTER_URI=http://localhost:12661/[0m
+]2;roscore http://localhost:12661/
+[1msetting /run_id to 42a0c300-7e65-11f1-a718-79b7e70ca52d[0m
+[1mprocess[rosout-1]: started with pid [2623262][0m
+started core service [/rosout]
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+... logging to /home/jiutian/.ros/log/42a0c300-7e65-11f1-a718-79b7e70ca52d/roslaunch-JiuTian-AI4090-2623271.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/jiutian/Local-Critic-Multi-Robot-Navigation/TD3/assets/multi_robot_scenario_curriculum_test_stage3_asym_three_5_5.launch
+[1mstarted roslaunch server http://localhost:34477/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /robot_description_r1: <?xml version="1....
+ * /robot_description_r2: <?xml version="1....
+ * /robot_description_r3: <?xml version="1....
+ * /robot_description_r4: <?xml version="1....
+ * /robot_description_r5: <?xml version="1....
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+ * /use_sim_time: True
+
+NODES
+  /
+    gazebo (gazebo_ros/gzserver)
+    urdf_spawner_r1 (gazebo_ros/spawn_model)
+    urdf_spawner_r2 (gazebo_ros/spawn_model)
+    urdf_spawner_r3 (gazebo_ros/spawn_model)
+    urdf_spawner_r4 (gazebo_ros/spawn_model)
+    urdf_spawner_r5 (gazebo_ros/spawn_model)
+
+[1mROS_MASTER_URI=http://localhost:12661/[0m
+]2;/home/jiutian/Local-Critic-Multi-Robot-Navigation/TD3/assets/multi_robot_scenario_curriculum_test_stage3_asym_three_5_5.launch http://localhost:12661/
+[1mprocess[gazebo-1]: started with pid [2623456][0m
+[1mprocess[urdf_spawner_r1-2]: started with pid [2623460][0m
+[1mprocess[urdf_spawner_r2-3]: started with pid [2623462][0m
+[1mprocess[urdf_spawner_r3-4]: started with pid [2623463][0m
+[1mprocess[urdf_spawner_r4-5]: started with pid [2623464][0m
+[1mprocess[urdf_spawner_r5-6]: started with pid [2623465][0m
+[1m[urdf_spawner_r2-3] process has finished cleanly
+log file: /home/jiutian/.ros/log/42a0c300-7e65-11f1-a718-79b7e70ca52d/urdf_spawner_r2-3*.log[0m
+[1m[urdf_spawner_r3-4] process has finished cleanly
+log file: /home/jiutian/.ros/log/42a0c300-7e65-11f1-a718-79b7e70ca52d/urdf_spawner_r3-4*.log[0m
+[1m[urdf_spawner_r1-2] process has finished cleanly
+log file: /home/jiutian/.ros/log/42a0c300-7e65-11f1-a718-79b7e70ca52d/urdf_spawner_r1-2*.log[0m
+[1m[urdf_spawner_r5-6] process has finished cleanly
+log file: /home/jiutian/.ros/log/42a0c300-7e65-11f1-a718-79b7e70ca52d/urdf_spawner_r5-6*.log[0m
+[1m[urdf_spawner_r4-5] process has finished cleanly
+log file: /home/jiutian/.ros/log/42a0c300-7e65-11f1-a718-79b7e70ca52d/urdf_spawner_r4-5*.log[0m
+[gazebo-1] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m

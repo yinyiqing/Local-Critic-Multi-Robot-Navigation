@@ -549,3 +549,112 @@ Episode 299 complete | case=standard | env_steps=21761 | agent_samples=42689 | e
 Episode 300 complete | case=standard | env_steps=21795 | agent_samples=42798 | episode_env_steps=34 | episode_agent_samples=109 | mean_reward=125.046 | success=5/5 | collision=0/5 | unresolved=0/5 | full_success=1 | timeout=0 | mean_final_distance=0.260 | dense_action_share=0.000 | samples/sec=14.945
 Recent 10 episodes | avg_reward=94.524 | success_rate=0.840 | collision_rate=0.140 | unresolved_rate=0.020 | full_success_rate=0.700 | timeout_episode_rate=0.100 | total_success=1337 | total_collision=128 | total_unresolved=35 | total_full_success=172 | timeout_episodes=32 | success_hist=[0, 1, 5, 22, 100, 172] | collision_hist=[201, 76, 18, 4, 1, 0]
 Target test episodes reached | episode_num=300 | target=300
+azeboRosJointStatePublisher is going to publish joint: right_hub_joint
+[INFO] [1783903782.944619774, 1.006000000]: Starting GazeboRosJointStatePublisher Plugin (ns = /r1/)!, parent name: r1
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+... logging to /home/jiutian/.ros/log/b8afb2b0-7e54-11f1-a718-79b7e70ca52d/roslaunch-JiuTian-AI4090-2437163.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;roscore
+[1mstarted roslaunch server http://localhost:39643/[0m
+ros_comm version 1.17.4
+
+
+SUMMARY
+========
+
+PARAMETERS
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+
+NODES
+
+auto-starting new master
+[1mprocess[master]: started with pid [2437173][0m
+[1mROS_MASTER_URI=http://localhost:11386/[0m
+]2;roscore http://localhost:11386/
+[1msetting /run_id to b8afb2b0-7e54-11f1-a718-79b7e70ca52d[0m
+[1mprocess[rosout-1]: started with pid [2437183][0m
+started core service [/rosout]
+[rosout-1] killing on exit
+[master] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+Error in XmlRpcClient::writeRequest: write error (Connection refused).
+Error in XmlRpcDispatch::work: couldn't find source iterator
+... logging to /home/jiutian/.ros/log/b8afb2b0-7e54-11f1-a718-79b7e70ca52d/roslaunch-JiuTian-AI4090-2437192.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/home/jiutian/Local-Critic-Multi-Robot-Navigation/TD3/assets/multi_robot_scenario_stage2_to_5a_shared_guarded_test_5.launch
+[1mstarted roslaunch server http://localhost:39689/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /robot_description_r1: <?xml version="1....
+ * /robot_description_r2: <?xml version="1....
+ * /robot_description_r3: <?xml version="1....
+ * /robot_description_r4: <?xml version="1....
+ * /robot_description_r5: <?xml version="1....
+ * /rosdistro: noetic
+ * /rosversion: 1.17.4
+ * /use_sim_time: True
+
+NODES
+  /
+    gazebo (gazebo_ros/gzserver)
+    urdf_spawner_r1 (gazebo_ros/spawn_model)
+    urdf_spawner_r2 (gazebo_ros/spawn_model)
+    urdf_spawner_r3 (gazebo_ros/spawn_model)
+    urdf_spawner_r4 (gazebo_ros/spawn_model)
+    urdf_spawner_r5 (gazebo_ros/spawn_model)
+
+[1mROS_MASTER_URI=http://localhost:11386/[0m
+]2;/home/jiutian/Local-Critic-Multi-Robot-Navigation/TD3/assets/multi_robot_scenario_stage2_to_5a_shared_guarded_test_5.launch http://localhost:11386/
+[1mprocess[gazebo-1]: started with pid [2437374][0m
+[1mprocess[urdf_spawner_r1-2]: started with pid [2437377][0m
+[1mprocess[urdf_spawner_r2-3]: started with pid [2437380][0m
+[1mprocess[urdf_spawner_r3-4]: started with pid [2437381][0m
+[1mprocess[urdf_spawner_r4-5]: started with pid [2437382][0m
+[1mprocess[urdf_spawner_r5-6]: started with pid [2437383][0m
+[1m[urdf_spawner_r5-6] process has finished cleanly
+log file: /home/jiutian/.ros/log/b8afb2b0-7e54-11f1-a718-79b7e70ca52d/urdf_spawner_r5-6*.log[0m
+[1m[urdf_spawner_r4-5] process has finished cleanly
+log file: /home/jiutian/.ros/log/b8afb2b0-7e54-11f1-a718-79b7e70ca52d/urdf_spawner_r4-5*.log[0m
+[1m[urdf_spawner_r3-4] process has finished cleanly
+log file: /home/jiutian/.ros/log/b8afb2b0-7e54-11f1-a718-79b7e70ca52d/urdf_spawner_r3-4*.log[0m
+[1m[urdf_spawner_r2-3] process has finished cleanly
+log file: /home/jiutian/.ros/log/b8afb2b0-7e54-11f1-a718-79b7e70ca52d/urdf_spawner_r2-3*.log[0m
+[1m[urdf_spawner_r1-2] process has finished cleanly
+log file: /home/jiutian/.ros/log/b8afb2b0-7e54-11f1-a718-79b7e70ca52d/urdf_spawner_r1-2*.log[0m
+[gazebo-1] killing on exit
+shutting down processing monitor...
+... shutting down processing monitor complete
+[1mdone[0m

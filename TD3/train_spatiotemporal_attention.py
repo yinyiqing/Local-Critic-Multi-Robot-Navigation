@@ -152,6 +152,7 @@ history_len = env_int("DRL_ATTENTION_HISTORY_LEN", 6)
 model_dim = env_int("DRL_ATTENTION_MODEL_DIM", 96)
 num_heads = env_int("DRL_ATTENTION_NUM_HEADS", 4)
 max_residual = env_float("DRL_ATTENTION_MAX_RESIDUAL", 0.25)
+initial_gate = env_float("DRL_ATTENTION_INITIAL_GATE", 0.2)
 actor_lr = env_float("DRL_ATTENTION_ACTOR_LR", 1e-5)
 critic_lr = env_float("DRL_ATTENTION_CRITIC_LR", 2e-5)
 actor_start_step = env_int("DRL_ATTENTION_ACTOR_START_STEP", 5000)
@@ -161,12 +162,13 @@ actor_lr_min_ratio = env_float("DRL_ATTENTION_ACTOR_MIN_LR_RATIO", 0.1)
 exploration_noise = env_float("DRL_ATTENTION_EXPLORATION_NOISE", 0.01)
 gradient_clip = env_float("DRL_ATTENTION_GRADIENT_CLIP", 1.0)
 reward_scale = env_float("DRL_ATTENTION_REWARD_SCALE", 0.1)
-gate_penalty_weight = env_float("DRL_ATTENTION_GATE_PENALTY", 0.1)
-residual_penalty_weight = env_float("DRL_ATTENTION_RESIDUAL_PENALTY", 0.05)
-standard_residual_penalty_weight = env_float(
-    "DRL_ATTENTION_STANDARD_RESIDUAL_PENALTY", 1.0
+correction_budget = env_float("DRL_ATTENTION_CORRECTION_BUDGET", 0.5)
+correction_budget_penalty_weight = env_float(
+    "DRL_ATTENTION_CORRECTION_BUDGET_PENALTY", 0.1
 )
-batch_size = env_int("DRL_ATTENTION_BATCH_SIZE", 64)
+risk_distance = env_float("DRL_ATTENTION_RISK_DISTANCE", 1.5)
+risk_closing_scale = env_float("DRL_ATTENTION_RISK_CLOSING_SCALE", 1.25)
+batch_size = env_int("DRL_ATTENTION_BATCH_SIZE", 96)
 replay_capacity = env_int("DRL_ATTENTION_REPLAY_CAPACITY", 200000)
 replay_group_ratios = {
     "standard": env_float("DRL_ATTENTION_REPLAY_STANDARD_RATIO", 1.0),
@@ -177,11 +179,65 @@ learning_starts = env_int("DRL_ATTENTION_LEARNING_STARTS", 2000)
 max_episodes = env_int("DRL_ATTENTION_MAX_EPISODES", 1000)
 max_episode_steps = env_int("DRL_ATTENTION_MAX_EPISODE_STEPS", 300)
 eval_interval = env_int("DRL_ATTENTION_EVAL_INTERVAL", 25)
-eval_episodes_per_case = env_int("DRL_ATTENTION_EVAL_EPISODES_PER_CASE", 4)
-standard_eval_episodes = env_int("DRL_ATTENTION_STANDARD_EVAL_EPISODES", 12)
+eval_episodes_per_case = env_int("DRL_ATTENTION_EVAL_EPISODES_PER_CASE", 10)
+standard_eval_episodes = env_int("DRL_ATTENTION_STANDARD_EVAL_EPISODES", 30)
 evaluation_seed = env_int("DRL_ATTENTION_EVAL_SEED", 20260713)
 early_stopping_patience = env_int("DRL_ATTENTION_EARLY_STOPPING_PATIENCE", 8)
 checkpoint_interval = env_int("DRL_ATTENTION_CHECKPOINT_INTERVAL", 10)
+
+
+def validate_training_config():
+    if history_len <= 0:
+        raise ValueError("DRL_ATTENTION_HISTORY_LEN must be positive")
+    if model_dim <= 0 or num_heads <= 0 or model_dim % num_heads != 0:
+        raise ValueError(
+            "DRL_ATTENTION_MODEL_DIM must be positive and divisible by "
+            "DRL_ATTENTION_NUM_HEADS"
+        )
+    if max_residual <= 0.0:
+        raise ValueError("DRL_ATTENTION_MAX_RESIDUAL must be positive")
+    if not 0.0 < initial_gate < 1.0:
+        raise ValueError("DRL_ATTENTION_INITIAL_GATE must be between 0 and 1")
+    if actor_lr <= 0.0 or critic_lr <= 0.0:
+        raise ValueError("Attention actor and critic learning rates must be positive")
+    if actor_start_step < 0 or actor_lr_warmup_steps < 0:
+        raise ValueError("Attention actor start and warmup steps must be non-negative")
+    if actor_lr_decay_steps <= 0:
+        raise ValueError("DRL_ATTENTION_ACTOR_DECAY_STEPS must be positive")
+    if not 0.0 <= actor_lr_min_ratio <= 1.0:
+        raise ValueError("DRL_ATTENTION_ACTOR_MIN_LR_RATIO must be between 0 and 1")
+    if exploration_noise < 0.0 or gradient_clip <= 0.0 or reward_scale <= 0.0:
+        raise ValueError(
+            "Exploration noise must be non-negative; gradient clip and reward "
+            "scale must be positive"
+        )
+    if not 0.0 <= correction_budget <= 1.0:
+        raise ValueError("DRL_ATTENTION_CORRECTION_BUDGET must be between 0 and 1")
+    if risk_distance <= 0.0 or risk_closing_scale <= 0.0:
+        raise ValueError("Attention risk distance and closing scale must be positive")
+    if correction_budget_penalty_weight < 0.0:
+        raise ValueError("Attention constraint penalty weights must be non-negative")
+    if batch_size < len(replay_group_ratios):
+        raise ValueError("DRL_ATTENTION_BATCH_SIZE must cover all replay groups")
+    if any(ratio <= 0.0 for ratio in replay_group_ratios.values()):
+        raise ValueError("All attention replay group ratios must be positive")
+    if replay_capacity < batch_size or learning_starts < batch_size:
+        raise ValueError(
+            "Replay capacity and DRL_ATTENTION_LEARNING_STARTS must be at least "
+            "DRL_ATTENTION_BATCH_SIZE"
+        )
+    if min(max_episodes, max_episode_steps, eval_interval) <= 0:
+        raise ValueError("Episode and evaluation intervals must be positive")
+    if eval_episodes_per_case <= 0 or standard_eval_episodes <= 0:
+        raise ValueError("Attention evaluation sample counts must be positive")
+    if checkpoint_interval <= 0 or early_stopping_patience < 0:
+        raise ValueError(
+            "Checkpoint interval must be positive and early-stopping patience "
+            "must be non-negative"
+        )
+
+
+validate_training_config()
 
 agent_names = [f"r{index}" for index in range(1, 6)]
 launchfile = os.environ.get(
@@ -193,7 +249,7 @@ base_model = os.environ.get(
 )
 model_name = os.environ.get(
     "DRL_ATTENTION_MODEL_NAME",
-    "TD3_velodyne_multi_v5_attention_residual_from_5d_balanced_v2",
+    "TD3_velodyne_multi_v5_attention_residual_from_5d_risk_modulated_v6",
 )
 base_actor_path = os.path.join("pytorch_models", f"{base_model}_actor.pth")
 checkpoint_path = os.path.join("checkpoints", f"{model_name}_latest.pt")
@@ -210,6 +266,9 @@ agent = SpatioTemporalTD3(
     model_dim=model_dim,
     num_heads=num_heads,
     max_residual=max_residual,
+    initial_gate=initial_gate,
+    risk_distance=risk_distance,
+    risk_closing_scale=risk_closing_scale,
     actor_lr=actor_lr,
     critic_lr=critic_lr,
 )
@@ -254,14 +313,21 @@ def save_checkpoint(path):
             "best_metrics": best_metrics,
             "evaluations_without_improvement": evaluations_without_improvement,
             "config": {
-                "training_version": 2,
+                "training_version": 6,
                 "history_len": history_len,
                 "model_dim": model_dim,
                 "num_heads": num_heads,
                 "max_residual": max_residual,
+                "initial_gate": initial_gate,
                 "base_model": base_model,
                 "reward_scale": reward_scale,
                 "replay_group_ratios": replay_group_ratios,
+                "correction_budget": correction_budget,
+                "correction_budget_penalty_weight": (
+                    correction_budget_penalty_weight
+                ),
+                "risk_distance": risk_distance,
+                "risk_closing_scale": risk_closing_scale,
             },
         },
         path,
@@ -272,14 +338,19 @@ if os.path.exists(checkpoint_path):
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     config = checkpoint["config"]
     expected = (
-        2,
+        6,
         history_len,
         model_dim,
         num_heads,
         max_residual,
+        initial_gate,
         base_model,
         reward_scale,
         replay_group_ratios,
+        correction_budget,
+        correction_budget_penalty_weight,
+        risk_distance,
+        risk_closing_scale,
     )
     restored = (
         config.get("training_version"),
@@ -287,9 +358,14 @@ if os.path.exists(checkpoint_path):
         config["model_dim"],
         config["num_heads"],
         config["max_residual"],
+        config.get("initial_gate"),
         config["base_model"],
         config.get("reward_scale"),
         config.get("replay_group_ratios"),
+        config.get("correction_budget"),
+        config.get("correction_budget_penalty_weight"),
+        config.get("risk_distance"),
+        config.get("risk_closing_scale"),
     )
     if restored != expected:
         raise ValueError(f"Checkpoint config mismatch: {restored} != {expected}")
@@ -309,6 +385,7 @@ print("Training: 5D frozen actor + spatiotemporal attention residual")
 print("Base model:", base_model)
 print("History length:", history_len)
 print("Attention model dim / heads:", model_dim, "/", num_heads)
+print("Initial learned gate / zero residual head:", initial_gate, "/", True)
 print("Mixed curriculum groups: standard, pair, three")
 print("Reward: base individual reward only")
 print(
@@ -322,13 +399,18 @@ print(
 print("Replay group ratios:", replay_group_ratios)
 print("Critic reward scale:", reward_scale)
 print(
-    "Gate / residual / standard residual penalties:",
-    gate_penalty_weight,
+    "Correction budget / budget penalty:",
+    correction_budget,
     "/",
-    residual_penalty_weight,
-    "/",
-    standard_residual_penalty_weight,
+    correction_budget_penalty_weight,
 )
+print(
+    "Observable risk-modulated correction distance / closing scale:",
+    risk_distance,
+    "/",
+    risk_closing_scale,
+)
+print("Batch size / expected samples per group:", batch_size, "/", batch_size // 3)
 print(
     "Fixed evaluation: standard=%d, dense=%d per case, seed=%d"
     % (standard_eval_episodes, eval_episodes_per_case, evaluation_seed)
@@ -409,10 +491,9 @@ try:
                     actor_lr_decay_steps=actor_lr_decay_steps,
                     actor_lr_min_ratio=actor_lr_min_ratio,
                     reward_scale=reward_scale,
-                    gate_penalty_weight=gate_penalty_weight,
-                    residual_penalty_weight=residual_penalty_weight,
-                    standard_residual_penalty_weight=(
-                        standard_residual_penalty_weight
+                    correction_budget=correction_budget,
+                    correction_budget_penalty_weight=(
+                        correction_budget_penalty_weight
                     ),
                     gradient_clip=gradient_clip,
                     environment_step=agent_samples,
@@ -444,7 +525,10 @@ try:
                 if value is not None:
                     namespace = (
                         "diagnostic"
-                        if "_gate_" in name or "_residual_" in name
+                        if "_gate_" in name
+                        or "_residual_" in name
+                        or "_correction_" in name
+                        or "interaction_risk_" in name
                         else "optimization"
                     )
                     writer.add_scalar(
