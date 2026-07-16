@@ -20,7 +20,7 @@
 - `PAIR(from_5d)` 的训练过程更顺，但正式 dense 测试没有超过 `5D`；继续训练到 `THREE_5` 后逐轮退化。
 - `5A + 5D` 的 hard switch 和 case-level oracle 都没有超过单独使用 `5D`，二者暂时缺乏足够的专家互补性。
 
-因此当前不再覆盖训练完整 Actor，也不再训练双 Actor gate。新主线冻结 `5D`，只训练使用本车观测历史的时空 Attention 残差和 Attention Critic。
+因此当前不再覆盖训练完整 Actor，也不再训练双 Actor gate。新主线冻结 `5D`，只训练使用本车观测历史的时空 Attention 残差；Critic 使用两个独立的轻量 full-history MLP Q 网络。
 
 ## 方法结构
 
@@ -38,7 +38,7 @@ Actor 在所有主要实验中保持分散执行：
 - 局部 Critic：训练时加入邻居几何及可选动作信息。
 - 几何邻域 Critic：只加入邻居几何，不依赖邻居动作。
 - 时空 Attention：使用本车激光扇区和最近观测历史，输出对冻结 `5D` 的门控残差动作。
-- Attention Critic：与 Actor 使用相同的本地序列输入，不使用其他机器人的仿真真值。
+- Full-history MLP Critic：两个独立 Q 网络都读取本车最近 6 帧 24 维观测历史和当前动作，不使用其他机器人的仿真真值。
 
 ## 建议阅读顺序
 

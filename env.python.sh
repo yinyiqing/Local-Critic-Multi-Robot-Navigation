@@ -2,7 +2,7 @@
 
 # Activate the isolated Python environment for this project only.
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export DRL_ROBOT_NAV_VENV="/home/jiutian/venvs/drl-robot-nav"
+export DRL_ROBOT_NAV_VENV="${DRL_ROBOT_NAV_VENV:-/home/admini/venvs/drl-robot-nav}"
 
 if [ ! -f "$DRL_ROBOT_NAV_VENV/bin/activate" ]; then
   echo "Missing virtual environment: $DRL_ROBOT_NAV_VENV"

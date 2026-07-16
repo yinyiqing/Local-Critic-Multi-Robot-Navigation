@@ -22,7 +22,7 @@
 
 因此，后续的新方法主线已经转到：
 
-- [04_保留专门化](/home/jiutian/Local-Critic-Multi-Robot-Navigation/experiments/04_保留专门化/README.md)
+- [04_保留专门化](/home/admini/Local-Critic-Multi-Robot-Navigation/experiments/04_保留专门化/README.md)
 
 课程学习目录后面主要保留：
 

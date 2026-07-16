@@ -155,6 +155,7 @@ max_residual = env_float("DRL_ATTENTION_MAX_RESIDUAL", 0.25)
 initial_gate = env_float("DRL_ATTENTION_INITIAL_GATE", 0.2)
 actor_lr = env_float("DRL_ATTENTION_ACTOR_LR", 1e-5)
 critic_lr = env_float("DRL_ATTENTION_CRITIC_LR", 2e-5)
+critic_hidden_dim = env_int("DRL_ATTENTION_CRITIC_HIDDEN_DIM", 256)
 actor_start_step = env_int("DRL_ATTENTION_ACTOR_START_STEP", 5000)
 actor_lr_warmup_steps = env_int("DRL_ATTENTION_ACTOR_WARMUP_STEPS", 10000)
 actor_lr_decay_steps = env_int("DRL_ATTENTION_ACTOR_DECAY_STEPS", 100000)
@@ -200,6 +201,8 @@ def validate_training_config():
         raise ValueError("DRL_ATTENTION_INITIAL_GATE must be between 0 and 1")
     if actor_lr <= 0.0 or critic_lr <= 0.0:
         raise ValueError("Attention actor and critic learning rates must be positive")
+    if critic_hidden_dim < 2:
+        raise ValueError("DRL_ATTENTION_CRITIC_HIDDEN_DIM must be at least 2")
     if actor_start_step < 0 or actor_lr_warmup_steps < 0:
         raise ValueError("Attention actor start and warmup steps must be non-negative")
     if actor_lr_decay_steps <= 0:
@@ -249,7 +252,7 @@ base_model = os.environ.get(
 )
 model_name = os.environ.get(
     "DRL_ATTENTION_MODEL_NAME",
-    "TD3_velodyne_multi_v5_attention_residual_from_5d_risk_modulated_v6",
+    "TD3_velodyne_multi_v5_attention_residual_from_5d_history_mlp_critic_v7",
 )
 base_actor_path = os.path.join("pytorch_models", f"{base_model}_actor.pth")
 checkpoint_path = os.path.join("checkpoints", f"{model_name}_latest.pt")
@@ -271,6 +274,7 @@ agent = SpatioTemporalTD3(
     risk_closing_scale=risk_closing_scale,
     actor_lr=actor_lr,
     critic_lr=critic_lr,
+    critic_hidden_dim=critic_hidden_dim,
 )
 replay_buffer = SequenceReplayBuffer(
     replay_capacity, seed, group_ratios=replay_group_ratios
@@ -313,10 +317,12 @@ def save_checkpoint(path):
             "best_metrics": best_metrics,
             "evaluations_without_improvement": evaluations_without_improvement,
             "config": {
-                "training_version": 6,
+                "training_version": 7,
                 "history_len": history_len,
                 "model_dim": model_dim,
                 "num_heads": num_heads,
+                "critic_type": "full_history_mlp",
+                "critic_hidden_dim": critic_hidden_dim,
                 "max_residual": max_residual,
                 "initial_gate": initial_gate,
                 "base_model": base_model,
@@ -338,10 +344,12 @@ if os.path.exists(checkpoint_path):
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     config = checkpoint["config"]
     expected = (
-        6,
+        7,
         history_len,
         model_dim,
         num_heads,
+        "full_history_mlp",
+        critic_hidden_dim,
         max_residual,
         initial_gate,
         base_model,
@@ -357,6 +365,8 @@ if os.path.exists(checkpoint_path):
         config["history_len"],
         config["model_dim"],
         config["num_heads"],
+        config.get("critic_type"),
+        config.get("critic_hidden_dim"),
         config["max_residual"],
         config.get("initial_gate"),
         config["base_model"],

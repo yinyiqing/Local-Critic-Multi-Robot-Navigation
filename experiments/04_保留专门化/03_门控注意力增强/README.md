@@ -29,7 +29,7 @@
 - curriculum：`standard / pair / three` 混合采集
 - ReplayBuffer：固定长度序列，按 `standard / pair / three = 1:1:1` 分层采样；默认
   batch 为 `96`，三组样本充足时每组 `32`
-- Critic：独立时空 Attention Twin Critic
+- Critic：两个独立的轻量 full-history MLP Q 网络；每个 Q 读取最近 6 帧完整 24 维本车观测历史和当前动作，默认结构为 `146 -> 256 -> 256 -> 1`
 - reward：进入 Critic target 前乘 `0.1`，降低终止奖励造成的 Q 梯度冲击
 - Actor：Critic 预热后线性 warmup，再进行余弦学习率衰减
 - Actor 约束：Q 项归一化；不单独惩罚 gate 和 residual，只约束实际修正量
@@ -42,12 +42,13 @@
 - best：同时比较 `standard` 与 `three`，优先提高两者中较差的 full success
 
 默认新模型名为
-`TD3_velodyne_multi_v5_attention_residual_from_5d_risk_modulated_v6`。它不会续接旧
-`TD3_velodyne_multi_v5_attention_residual_from_5d_latest.pt`，因为 replay 格式、reward
-尺度和优化目标已经不兼容；旧 checkpoint 和 best 文件仍保留用于对照。
+`TD3_velodyne_multi_v5_attention_residual_from_5d_history_mlp_critic_v7`。它不会续接旧
+`TD3_velodyne_multi_v5_attention_residual_from_5d_latest.pt` 或
+`TD3_velodyne_multi_v5_attention_residual_from_5d_risk_modulated_v6_latest.pt`，因为 Critic
+结构、replay/checkpoint 配置和优化目标已经不兼容；旧 checkpoint 和 best 文件仍保留用于对照。
 
-当前先验证同一个动态风险直接调制 correction 后能否兼顾 standard 与 dense。不加入让行 reward、停滞
-信号或新网络结构；只有这一轮失败后才逐项尝试。
+当前先验证“保留双 Q、Actor 保留 Attention、Critic 改成两个独立轻量 MLP 并读取完整历史”
+能否比 v6 更稳定。不加入让行 reward、停滞信号或邻居真值；只有这一轮失败后才逐项尝试。
 
 ## v3 阶段结论
 
@@ -64,11 +65,14 @@
 `0.086`，但 residual 反向补偿，risk 与实际 correction 仍为 `-0.098`，因此不做性能
 评估。v6 直接连续调制实际 correction，避免 Gate 与 residual 互相抵消。
 
-`risk_modulated_v6` 在 100 episode、9542 samples 后，risk 与 effective Gate、实际
+`risk_modulated_v6` 是上一轮候选：在 100 episode、9542 samples 后，risk 与 effective Gate、实际
 correction 的相关性分别达到 `0.9997` 和 `0.9962`；高风险 correction 约为低风险的
 38 倍。固定种子评估结果为：standard success/full `94.0% / 73.3%`，three
 success/full `86.7% / 53.3%`。它保持了 v3 的最高 three full，同时将 standard full
-从 v3 best 的 `63.3%` 恢复到 `73.3%`，因此停止继续增加因素，保留 v6 为当前候选。
+从 v3 best 的 `63.3%` 恢复到 `73.3%`。
+
+v7 在 v6 基础上不改 Actor 风险调制路径，只把 Critic 从 Attention Critic 改为两个独立的
+full-history MLP Q 网络。当前代码和启动脚本已经切到 v7，正式训练结果尚未归档。
 
 ## 旧 run 的波动诊断
 

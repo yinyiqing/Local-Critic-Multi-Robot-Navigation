@@ -1,0 +1,62 @@
+FROM nvidia/cuda:12.8.1-cudnn-devel-ubuntu20.04
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG PYTHON_VERSION=3.10
+ARG PYTORCH_INDEX_URL=https://download.pytorch.org/whl/cu128
+ARG TORCH_PACKAGE=torch
+
+ENV LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    ROS_DISTRO=noetic \
+    DRL_ROBOT_NAV_VENV=/opt/drl-robot-nav-venv \
+    PYTHONNOUSERSITE=1 \
+    TORCHDYNAMO_DISABLE=1 \
+    TORCHINDUCTOR_CACHE_DIR=/tmp/torchinductor
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    gnupg2 \
+    lsb-release \
+    software-properties-common \
+    && curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add - \
+    && echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list \
+    && add-apt-repository ppa:deadsnakes/ppa -y \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    ros-noetic-desktop-full \
+    python3-rosdep \
+    python3-rosinstall \
+    python3-rosinstall-generator \
+    python3-wstool \
+    build-essential \
+    cmake \
+    git \
+    x11-apps \
+    mesa-utils \
+    libgl1-mesa-dri \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    "python${PYTHON_VERSION}" \
+    "python${PYTHON_VERSION}-dev" \
+    "python${PYTHON_VERSION}-venv" \
+    python3-pip \
+    && rosdep init || true \
+    && rosdep update \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN "python${PYTHON_VERSION}" -m venv "$DRL_ROBOT_NAV_VENV" \
+    && "$DRL_ROBOT_NAV_VENV/bin/pip" install --upgrade pip setuptools wheel \
+    && "$DRL_ROBOT_NAV_VENV/bin/pip" install --index-url "$PYTORCH_INDEX_URL" "$TORCH_PACKAGE" \
+    && "$DRL_ROBOT_NAV_VENV/bin/pip" install --index-url "$PIP_INDEX_URL" \
+        numpy \
+        tensorboard \
+        protobuf \
+        squaternion \
+        rospkg \
+        catkin_pkg \
+        PyYAML \
+        netifaces
+
+WORKDIR /workspace/Local-Critic-Multi-Robot-Navigation

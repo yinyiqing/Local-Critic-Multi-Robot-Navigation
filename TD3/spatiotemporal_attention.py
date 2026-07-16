@@ -194,38 +194,44 @@ class ResidualAttentionActor(nn.Module):
         return action
 
 
-class AttentionQNetwork(nn.Module):
+class HistoryMLPQNetwork(nn.Module):
     def __init__(
         self,
         history_len=6,
+        state_dim=24,
         action_dim=2,
-        model_dim=96,
-        num_heads=4,
+        hidden_dim=256,
     ):
         super().__init__()
-        self.encoder = SpatioTemporalEncoder(
-            history_len=history_len,
-            model_dim=model_dim,
-            num_heads=num_heads,
-        )
-        self.value = nn.Sequential(
-            nn.Linear(model_dim + action_dim, 256),
+        self.history_len = int(history_len)
+        self.state_dim = int(state_dim)
+        input_dim = self.history_len * self.state_dim + int(action_dim)
+        self.net = nn.Sequential(
+            nn.Linear(input_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(hidden_dim, hidden_dim),
             nn.ReLU(),
-            nn.Linear(256, 1),
+            nn.Linear(hidden_dim, 1),
         )
 
     def forward(self, history, action):
-        features = self.encoder(history)
-        return self.value(torch.cat((features, action), dim=-1))
+        if history.ndim != 3:
+            raise ValueError("history must have shape [batch, time, state]")
+        batch_size, time_steps, state_dim = history.shape
+        if time_steps != self.history_len or state_dim != self.state_dim:
+            raise ValueError(
+                "expected history shape [batch, %d, %d], got %s"
+                % (self.history_len, self.state_dim, tuple(history.shape))
+            )
+        flattened_history = history.reshape(batch_size, self.history_len * self.state_dim)
+        return self.net(torch.cat((flattened_history, action), dim=-1))
 
 
-class TwinAttentionCritic(nn.Module):
+class TwinHistoryMLPCritic(nn.Module):
     def __init__(self, **kwargs):
         super().__init__()
-        self.q1 = AttentionQNetwork(**kwargs)
-        self.q2 = AttentionQNetwork(**kwargs)
+        self.q1 = HistoryMLPQNetwork(**kwargs)
+        self.q2 = HistoryMLPQNetwork(**kwargs)
 
     def forward(self, history, action):
         return self.q1(history, action), self.q2(history, action)
@@ -249,6 +255,7 @@ class SpatioTemporalTD3:
         risk_closing_scale=1.25,
         actor_lr=1e-5,
         critic_lr=2e-5,
+        critic_hidden_dim=256,
         device=None,
     ):
         self.device = device or torch.device(
@@ -269,11 +276,11 @@ class SpatioTemporalTD3:
             risk_closing_scale=risk_closing_scale,
         ).to(self.device)
         self.actor_target = copy.deepcopy(self.actor).to(self.device)
-        self.critic = TwinAttentionCritic(
+        self.critic = TwinHistoryMLPCritic(
             history_len=history_len,
+            state_dim=state_dim,
             action_dim=action_dim,
-            model_dim=model_dim,
-            num_heads=num_heads,
+            hidden_dim=critic_hidden_dim,
         ).to(self.device)
         self.critic_target = copy.deepcopy(self.critic).to(self.device)
 

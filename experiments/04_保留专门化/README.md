@@ -41,7 +41,7 @@
 
 一句话：
 
-**冻结当前最稳的 `5D` Actor，只训练使用本车时空观测的门控残差和 Attention Critic，不再覆盖完整 Actor。**
+**冻结当前最稳的 `5D` Actor，只训练使用本车时空观测的门控残差；Critic 使用两个独立 full-history MLP Q 网络，不再覆盖完整 Actor。**
 
 ## 这一目录后面准备怎么放
 
