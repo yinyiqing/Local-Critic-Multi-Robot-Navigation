@@ -4,9 +4,9 @@ set -eo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TD3_DIR="$PROJECT_ROOT/TD3"
 LOG_DIR="$PROJECT_ROOT/logs"
-PID_FILE="$PROJECT_ROOT/.test_multi_stage2_to_5d_geo_critic_from_5a_guarded_best_detached.pid"
+PID_FILE="$PROJECT_ROOT/.test_multi_5d_baseline_detached.pid"
 NUM_AGENTS=5
-LAUNCHFILE="multi_robot_scenario_stage2_to_5d_geo_critic_from_5a_guarded_test_${NUM_AGENTS}.launch"
+LAUNCHFILE="multi_robot_scenario_5d_baseline_${NUM_AGENTS}.launch"
 LAUNCH_PATH="$TD3_DIR/assets/$LAUNCHFILE"
 MODEL_NAME="${DRL_MULTI_TEST_FILE_NAME:-TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best}"
 ROS_PORT="${DRL_MULTI_TEST_ROS_PORT:-11388}"
@@ -17,12 +17,12 @@ SAFE_MODEL="${MODEL_NAME//[^A-Za-z0-9_]/_}"
 mkdir -p "$LOG_DIR"
 
 timestamp="$(date +%Y%m%d_%H%M%S)"
-log_file="$LOG_DIR/test_multi_stage2_to_5d_geo_critic_from_5a_guarded_best_${SAFE_MODEL}_detached_${timestamp}.log"
+log_file="$LOG_DIR/test_multi_5d_baseline_${SAFE_MODEL}_detached_${timestamp}.log"
 
 if [[ -f "$PID_FILE" ]]; then
   old_pid="$(cat "$PID_FILE" 2>/dev/null || true)"
   if [[ -n "$old_pid" ]] && kill -0 "$old_pid" 2>/dev/null; then
-    echo "A detached stage2-to-5D geometry-critic best test process is already running with PID $old_pid"
+    echo "A detached 5D baseline test is already running with PID $old_pid"
     exit 1
   fi
 fi
@@ -60,8 +60,8 @@ setsid bash -lc "
   export DRL_MULTI_TEST_LAUNCHFILE='$LAUNCHFILE'
   export DRL_MULTI_TEST_FILE_NAME='$MODEL_NAME'
   export DRL_MULTI_TEST_TARGET_EPISODES='$TARGET_EPISODES'
-  export DRL_MULTI_TEST_STATE_PATH='./checkpoints/${SAFE_MODEL}_stage2_to_5d_geo_critic_test_state.pt'
-  export DRL_MULTI_TEST_STATS_PATH='./results/${SAFE_MODEL}_stage2_to_5d_geo_critic_test.npy'
+  export DRL_MULTI_TEST_STATE_PATH='./checkpoints/${SAFE_MODEL}_5d_baseline_test_state.pt'
+  export DRL_MULTI_TEST_STATS_PATH='./results/${SAFE_MODEL}_5d_baseline_test.npy'
   export DRL_MULTI_SCENARIO=standard
   cd '$PROJECT_ROOT/catkin_ws'
   source devel_isolated/setup.bash
@@ -71,7 +71,7 @@ setsid bash -lc "
 
 echo $! > "$PID_FILE"
 
-echo "Detached stage2-to-5D geometry-critic best test started."
+echo "Detached 5D baseline test started."
 echo "PID: $(cat "$PID_FILE")"
 echo "Agents: $NUM_AGENTS"
 echo "Model: $MODEL_NAME"

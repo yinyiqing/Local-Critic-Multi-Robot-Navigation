@@ -1,6 +1,6 @@
 {
-  "name": "stage3_asym_three_5_cases",
-  "description": "Third curriculum restart level 2: five-agent environment with one softened asymmetric three-agent interaction, where only two agents form the main conflict and the third joins with a clear disadvantage.",
+  "name": "attention_three_5",
+  "description": "Five-agent Attention cases with one asymmetric three-agent interaction.",
   "cases": [
     {
       "name": "three_cross_main_pair_with_late_third",

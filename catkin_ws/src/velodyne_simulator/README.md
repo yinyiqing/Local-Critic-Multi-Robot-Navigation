@@ -1,50 +1,36 @@
 # Velodyne Simulator
-URDF description and Gazebo plugins to simulate Velodyne laser scanners
 
-![rviz screenshot](img/rviz.png)
+This vendored ROS package provides the URDF description and Gazebo plugins used to simulate the project's Velodyne laser scanner. It is built through the repository's ROS Noetic catkin workspace; use the root execution guide for environment setup.
 
-# Features
-* URDF with colored meshes
-* Gazebo plugin based on [gazebo_plugins/gazebo_ros_block_laser](https://github.com/ros-simulation/gazebo_ros_pkgs/blob/kinetic-devel/gazebo_plugins/src/gazebo_ros_block_laser.cpp)
-* Publishes PointCloud2 with same structure (x, y, z, intensity, ring)
-* Simulated Gaussian noise
-* GPU acceleration ([with a modern Gazebo build](gazebo_upgrade.md))
-* Supported models:
-    * [VLP-16](velodyne_description/urdf/VLP-16.urdf.xacro)
-    * [HDL-32E](velodyne_description/urdf/HDL-32E.urdf.xacro)
-    * Pull requests for other models are welcome
-* Experimental support for clipping low-intensity returns
+![RViz screenshot](img/rviz.png)
 
-# Parameters
-* ```*origin``` URDF transform from parent link.
-* ```parent``` URDF parent link name. Default ```base_link```
-* ```name``` URDF model name. Also used as tf frame_id for PointCloud2 output. Default ```velodyne```
-* ```topic``` PointCloud2 output topic name. Default ```/velodyne_points```
-* ```hz``` Update rate in hz. Default ```10```
-* ```lasers``` Number of vertical spinning lasers. Default ```VLP-16: 16, HDL-32E: 32```
-* ```samples``` Nuber of horizontal rotating samples. Default ```VLP-16: 1875, HDL-32E: 2187```
-* ```min_range``` Minimum range value in meters. Default ```0.9```
-* ```max_range``` Maximum range value in meters. Default ```130.0```
-* ```noise``` Gausian noise value in meters. Default ```0.008```
-* ```min_angle``` Minimum horizontal angle in radians. Default ```-3.14```
-* ```max_angle``` Maximum horizontal angle in radians. Default ```3.14```
-* ```gpu``` Use gpu_ray sensor instead of the standard ray sensor. Default ```false```
-* ```min_intensity``` The minimum intensity beneath which returns will be clipped.  Can be used to remove low-intensity objects.
+## Features
 
-# Known Issues
-* At full sample resolution, Gazebo can take up to 30 seconds to load the VLP-16 pluggin, 60 seconds for the HDL-32E
-* With the default Gazebo version shipped with ROS, ranges are incorrect when accelerated with the GPU option ([issue](https://bitbucket.org/osrf/gazebo/issues/946/),[image](img/gpu.png))
-    * Solution: Upgrade to a [modern Gazebo version](gazebo_upgrade.md)
-* Gazebo cannot maintain 10Hz with large pointclouds
-    * Solution: User can reduce number of points (samples) or frequency (hz) in the urdf parameters, see [example.urdf.xacro](velodyne_description/urdf/example.urdf.xacro)
-* Gazebo crashes when updating HDL-32E sensors with default number of points. "Took over 1.0 seconds to update a sensor."
-    * Solution: User can reduce number of points in urdf (same as above)
-* Gazebo versions in indigo and jade have different z orientations
-    * Solution: Maintain separate branches for urdf changes (gazebo2 and master)
+- VLP-16 and HDL-32E sensor descriptions.
+- `PointCloud2` output with `x`, `y`, `z`, `intensity`, and `ring` fields.
+- Configurable Gaussian noise, range, resolution, and update rate.
+- CPU ray and GPU ray sensor modes.
 
-# Example Gazebo Robot
-```roslaunch velodyne_description example.launch```
+## Xacro Parameters
 
-# Example Gazebo Robot (with GPU)
-```roslaunch velodyne_description example.launch gpu:=true```
+- `origin`: transform from the parent link.
+- `parent`: parent link name; defaults to `base_link`.
+- `name`: model and point-cloud frame name; defaults to `velodyne`.
+- `topic`: point-cloud topic; defaults to `/velodyne_points`.
+- `hz`: update rate; defaults to `10`.
+- `lasers`: number of vertical lasers.
+- `samples`: number of horizontal samples.
+- `min_range` and `max_range`: range limits in meters.
+- `noise`: Gaussian range noise in meters.
+- `min_angle` and `max_angle`: horizontal limits in radians.
+- `gpu`: select the GPU ray sensor.
+- `min_intensity`: discard returns below this intensity.
 
+## Examples
+
+```bash
+roslaunch velodyne_description example.launch
+roslaunch velodyne_description example.launch gpu:=true
+```
+
+Large point clouds can reduce the Gazebo update rate. Lower `samples` or `hz` when simulation cannot maintain real time.

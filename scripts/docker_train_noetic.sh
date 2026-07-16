@@ -119,7 +119,7 @@ container_id="$(
         ;;
       attention5d)
         LAUNCHFILE=\"\${DRL_ATTENTION_LAUNCHFILE:-multi_robot_scenario_attention_5.launch}\"
-        CASES_PATH=\"\${DRL_MULTI_CURRICULUM_CASES:-/workspace/Local-Critic-Multi-Robot-Navigation/experiments/02_课程学习/cases/stage4_spatiotemporal_attention_mixed_5_cases.json}\"
+        CASES_PATH=\"\${DRL_MULTI_CURRICULUM_CASES:-/workspace/Local-Critic-Multi-Robot-Navigation/experiments/cases/attention_mixed_5.json}\"
         BASE_MODEL=\"\${DRL_ATTENTION_BASE_MODEL:-TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best}\"
         if [[ ! -f \"TD3/pytorch_models/\${BASE_MODEL}_actor.pth\" ]]; then
           echo \"Missing frozen base actor: TD3/pytorch_models/\${BASE_MODEL}_actor.pth\" | tee '$CONTAINER_LOG_FILE'

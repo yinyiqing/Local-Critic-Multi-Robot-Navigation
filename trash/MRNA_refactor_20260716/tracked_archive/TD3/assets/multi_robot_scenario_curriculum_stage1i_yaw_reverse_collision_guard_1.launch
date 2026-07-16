@@ -1,0 +1,24 @@
+<launch>
+  <arg name="gui" default="false"/>
+  <arg name="enable_rviz" default="false"/>
+
+  <include file="$(find multi_robot_scenario)/launch/empty_world.launch">
+    <arg name="gui" value="false"/>
+  </include>
+
+  <param name="robot_description_r1"
+         command="$(find xacro)/xacro '$(find multi_robot_scenario)/xacro/p3dx/pioneer3dx.xacro' velodyne_name:=r1_velodyne velodyne_topic:=/r1/velodyne_points robot_namespace:=/r1 tf_prefix:=r1"/>
+  <node name="urdf_spawner_r1"
+        pkg="gazebo_ros"
+        type="spawn_model"
+        respawn="false"
+        output="screen"
+        args="-urdf -model r1 -param robot_description_r1 -x 0.00 -y 0.00 -z 0.01 -R 0 -P 0 -Y 0.0"/>
+
+  <group if="$(arg enable_rviz)">
+    <node pkg="rviz"
+          type="rviz"
+          name="rviz"
+          args="-d $(find multi_robot_scenario)/launch/pioneer3dx.rviz"/>
+  </group>
+</launch>

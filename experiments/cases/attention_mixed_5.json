@@ -1,13 +1,13 @@
 {
-  "name": "stage4_spatiotemporal_attention_mixed_5_cases",
+  "name": "attention_mixed_5",
   "description": "Single mixed distribution for 5D residual spatiotemporal attention training.",
   "case_files": [
     {
-      "path": "stage3_asym_pair_5_cases.json",
+      "path": "attention_pair_5.json",
       "group": "pair"
     },
     {
-      "path": "stage3_asym_three_5_cases.json",
+      "path": "attention_three_5.json",
       "group": "three"
     }
   ],

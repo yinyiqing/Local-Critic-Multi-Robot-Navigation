@@ -28,5 +28,6 @@ __pycache__/
 
 # Local-only archived artifacts. Keep the tracked trash archive outside this subtree.
 /trash/route2_pair_from_5a/local_artifacts/
+/trash/MRNA_refactor_20260716/local_artifacts/
 
 .DS_Store
