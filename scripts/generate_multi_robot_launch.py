@@ -38,8 +38,10 @@ def render_launch(num_agents, gui):
         "",
     ]
 
+    robot_specs = []
     for idx, (x, y) in enumerate(initial_positions(num_agents), start=1):
         name = f"r{idx}"
+        robot_specs.append(f"{name},{x:.2f},{y:.2f},0.01,0.0")
         lines.extend(
             [
                 f'  <param name="robot_description_{name}"',
@@ -47,20 +49,21 @@ def render_launch(num_agents, gui):
                 "'$(find multi_robot_scenario)/xacro/p3dx/pioneer3dx.xacro' "
                 f"velodyne_name:={name}_velodyne "
                 f"velodyne_topic:=/{name}/velodyne_points "
-                f"robot_namespace:=/{name} tf_prefix:={name}\"/>",
-                f'  <node name="urdf_spawner_{name}"',
-                '        pkg="gazebo_ros"',
-                '        type="spawn_model"',
-                '        respawn="false"',
-                '        output="screen"',
-                f'        args="-urdf -model {name} -param robot_description_{name} '
-                f'-x {x:.2f} -y {y:.2f} -z 0.01 -R 0 -P 0 -Y 0.0"/>',
+                f"robot_namespace:=/{name} tf_prefix:={name} "
+                'enable_aux_sensors:=false"/>',
                 "",
             ]
         )
 
     lines.extend(
         [
+            '  <node name="sequential_multi_robot_spawner"',
+            '        pkg="multi_robot_scenario"',
+            '        type="spawn_multi_robots.py"',
+            '        required="true"',
+            '        output="screen"',
+            f'        args="{" ".join(robot_specs)}"/>',
+            "",
             '  <group if="$(arg enable_rviz)">',
             '    <node pkg="rviz"',
             '          type="rviz"',

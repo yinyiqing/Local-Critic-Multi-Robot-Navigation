@@ -334,12 +334,12 @@ class MultiAgentGazeboEnv:
         normalized = []
         for idx, case in enumerate(cases):
             layout = str(case.get("layout", "fixed")).strip().lower()
-            if layout == "standard":
+            if layout in ("standard", "dense"):
                 normalized.append(case)
                 continue
             if layout != "fixed":
                 raise ValueError(
-                    f"Curriculum case {idx} layout must be fixed or standard"
+                    f"Curriculum case {idx} layout must be fixed, standard, or dense"
                 )
             if "agents" not in case or not isinstance(case["agents"], dict):
                 raise ValueError(f"Curriculum case {idx} must define an agents object")
@@ -370,6 +370,25 @@ class MultiAgentGazeboEnv:
             == "standard"
         )
 
+    def _current_case_uses_dense_layout(self):
+        return bool(
+            self.scenario_mode == "dense"
+            or (
+                self.scenario_mode == "curriculum"
+                and self.current_curriculum_case
+                and str(self.current_curriculum_case.get("layout", "fixed")).lower()
+                == "dense"
+            )
+        )
+
+    def _current_case_uses_fixed_layout(self):
+        return bool(
+            self.scenario_mode == "curriculum"
+            and self.current_curriculum_case
+            and str(self.current_curriculum_case.get("layout", "fixed")).lower()
+            == "fixed"
+        )
+
     def _select_curriculum_case(self):
         mode = os.environ.get("DRL_MULTI_CURRICULUM_SAMPLING", "cycle").strip().lower()
         if mode == "random":
@@ -393,7 +412,10 @@ class MultiAgentGazeboEnv:
         return np.array([float(value[0]), float(value[1])])
 
     def _apply_curriculum_boxes(self):
-        if self._current_case_uses_standard_layout():
+        if (
+            self._current_case_uses_standard_layout()
+            or self._current_case_uses_dense_layout()
+        ):
             self.random_box()
             return
         boxes = self.current_curriculum_case.get("boxes")
@@ -885,7 +907,7 @@ class MultiAgentGazeboEnv:
         )
 
     def _agent_side_ranges(self, name):
-        if self.scenario_mode == "dense":
+        if self._current_case_uses_dense_layout():
             return self.dense_start_x_range, self.dense_start_y_range
         if not self.weak_coupling_layout:
             return (-4.5, 4.5), (-4.5, 4.5)
@@ -896,7 +918,7 @@ class MultiAgentGazeboEnv:
         return (1.0, 4.2), (-4.2, 4.2)
 
     def _sample_goal_candidate_for_agent(self, name):
-        if self.scenario_mode == "dense":
+        if self._current_case_uses_dense_layout():
             x_range, y_range = self._agent_side_ranges(name)
             while True:
                 x_offset = random.uniform(*self.dense_goal_x_offset)
@@ -951,10 +973,7 @@ class MultiAgentGazeboEnv:
             return candidate
 
     def _sample_start_heading(self, name):
-        if (
-            self.scenario_mode == "curriculum"
-            and not self._current_case_uses_standard_layout()
-        ):
+        if self._current_case_uses_fixed_layout():
             agent_case = self.current_curriculum_case["agents"][name]
             if "heading" in agent_case:
                 return float(agent_case["heading"])
@@ -965,6 +984,10 @@ class MultiAgentGazeboEnv:
     def step(self, actions, active_mask=None):
         if active_mask is None:
             active_mask = [True] * self.num_agents
+
+        actions = [
+            [max(0.0, float(action[0])), float(action[1])] for action in actions
+        ]
 
         for idx, name in enumerate(self.agent_names):
             command = Twist()
@@ -1236,15 +1259,12 @@ class MultiAgentGazeboEnv:
         return initial_states
 
     def _sample_robot_positions(self, min_clearance=1.2):
-        if (
-            self.scenario_mode == "curriculum"
-            and not self._current_case_uses_standard_layout()
-        ):
+        if self._current_case_uses_fixed_layout():
             return {
                 name: self._curriculum_agent_position(name, "start")
                 for name in self.agent_names
             }
-        if self.scenario_mode == "dense":
+        if self._current_case_uses_dense_layout():
             min_clearance = self.dense_robot_clearance
         elif self._uses_capacity_layout():
             min_clearance = min(min_clearance, self.capacity_robot_clearance)
@@ -1276,15 +1296,12 @@ class MultiAgentGazeboEnv:
         return positions
 
     def _sample_goal_positions(self, min_clearance=1.2):
-        if (
-            self.scenario_mode == "curriculum"
-            and not self._current_case_uses_standard_layout()
-        ):
+        if self._current_case_uses_fixed_layout():
             return {
                 name: self._curriculum_agent_position(name, "goal")
                 for name in self.agent_names
             }
-        if self.scenario_mode == "dense":
+        if self._current_case_uses_dense_layout():
             min_clearance = self.dense_goal_clearance
             goal_min_distance = self.dense_goal_min_distance
             goal_max_distance = self.dense_goal_max_distance
@@ -1300,7 +1317,7 @@ class MultiAgentGazeboEnv:
             robot_goal_clearance = self.goal_clearance
 
         clearance_schedule = [min_clearance]
-        if self.scenario_mode == "dense":
+        if self._current_case_uses_dense_layout():
             clearance_schedule = [
                 min_clearance,
                 max(min_clearance * 0.75, 0.55),

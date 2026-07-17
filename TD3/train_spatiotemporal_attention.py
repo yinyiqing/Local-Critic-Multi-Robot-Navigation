@@ -38,6 +38,35 @@ def history_array(histories, index):
     return np.stack(histories[index]).astype(np.float32, copy=False)
 
 
+def policy_action_to_env(raw_action, forward_speed):
+    raw_action = np.asarray(raw_action, dtype=np.float32)
+    linear = np.clip(
+        (raw_action[0] + 1.0) * 0.5 * forward_speed,
+        0.0,
+        forward_speed,
+    )
+    return [float(linear), float(raw_action[1])]
+
+
+def local_driving_shaping(
+    next_state,
+    env_action,
+    slowdown_distance,
+    slowdown_penalty_weight,
+    forward_speed,
+):
+    min_laser = float(np.min(np.asarray(next_state)[:20]))
+    pressure = np.clip(
+        (slowdown_distance - min_laser) / max(slowdown_distance, 1e-6),
+        0.0,
+        1.0,
+    )
+    linear = float(env_action[0])
+    safe_forward = forward_speed * (1.0 - pressure)
+    overspeed = max(linear - safe_forward, 0.0)
+    return float(-slowdown_penalty_weight * overspeed**2)
+
+
 def evaluate_group(
     agent,
     env,
@@ -46,6 +75,7 @@ def evaluate_group(
     episodes_per_case,
     max_episode_steps,
     evaluation_seed,
+    forward_speed,
 ):
     original_cases = env.curriculum_cases
     original_index = env.curriculum_case_index
@@ -91,7 +121,7 @@ def evaluate_group(
                         actions.append([0.0, 0.0])
                         continue
                     raw_action = agent.select_action(history_array(histories, index))
-                    actions.append([(raw_action[0] + 1.0) / 2.0, raw_action[1]])
+                    actions.append(policy_action_to_env(raw_action, forward_speed))
                 next_states, _, dones, targets, collision_flags = env.step(
                     actions, active
                 )
@@ -151,40 +181,41 @@ seed = env_int("DRL_ATTENTION_SEED", 0)
 history_len = env_int("DRL_ATTENTION_HISTORY_LEN", 6)
 model_dim = env_int("DRL_ATTENTION_MODEL_DIM", 96)
 num_heads = env_int("DRL_ATTENTION_NUM_HEADS", 4)
-max_residual = env_float("DRL_ATTENTION_MAX_RESIDUAL", 0.25)
-initial_gate = env_float("DRL_ATTENTION_INITIAL_GATE", 0.2)
-actor_lr = env_float("DRL_ATTENTION_ACTOR_LR", 1e-5)
+attention_logit_scale = env_float("DRL_ATTENTION_LOGIT_SCALE", 3.0)
+initial_gate = env_float("DRL_ATTENTION_INITIAL_GATE", 0.1)
+base_actor_lr = env_float("DRL_ATTENTION_BASE_ACTOR_LR", 1e-5)
+attention_lr = env_float("DRL_ATTENTION_LR", 1e-5)
 critic_lr = env_float("DRL_ATTENTION_CRITIC_LR", 2e-5)
 critic_hidden_dim = env_int("DRL_ATTENTION_CRITIC_HIDDEN_DIM", 256)
 actor_start_step = env_int("DRL_ATTENTION_ACTOR_START_STEP", 5000)
+attention_start_step = env_int("DRL_ATTENTION_START_STEP", 100000)
 actor_lr_warmup_steps = env_int("DRL_ATTENTION_ACTOR_WARMUP_STEPS", 10000)
 actor_lr_decay_steps = env_int("DRL_ATTENTION_ACTOR_DECAY_STEPS", 100000)
 actor_lr_min_ratio = env_float("DRL_ATTENTION_ACTOR_MIN_LR_RATIO", 0.1)
-exploration_noise = env_float("DRL_ATTENTION_EXPLORATION_NOISE", 0.01)
+base_finetune_lr_ratio = env_float("DRL_ATTENTION_BASE_FINETUNE_LR_RATIO", 0.1)
+gate_supervision_weight = env_float("DRL_ATTENTION_GATE_LOSS_WEIGHT", 1.0)
+exploration_noise = env_float("DRL_ATTENTION_EXPLORATION_NOISE", 0.1)
 gradient_clip = env_float("DRL_ATTENTION_GRADIENT_CLIP", 1.0)
 reward_scale = env_float("DRL_ATTENTION_REWARD_SCALE", 0.1)
-correction_budget = env_float("DRL_ATTENTION_CORRECTION_BUDGET", 0.5)
-correction_budget_penalty_weight = env_float(
-    "DRL_ATTENTION_CORRECTION_BUDGET_PENALTY", 0.1
-)
-risk_distance = env_float("DRL_ATTENTION_RISK_DISTANCE", 1.5)
-risk_closing_scale = env_float("DRL_ATTENTION_RISK_CLOSING_SCALE", 1.25)
+forward_speed = env_float("DRL_ATTENTION_FORWARD_SPEED", 1.0)
+slowdown_distance = env_float("DRL_ATTENTION_SLOWDOWN_DISTANCE", 1.8)
+slowdown_penalty_weight = env_float("DRL_ATTENTION_SLOWDOWN_PENALTY", 2.0)
 batch_size = env_int("DRL_ATTENTION_BATCH_SIZE", 96)
 replay_capacity = env_int("DRL_ATTENTION_REPLAY_CAPACITY", 200000)
 replay_group_ratios = {
     "standard": env_float("DRL_ATTENTION_REPLAY_STANDARD_RATIO", 1.0),
-    "pair": env_float("DRL_ATTENTION_REPLAY_PAIR_RATIO", 1.0),
-    "three": env_float("DRL_ATTENTION_REPLAY_THREE_RATIO", 1.0),
+    "dense": env_float("DRL_ATTENTION_REPLAY_DENSE_RATIO", 1.0),
 }
 learning_starts = env_int("DRL_ATTENTION_LEARNING_STARTS", 2000)
 max_episodes = env_int("DRL_ATTENTION_MAX_EPISODES", 1000)
 max_episode_steps = env_int("DRL_ATTENTION_MAX_EPISODE_STEPS", 300)
 eval_interval = env_int("DRL_ATTENTION_EVAL_INTERVAL", 25)
-eval_episodes_per_case = env_int("DRL_ATTENTION_EVAL_EPISODES_PER_CASE", 10)
 standard_eval_episodes = env_int("DRL_ATTENTION_STANDARD_EVAL_EPISODES", 30)
+dense_eval_episodes = env_int("DRL_ATTENTION_DENSE_EVAL_EPISODES", 30)
 evaluation_seed = env_int("DRL_ATTENTION_EVAL_SEED", 20260713)
 early_stopping_patience = env_int("DRL_ATTENTION_EARLY_STOPPING_PATIENCE", 8)
 checkpoint_interval = env_int("DRL_ATTENTION_CHECKPOINT_INTERVAL", 10)
+startup_odom_timeout = env_float("DRL_ATTENTION_STARTUP_ODOM_TIMEOUT", 240.0)
 
 
 def validate_training_config():
@@ -195,31 +226,40 @@ def validate_training_config():
             "DRL_ATTENTION_MODEL_DIM must be positive and divisible by "
             "DRL_ATTENTION_NUM_HEADS"
         )
-    if max_residual <= 0.0:
-        raise ValueError("DRL_ATTENTION_MAX_RESIDUAL must be positive")
+    if attention_logit_scale <= 0.0:
+        raise ValueError("DRL_ATTENTION_LOGIT_SCALE must be positive")
     if not 0.0 < initial_gate < 1.0:
         raise ValueError("DRL_ATTENTION_INITIAL_GATE must be between 0 and 1")
-    if actor_lr <= 0.0 or critic_lr <= 0.0:
-        raise ValueError("Attention actor and critic learning rates must be positive")
+    if min(base_actor_lr, attention_lr, critic_lr) <= 0.0:
+        raise ValueError("Actor, Attention, and Critic learning rates must be positive")
     if critic_hidden_dim < 2:
         raise ValueError("DRL_ATTENTION_CRITIC_HIDDEN_DIM must be at least 2")
     if actor_start_step < 0 or actor_lr_warmup_steps < 0:
         raise ValueError("Attention actor start and warmup steps must be non-negative")
+    if attention_start_step <= actor_start_step:
+        raise ValueError(
+            "DRL_ATTENTION_START_STEP must be greater than "
+            "DRL_ATTENTION_ACTOR_START_STEP"
+        )
     if actor_lr_decay_steps <= 0:
         raise ValueError("DRL_ATTENTION_ACTOR_DECAY_STEPS must be positive")
     if not 0.0 <= actor_lr_min_ratio <= 1.0:
         raise ValueError("DRL_ATTENTION_ACTOR_MIN_LR_RATIO must be between 0 and 1")
+    if not 0.0 <= base_finetune_lr_ratio <= 1.0:
+        raise ValueError(
+            "DRL_ATTENTION_BASE_FINETUNE_LR_RATIO must be between 0 and 1"
+        )
+    if gate_supervision_weight < 0.0:
+        raise ValueError("DRL_ATTENTION_GATE_LOSS_WEIGHT must be non-negative")
     if exploration_noise < 0.0 or gradient_clip <= 0.0 or reward_scale <= 0.0:
         raise ValueError(
             "Exploration noise must be non-negative; gradient clip and reward "
             "scale must be positive"
         )
-    if not 0.0 <= correction_budget <= 1.0:
-        raise ValueError("DRL_ATTENTION_CORRECTION_BUDGET must be between 0 and 1")
-    if risk_distance <= 0.0 or risk_closing_scale <= 0.0:
-        raise ValueError("Attention risk distance and closing scale must be positive")
-    if correction_budget_penalty_weight < 0.0:
-        raise ValueError("Attention constraint penalty weights must be non-negative")
+    if min(forward_speed, slowdown_distance) <= 0.0:
+        raise ValueError("Forward speed limit and slowdown distance must be positive")
+    if slowdown_penalty_weight < 0.0:
+        raise ValueError("Local driving shaping weight must be non-negative")
     if batch_size < len(replay_group_ratios):
         raise ValueError("DRL_ATTENTION_BATCH_SIZE must cover all replay groups")
     if any(ratio <= 0.0 for ratio in replay_group_ratios.values()):
@@ -231,13 +271,15 @@ def validate_training_config():
         )
     if min(max_episodes, max_episode_steps, eval_interval) <= 0:
         raise ValueError("Episode and evaluation intervals must be positive")
-    if eval_episodes_per_case <= 0 or standard_eval_episodes <= 0:
+    if standard_eval_episodes <= 0 or dense_eval_episodes <= 0:
         raise ValueError("Attention evaluation sample counts must be positive")
     if checkpoint_interval <= 0 or early_stopping_patience < 0:
         raise ValueError(
             "Checkpoint interval must be positive and early-stopping patience "
             "must be non-negative"
         )
+    if startup_odom_timeout <= 0.0:
+        raise ValueError("DRL_ATTENTION_STARTUP_ODOM_TIMEOUT must be positive")
 
 
 validate_training_config()
@@ -252,11 +294,14 @@ base_model = os.environ.get(
 )
 model_name = os.environ.get(
     "DRL_ATTENTION_MODEL_NAME",
-    "TD3_velodyne_multi_v5_attention_residual_from_5d_history_mlp_critic_v7",
+    "TD3_velodyne_multi_v9_staged_standard_dense_attention_forward_only",
 )
 base_actor_path = os.path.join("pytorch_models", f"{base_model}_actor.pth")
 checkpoint_path = os.path.join("checkpoints", f"{model_name}_latest.pt")
 best_checkpoint_path = os.path.join("checkpoints", f"{model_name}_best.pt")
+base_stage_actor_path = os.path.join(
+    "pytorch_models", f"{model_name}_base_stage_actor.pth"
+)
 
 random.seed(seed)
 np.random.seed(seed)
@@ -268,11 +313,10 @@ agent = SpatioTemporalTD3(
     history_len=history_len,
     model_dim=model_dim,
     num_heads=num_heads,
-    max_residual=max_residual,
+    attention_logit_scale=attention_logit_scale,
     initial_gate=initial_gate,
-    risk_distance=risk_distance,
-    risk_closing_scale=risk_closing_scale,
-    actor_lr=actor_lr,
+    base_actor_lr=base_actor_lr,
+    attention_lr=attention_lr,
     critic_lr=critic_lr,
     critic_hidden_dim=critic_hidden_dim,
 )
@@ -293,7 +337,9 @@ env = MultiAgentGazeboEnv(
     scenario_mode="curriculum",
     active_neighbors_only=True,
 )
-time.sleep(5)
+for agent_name in agent_names:
+    env.wait_for_odom(agent_name, timeout=startup_odom_timeout)
+print("All robot odometry topics are ready; training may start")
 
 timestamp = datetime.now().strftime("%b%d_%H-%M-%S")
 writer = SummaryWriter(
@@ -304,6 +350,29 @@ environment_steps = 0
 agent_samples = 0
 best_metrics = None
 evaluations_without_improvement = 0
+base_stage_saved = False
+
+training_config = {
+    "training_version": 9,
+    "history_len": history_len,
+    "model_dim": model_dim,
+    "num_heads": num_heads,
+    "critic_type": "full_history_mlp",
+    "critic_hidden_dim": critic_hidden_dim,
+    "attention_logit_scale": attention_logit_scale,
+    "initial_gate": initial_gate,
+    "base_model": base_model,
+    "base_actor_lr": base_actor_lr,
+    "attention_lr": attention_lr,
+    "attention_start_step": attention_start_step,
+    "base_finetune_lr_ratio": base_finetune_lr_ratio,
+    "gate_supervision_weight": gate_supervision_weight,
+    "reward_scale": reward_scale,
+    "replay_group_ratios": replay_group_ratios,
+    "forward_speed": forward_speed,
+    "slowdown_distance": slowdown_distance,
+    "slowdown_penalty_weight": slowdown_penalty_weight,
+}
 
 
 def save_checkpoint(path):
@@ -316,25 +385,8 @@ def save_checkpoint(path):
             "agent_samples": agent_samples,
             "best_metrics": best_metrics,
             "evaluations_without_improvement": evaluations_without_improvement,
-            "config": {
-                "training_version": 7,
-                "history_len": history_len,
-                "model_dim": model_dim,
-                "num_heads": num_heads,
-                "critic_type": "full_history_mlp",
-                "critic_hidden_dim": critic_hidden_dim,
-                "max_residual": max_residual,
-                "initial_gate": initial_gate,
-                "base_model": base_model,
-                "reward_scale": reward_scale,
-                "replay_group_ratios": replay_group_ratios,
-                "correction_budget": correction_budget,
-                "correction_budget_penalty_weight": (
-                    correction_budget_penalty_weight
-                ),
-                "risk_distance": risk_distance,
-                "risk_closing_scale": risk_closing_scale,
-            },
+            "base_stage_saved": base_stage_saved,
+            "config": training_config,
         },
         path,
     )
@@ -343,42 +395,10 @@ def save_checkpoint(path):
 if os.path.exists(checkpoint_path):
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     config = checkpoint["config"]
-    expected = (
-        7,
-        history_len,
-        model_dim,
-        num_heads,
-        "full_history_mlp",
-        critic_hidden_dim,
-        max_residual,
-        initial_gate,
-        base_model,
-        reward_scale,
-        replay_group_ratios,
-        correction_budget,
-        correction_budget_penalty_weight,
-        risk_distance,
-        risk_closing_scale,
-    )
-    restored = (
-        config.get("training_version"),
-        config["history_len"],
-        config["model_dim"],
-        config["num_heads"],
-        config.get("critic_type"),
-        config.get("critic_hidden_dim"),
-        config["max_residual"],
-        config.get("initial_gate"),
-        config["base_model"],
-        config.get("reward_scale"),
-        config.get("replay_group_ratios"),
-        config.get("correction_budget"),
-        config.get("correction_budget_penalty_weight"),
-        config.get("risk_distance"),
-        config.get("risk_closing_scale"),
-    )
-    if restored != expected:
-        raise ValueError(f"Checkpoint config mismatch: {restored} != {expected}")
+    if config != training_config:
+        raise ValueError(
+            f"Checkpoint config mismatch: {config} != {training_config}"
+        )
     agent.load_state_dict(checkpoint["agent"])
     replay_buffer.load_state_dict(checkpoint["replay_buffer"])
     episode = int(checkpoint["episode"])
@@ -388,42 +408,51 @@ if os.path.exists(checkpoint_path):
     evaluations_without_improvement = int(
         checkpoint.get("evaluations_without_improvement", 0)
     )
+    base_stage_saved = bool(checkpoint.get("base_stage_saved", False))
     print("Resumed attention training from:", checkpoint_path)
 
+agent.set_attention_enabled(agent_samples >= attention_start_step)
+
 print("==============================================")
-print("Training: 5D frozen actor + spatiotemporal attention residual")
-print("Base model:", base_model)
+print("Training: trainable base Actor, then gated spatiotemporal Attention")
+print("Initialization model:", base_model)
 print("History length:", history_len)
 print("Attention model dim / heads:", model_dim, "/", num_heads)
-print("Initial learned gate / zero residual head:", initial_gate, "/", True)
-print("Mixed curriculum groups: standard, pair, three")
-print("Reward: base individual reward only")
+print("Initial gate / zero Attention delta head:", initial_gate, "/", True)
+print("Curriculum groups: standard, dense")
 print(
-    "Actor start / LR warmup / decay:",
+    "Base Actor start / Attention start:",
     actor_start_step,
     "/",
+    attention_start_step,
+)
+print(
+    "LR warmup / decay / base fine-tune ratio:",
     actor_lr_warmup_steps,
     "/",
     actor_lr_decay_steps,
+    "/",
+    base_finetune_lr_ratio,
 )
 print("Replay group ratios:", replay_group_ratios)
 print("Critic reward scale:", reward_scale)
 print(
-    "Correction budget / budget penalty:",
-    correction_budget,
+    "Policy linear speed range:",
+    0.0,
     "/",
-    correction_budget_penalty_weight,
+    forward_speed,
 )
 print(
-    "Observable risk-modulated correction distance / closing scale:",
-    risk_distance,
+    "Slowdown distance / penalty:",
+    slowdown_distance,
     "/",
-    risk_closing_scale,
+    slowdown_penalty_weight,
 )
-print("Batch size / expected samples per group:", batch_size, "/", batch_size // 3)
+print("Gate supervision weight:", gate_supervision_weight)
+print("Batch size / expected samples per group:", batch_size, "/", batch_size // 2)
 print(
-    "Fixed evaluation: standard=%d, dense=%d per case, seed=%d"
-    % (standard_eval_episodes, eval_episodes_per_case, evaluation_seed)
+    "Fixed evaluation episodes: standard=%d, dense=%d, seed=%d"
+    % (standard_eval_episodes, dense_eval_episodes, evaluation_seed)
 )
 print("Early stopping patience:", early_stopping_patience, "evaluations")
 print("Fixed exploration noise:", exploration_noise)
@@ -436,6 +465,8 @@ try:
         states = env.reset()
         case_name = str(env.current_curriculum_case.get("name", "unknown"))
         case_group = str(env.current_curriculum_case.get("group", "unknown"))
+        if case_group not in replay_group_ratios:
+            raise ValueError(f"Unsupported training group: {case_group}")
         histories = make_histories(states, history_len)
         active = [True] * env.num_agents
         episode_rewards = np.zeros(env.num_agents, dtype=np.float32)
@@ -461,7 +492,7 @@ try:
                     1.0,
                 ).astype(np.float32)
                 raw_actions.append(raw_action)
-                env_actions.append([(raw_action[0] + 1.0) / 2.0, raw_action[1]])
+                env_actions.append(policy_action_to_env(raw_action, forward_speed))
 
             next_states, rewards, dones, targets, collisions = env.step(
                 env_actions, active
@@ -473,16 +504,23 @@ try:
                 if not active[index]:
                     continue
                 next_history = history_array(histories, index)
+                shaped_reward = rewards[index] + local_driving_shaping(
+                    next_state,
+                    env_actions[index],
+                    slowdown_distance,
+                    slowdown_penalty_weight,
+                    forward_speed,
+                )
                 replay_buffer.add(
                     current_histories[index],
                     raw_actions[index],
-                    rewards[index],
+                    shaped_reward,
                     dones[index] or truncated,
                     next_history,
                     case_group,
                 )
                 agent_samples += 1
-                episode_rewards[index] += rewards[index]
+                episode_rewards[index] += shaped_reward
                 episode_success[index] = max(
                     episode_success[index], int(targets[index])
                 )
@@ -492,19 +530,26 @@ try:
                 if dones[index] or truncated:
                     active[index] = False
 
+            if not base_stage_saved and agent_samples >= attention_start_step:
+                torch.save(agent.actor.base_actor.state_dict(), base_stage_actor_path)
+                base_stage_saved = True
+                best_metrics = None
+                evaluations_without_improvement = 0
+                agent.set_attention_enabled(True)
+                print("Base stage completed. Saved Actor:", base_stage_actor_path)
+
             if len(replay_buffer) >= learning_starts:
                 step_losses = agent.train_step(
                     replay_buffer,
                     batch_size=batch_size,
                     actor_start_step=actor_start_step,
+                    attention_start_step=attention_start_step,
                     actor_lr_warmup_steps=actor_lr_warmup_steps,
                     actor_lr_decay_steps=actor_lr_decay_steps,
                     actor_lr_min_ratio=actor_lr_min_ratio,
+                    base_finetune_lr_ratio=base_finetune_lr_ratio,
+                    gate_supervision_weight=gate_supervision_weight,
                     reward_scale=reward_scale,
-                    correction_budget=correction_budget,
-                    correction_budget_penalty_weight=(
-                        correction_budget_penalty_weight
-                    ),
                     gradient_clip=gradient_clip,
                     environment_step=agent_samples,
                 )
@@ -536,9 +581,8 @@ try:
                     namespace = (
                         "diagnostic"
                         if "_gate_" in name
-                        or "_residual_" in name
+                        or "attention_" in name
                         or "_correction_" in name
-                        or "interaction_risk_" in name
                         else "optimization"
                     )
                     writer.add_scalar(
@@ -546,10 +590,11 @@ try:
                     )
 
         print(
-            "Episode %d | group=%s | case=%s | samples=%d | steps=%d | "
+            "Episode %d | phase=%s | group=%s | case=%s | samples=%d | steps=%d | "
             "success=%.3f | collision=%.3f | full=%d | replay=%d"
             % (
                 episode,
+                "attention" if agent.attention_enabled else "base",
                 case_group,
                 case_name,
                 agent_samples,
@@ -574,25 +619,38 @@ try:
             standard_eval_episodes,
             max_episode_steps,
             evaluation_seed,
+            forward_speed,
         )
         dense_metrics = evaluate_group(
             agent,
             env,
-            "three",
+            "dense",
             history_len,
-            eval_episodes_per_case,
+            dense_eval_episodes,
             max_episode_steps,
             evaluation_seed + 1000,
+            forward_speed,
         )
         print("Eval standard:", standard_metrics)
-        print("Eval three:", dense_metrics)
-        for group, metrics in (("standard", standard_metrics), ("three", dense_metrics)):
+        print("Eval dense:", dense_metrics)
+        for group, metrics in (
+            ("standard", standard_metrics),
+            ("dense", dense_metrics),
+        ):
             for name, value in metrics.items():
                 writer.add_scalar(f"eval/{group}_{name}", value, episode)
 
-        candidate = {"standard": standard_metrics, "three": dense_metrics}
+        if not agent.attention_enabled:
+            print(
+                "Base-stage evaluation recorded; best selection starts in "
+                "Attention stage"
+            )
+            save_checkpoint(checkpoint_path)
+            continue
+
+        candidate = {"standard": standard_metrics, "dense": dense_metrics}
         if best_metrics is None or best_key(standard_metrics, dense_metrics) > best_key(
-            best_metrics["standard"], best_metrics["three"]
+            best_metrics["standard"], best_metrics["dense"]
         ):
             best_metrics = candidate
             evaluations_without_improvement = 0

@@ -1,22 +1,18 @@
 {
   "name": "attention_mixed_5",
-  "description": "Single mixed distribution for 5D residual spatiotemporal attention training.",
-  "case_files": [
-    {
-      "path": "attention_pair_5.json",
-      "group": "pair"
-    },
-    {
-      "path": "attention_three_5.json",
-      "group": "three"
-    }
-  ],
+  "description": "Standard and dense random five-robot distributions for staged attention training.",
   "cases": [
     {
       "name": "standard_5_random",
       "group": "standard",
       "layout": "standard",
-      "weight": 4.0
+      "weight": 1.0
+    },
+    {
+      "name": "dense_5_random",
+      "group": "dense",
+      "layout": "dense",
+      "weight": 1.0
     }
   ]
 }

@@ -5,7 +5,7 @@ import numpy as np
 
 
 class SequenceReplayBuffer:
-    GROUPS = ("standard", "pair", "three")
+    GROUPS = ("standard", "dense")
 
     def __init__(self, capacity, seed=0, group_ratios=None):
         self.capacity = int(capacity)

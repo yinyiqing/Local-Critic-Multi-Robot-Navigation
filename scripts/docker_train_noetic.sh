@@ -8,6 +8,7 @@ DOCKER_RUNTIME="${DRL_DOCKER_RUNTIME:-nvidia}"
 DOCKER_GPUS="${DRL_DOCKER_GPUS:-all}"
 TRAIN_MODE="${DRL_DOCKER_TRAIN_MODE:-single}"
 DETACHED="${DRL_DOCKER_DETACHED:-1}"
+KEEP_CONTAINER="${DRL_DOCKER_KEEP_CONTAINER:-0}"
 ROS_PORT="${DRL_DOCKER_ROS_PORT:-12611}"
 GAZEBO_PORT="${DRL_DOCKER_GAZEBO_PORT:-12711}"
 DOCKER_USER="${DRL_DOCKER_USER:-$(id -u):$(id -g)}"
@@ -18,13 +19,13 @@ LOG_BASENAME="docker_train_${TRAIN_MODE}_$(date +%Y%m%d_%H%M%S).log"
 HOST_LOG_FILE="$LOG_DIR/$LOG_BASENAME"
 CONTAINER_LOG_FILE="/workspace/Local-Critic-Multi-Robot-Navigation/logs/$LOG_BASENAME"
 ATTENTION_BASE_MODEL="${DRL_ATTENTION_BASE_MODEL:-TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best}"
-ATTENTION_MODEL_NAME="${DRL_ATTENTION_MODEL_NAME:-TD3_velodyne_multi_v5_attention_residual_from_5d_history_mlp_critic_v7}"
+ATTENTION_MODEL_NAME="${DRL_ATTENTION_MODEL_NAME:-TD3_velodyne_multi_v9_staged_standard_dense_attention_forward_only}"
 
 if [[ "$TRAIN_MODE" == "attention5d" ]]; then
   base_actor_path="$PROJECT_ROOT/TD3/pytorch_models/${ATTENTION_BASE_MODEL}_actor.pth"
   if [[ ! -f "$base_actor_path" ]]; then
     {
-      echo "Missing frozen base actor: $base_actor_path"
+      echo "Missing base Actor initialization: $base_actor_path"
       echo "Restore this file or set DRL_ATTENTION_BASE_MODEL to an existing actor before starting attention5d."
     } | tee "$HOST_LOG_FILE"
     exit 1
@@ -74,9 +75,17 @@ run_args=(
 )
 
 if [[ "$DETACHED" == "1" ]]; then
-  run_args=(-d --rm "${run_args[@]}")
+  if [[ "$KEEP_CONTAINER" == "1" ]]; then
+    run_args=(-d "${run_args[@]}")
+  else
+    run_args=(-d --rm "${run_args[@]}")
+  fi
 else
-  run_args=(--rm "${run_args[@]}")
+  if [[ "$KEEP_CONTAINER" == "1" ]]; then
+    run_args=("${run_args[@]}")
+  else
+    run_args=(--rm "${run_args[@]}")
+  fi
 fi
 
 docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
@@ -122,7 +131,7 @@ container_id="$(
         CASES_PATH=\"\${DRL_MULTI_CURRICULUM_CASES:-/workspace/Local-Critic-Multi-Robot-Navigation/experiments/cases/attention_mixed_5.json}\"
         BASE_MODEL=\"\${DRL_ATTENTION_BASE_MODEL:-TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best}\"
         if [[ ! -f \"TD3/pytorch_models/\${BASE_MODEL}_actor.pth\" ]]; then
-          echo \"Missing frozen base actor: TD3/pytorch_models/\${BASE_MODEL}_actor.pth\" | tee '$CONTAINER_LOG_FILE'
+          echo \"Missing base Actor initialization: TD3/pytorch_models/\${BASE_MODEL}_actor.pth\" | tee '$CONTAINER_LOG_FILE'
           exit 1
         fi
         python3 scripts/generate_multi_robot_launch.py --num-agents 5 --output \"TD3/assets/\$LAUNCHFILE\"

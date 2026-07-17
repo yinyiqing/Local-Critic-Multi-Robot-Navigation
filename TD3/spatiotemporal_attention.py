@@ -6,21 +6,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-def observable_interaction_risk(
-    history,
-    laser_dim=20,
-    risk_distance=1.5,
-    risk_closing_scale=1.25,
-):
-    current_laser = history[:, -1, :laser_dim]
-    oldest_laser = history[:, 0, :laser_dim]
-    proximity = ((risk_distance - current_laser) / risk_distance).clamp(0.0, 1.0)
-    closing = ((oldest_laser - current_laser) / risk_closing_scale).clamp(
-        0.0, 1.0
-    )
-    return (proximity * closing).amax(dim=1, keepdim=True).detach()
-
-
 class BaseActor(nn.Module):
     def __init__(self, state_dim=24, action_dim=2):
         super().__init__()
@@ -28,10 +13,13 @@ class BaseActor(nn.Module):
         self.layer_2 = nn.Linear(800, 600)
         self.layer_3 = nn.Linear(600, action_dim)
 
-    def forward(self, state):
+    def action_logits(self, state):
         state = F.relu(self.layer_1(state))
         state = F.relu(self.layer_2(state))
-        return torch.tanh(self.layer_3(state))
+        return self.layer_3(state)
+
+    def forward(self, state):
+        return torch.tanh(self.action_logits(state))
 
 
 class SpatioTemporalEncoder(nn.Module):
@@ -124,7 +112,7 @@ class SpatioTemporalEncoder(nn.Module):
         return temporal_features[:, -1]
 
 
-class ResidualAttentionActor(nn.Module):
+class StagedAttentionActor(nn.Module):
     def __init__(
         self,
         base_actor,
@@ -133,64 +121,61 @@ class ResidualAttentionActor(nn.Module):
         action_dim=2,
         model_dim=96,
         num_heads=4,
-        max_residual=0.25,
-        initial_gate=0.2,
-        risk_distance=1.5,
-        risk_closing_scale=1.25,
+        attention_logit_scale=3.0,
+        initial_gate=0.1,
     ):
         super().__init__()
         if not 0.0 < initial_gate < 1.0:
             raise ValueError("initial_gate must be between 0 and 1")
-        if risk_distance <= 0.0 or risk_closing_scale <= 0.0:
-            raise ValueError("attention risk scales must be positive")
+        if attention_logit_scale <= 0.0:
+            raise ValueError("attention_logit_scale must be positive")
         self.base_actor = base_actor
         self.encoder = SpatioTemporalEncoder(
             history_len=history_len,
             model_dim=model_dim,
             num_heads=num_heads,
         )
-        self.residual_head = nn.Sequential(
+        self.attention_head = nn.Sequential(
             nn.Linear(model_dim, model_dim),
             nn.ReLU(),
             nn.Linear(model_dim, action_dim),
-            nn.Tanh(),
         )
-        nn.init.zeros_(self.residual_head[2].weight)
-        nn.init.zeros_(self.residual_head[2].bias)
+        nn.init.zeros_(self.attention_head[2].weight)
+        nn.init.zeros_(self.attention_head[2].bias)
         self.gate_head = nn.Linear(model_dim, 1)
         nn.init.zeros_(self.gate_head.weight)
         gate_logit = math.log(initial_gate / (1.0 - initial_gate))
         nn.init.constant_(self.gate_head.bias, gate_logit)
-        self.max_residual = float(max_residual)
+        self.attention_logit_scale = float(attention_logit_scale)
         self.state_dim = int(state_dim)
-        self.risk_distance = float(risk_distance)
-        self.risk_closing_scale = float(risk_closing_scale)
-        self.freeze_base_actor()
 
-    def freeze_base_actor(self):
-        self.base_actor.eval()
-        for parameter in self.base_actor.parameters():
-            parameter.requires_grad = False
-
-    def train(self, mode=True):
-        super().train(mode)
-        self.base_actor.eval()
-        return self
-
-    def forward(self, history, return_details=False):
-        base_action = self.base_actor(history[:, -1, : self.state_dim])
-        features = self.encoder(history)
-        residual = self.max_residual * self.residual_head(features)
-        learned_gate = torch.sigmoid(self.gate_head(features))
-        interaction_risk = observable_interaction_risk(
-            history,
-            risk_distance=self.risk_distance,
-            risk_closing_scale=self.risk_closing_scale,
+    def forward(self, history, attention_enabled=True, return_details=False):
+        base_logits = self.base_actor.action_logits(
+            history[:, -1, : self.state_dim]
         )
-        gate = learned_gate * interaction_risk
-        action = torch.clamp(base_action + gate * residual, -1.0, 1.0)
+        base_action = torch.tanh(base_logits)
+        if not attention_enabled and not return_details:
+            return base_action
+
+        features = self.encoder(history)
+        attention_delta = self.attention_logit_scale * torch.tanh(
+            self.attention_head(features)
+        )
+        attention_action = torch.tanh(base_logits + attention_delta)
+        gate_logits = self.gate_head(features)
+        learned_gate = torch.sigmoid(gate_logits)
+        effective_gate = (
+            learned_gate if attention_enabled else torch.zeros_like(learned_gate)
+        )
+        action = torch.lerp(base_action, attention_action, effective_gate)
         if return_details:
-            return action, gate, residual
+            return (
+                action,
+                base_action,
+                attention_action,
+                learned_gate,
+                gate_logits,
+            )
         return action
 
 
@@ -249,11 +234,10 @@ class SpatioTemporalTD3:
         action_dim=2,
         model_dim=96,
         num_heads=4,
-        max_residual=0.25,
-        initial_gate=0.2,
-        risk_distance=1.5,
-        risk_closing_scale=1.25,
-        actor_lr=1e-5,
+        attention_logit_scale=3.0,
+        initial_gate=0.1,
+        base_actor_lr=1e-5,
+        attention_lr=1e-5,
         critic_lr=2e-5,
         critic_hidden_dim=256,
         device=None,
@@ -263,17 +247,15 @@ class SpatioTemporalTD3:
         )
         base_actor = BaseActor(state_dim, action_dim)
         base_actor.load_state_dict(base_actor_state)
-        self.actor = ResidualAttentionActor(
+        self.actor = StagedAttentionActor(
             base_actor,
             history_len=history_len,
             state_dim=state_dim,
             action_dim=action_dim,
             model_dim=model_dim,
             num_heads=num_heads,
-            max_residual=max_residual,
+            attention_logit_scale=attention_logit_scale,
             initial_gate=initial_gate,
-            risk_distance=risk_distance,
-            risk_closing_scale=risk_closing_scale,
         ).to(self.device)
         self.actor_target = copy.deepcopy(self.actor).to(self.device)
         self.critic = TwinHistoryMLPCritic(
@@ -284,21 +266,48 @@ class SpatioTemporalTD3:
         ).to(self.device)
         self.critic_target = copy.deepcopy(self.critic).to(self.device)
 
-        actor_parameters = [p for p in self.actor.parameters() if p.requires_grad]
-        self.actor_optimizer = torch.optim.Adam(actor_parameters, lr=actor_lr)
+        attention_parameters = list(self.actor.encoder.parameters())
+        attention_parameters.extend(self.actor.attention_head.parameters())
+        attention_parameters.extend(self.actor.gate_head.parameters())
+        self.actor_optimizer = torch.optim.Adam(
+            [
+                {
+                    "params": self.actor.base_actor.parameters(),
+                    "lr": base_actor_lr,
+                    "name": "base",
+                },
+                {
+                    "params": attention_parameters,
+                    "lr": 0.0,
+                    "name": "attention",
+                },
+            ]
+        )
         self.critic_optimizer = torch.optim.Adam(
             self.critic.parameters(), lr=critic_lr
         )
-        self.actor_lr = float(actor_lr)
+        self.base_actor_lr = float(base_actor_lr)
+        self.attention_lr = float(attention_lr)
+        self.attention_enabled = False
         self.total_updates = 0
 
-    def select_action(self, history):
+    def set_attention_enabled(self, enabled):
+        self.attention_enabled = bool(enabled)
+
+    def select_action(self, history, attention_enabled=None):
         history_tensor = torch.as_tensor(
             history, dtype=torch.float32, device=self.device
         ).unsqueeze(0)
         self.actor.eval()
         with torch.no_grad():
-            action = self.actor(history_tensor)
+            action = self.actor(
+                history_tensor,
+                attention_enabled=(
+                    self.attention_enabled
+                    if attention_enabled is None
+                    else bool(attention_enabled)
+                ),
+            )
         self.actor.train()
         return action.cpu().numpy().reshape(-1)
 
@@ -312,19 +321,24 @@ class SpatioTemporalTD3:
         noise_clip=0.25,
         policy_delay=2,
         actor_start_step=5000,
+        attention_start_step=100000,
         actor_lr_warmup_steps=10000,
         actor_lr_decay_steps=100000,
         actor_lr_min_ratio=0.1,
+        base_finetune_lr_ratio=0.1,
+        gate_supervision_weight=1.0,
         reward_scale=0.1,
-        correction_budget=0.5,
-        correction_budget_penalty_weight=0.1,
         gradient_clip=1.0,
         environment_step=0,
     ):
-        if not 0.0 <= correction_budget <= 1.0:
-            raise ValueError("correction_budget must be between 0 and 1")
-        if correction_budget_penalty_weight < 0.0:
-            raise ValueError("attention penalty weights must be non-negative")
+        if attention_start_step <= actor_start_step:
+            raise ValueError(
+                "attention_start_step must be greater than actor_start_step"
+            )
+        if not 0.0 <= base_finetune_lr_ratio <= 1.0:
+            raise ValueError("base_finetune_lr_ratio must be between 0 and 1")
+        if gate_supervision_weight < 0.0:
+            raise ValueError("gate_supervision_weight must be non-negative")
 
         (
             histories,
@@ -340,10 +354,18 @@ class SpatioTemporalTD3:
         done = torch.as_tensor(dones, device=self.device)
         next_history = torch.as_tensor(next_histories, device=self.device)
 
+        attention_enabled = environment_step >= attention_start_step
+        self.set_attention_enabled(attention_enabled)
+
         with torch.no_grad():
             noise = torch.randn_like(action) * policy_noise
             noise = noise.clamp(-noise_clip, noise_clip)
-            next_action = (self.actor_target(next_history) + noise).clamp(-1.0, 1.0)
+            next_action = (
+                self.actor_target(
+                    next_history, attention_enabled=attention_enabled
+                )
+                + noise
+            ).clamp(-1.0, 1.0)
             target_q1, target_q2 = self.critic_target(next_history, next_action)
             target_q = reward + (1.0 - done) * discount * torch.min(
                 target_q1, target_q2
@@ -366,37 +388,57 @@ class SpatioTemporalTD3:
         actor_metrics = {}
         actor_ready = environment_step >= actor_start_step
         if actor_ready and self.total_updates % policy_delay == 0:
-            actor_lr = self._actor_learning_rate(
-                environment_step,
-                actor_start_step,
-                actor_lr_warmup_steps,
-                actor_lr_decay_steps,
-                actor_lr_min_ratio,
-            )
-            for group in self.actor_optimizer.param_groups:
-                group["lr"] = actor_lr
+            if attention_enabled:
+                attention_lr = self._actor_learning_rate(
+                    environment_step,
+                    attention_start_step,
+                    actor_lr_warmup_steps,
+                    actor_lr_decay_steps,
+                    actor_lr_min_ratio,
+                    self.attention_lr,
+                )
+                base_lr = (
+                    attention_lr
+                    * self.base_actor_lr
+                    / self.attention_lr
+                    * base_finetune_lr_ratio
+                )
+            else:
+                attention_lr = 0.0
+                base_lr = self._actor_learning_rate(
+                    environment_step,
+                    actor_start_step,
+                    actor_lr_warmup_steps,
+                    actor_lr_decay_steps,
+                    actor_lr_min_ratio,
+                    self.base_actor_lr,
+                )
+            self._set_actor_learning_rates(base_lr, attention_lr)
 
             self._set_requires_grad(self.critic, False)
             try:
-                actor_action, gate, residual = self.actor(history, return_details=True)
+                (
+                    actor_action,
+                    base_action,
+                    attention_action,
+                    gate,
+                    gate_logits,
+                ) = self.actor(
+                    history,
+                    attention_enabled=attention_enabled,
+                    return_details=True,
+                )
                 actor_q = self.critic.first(history, actor_action)
                 q_normalizer = actor_q.detach().abs().mean().clamp(min=1.0)
                 policy_loss = -actor_q.mean() / q_normalizer
-                correction = gate * residual
-                normalized_correction = correction / self.actor.max_residual
-                correction_budget_penalty = F.relu(
-                    normalized_correction.abs() - correction_budget
-                ).pow(2).mean()
-                interaction_risk = self._interaction_risk(
-                    history,
-                    risk_distance=self.actor.risk_distance,
-                    risk_closing_scale=self.actor.risk_closing_scale,
-                )
-                actor_loss = (
-                    policy_loss
-                    + correction_budget_penalty_weight
-                    * correction_budget_penalty
-                )
+                if attention_enabled:
+                    gate_targets = self._gate_targets(groups, gate_logits.device)
+                    gate_loss = F.binary_cross_entropy_with_logits(
+                        gate_logits, gate_targets
+                    )
+                else:
+                    gate_loss = torch.zeros((), device=self.device)
+                actor_loss = policy_loss + gate_supervision_weight * gate_loss
                 self.actor_optimizer.zero_grad()
                 actor_loss.backward()
                 actor_grad_norm = torch.nn.utils.clip_grad_norm_(
@@ -409,24 +451,16 @@ class SpatioTemporalTD3:
             actor_loss_value = float(actor_loss.detach().cpu())
             actor_metrics = {
                 "policy_loss": float(policy_loss.detach().cpu()),
-                "correction_budget_penalty": float(
-                    correction_budget_penalty.detach().cpu()
-                ),
-                "interaction_risk_mean": float(interaction_risk.mean().cpu()),
-                "interaction_risk_min": float(interaction_risk.min().cpu()),
-                "interaction_risk_max": float(interaction_risk.max().cpu()),
-                "correction_abs_mean": float(
-                    correction.detach().abs().mean().cpu()
-                ),
-                "correction_abs_max": float(correction.detach().abs().max().cpu()),
+                "gate_supervision_loss": float(gate_loss.detach().cpu()),
                 "actor_q_abs_mean": float(actor_q.detach().abs().mean().cpu()),
-                "actor_lr": actor_lr,
+                "base_actor_lr": base_lr,
+                "attention_lr": attention_lr,
+                "attention_enabled": float(attention_enabled),
             }
             actor_metrics.update(
-                self._group_actor_metrics(gate, residual, correction, groups)
-            )
-            actor_metrics.update(
-                self._risk_actor_metrics(gate, correction, interaction_risk)
+                self._group_actor_metrics(
+                    gate, base_action, attention_action, groups
+                )
             )
 
             self._soft_update(self.actor, self.actor_target, tau)
@@ -451,54 +485,41 @@ class SpatioTemporalTD3:
         warmup_steps,
         decay_steps,
         min_ratio,
+        peak_lr,
     ):
         elapsed = max(environment_step - actor_start_step, 0)
         if elapsed < warmup_steps:
-            return self.actor_lr * elapsed / max(float(warmup_steps), 1.0)
+            return peak_lr * elapsed / max(float(warmup_steps), 1.0)
         decay_progress = min(
             max(elapsed - warmup_steps, 0) / max(float(decay_steps), 1.0), 1.0
         )
         cosine = 0.5 * (1.0 + math.cos(math.pi * decay_progress))
-        return self.actor_lr * (min_ratio + (1.0 - min_ratio) * cosine)
+        return peak_lr * (min_ratio + (1.0 - min_ratio) * cosine)
+
+    def _set_actor_learning_rates(self, base_lr, attention_lr):
+        for group in self.actor_optimizer.param_groups:
+            if group["name"] == "base":
+                group["lr"] = base_lr
+            elif group["name"] == "attention":
+                group["lr"] = attention_lr
 
     @staticmethod
-    def _interaction_risk(
-        history,
-        laser_dim=20,
-        risk_distance=1.5,
-        risk_closing_scale=1.25,
-    ):
-        return observable_interaction_risk(
-            history,
-            laser_dim=laser_dim,
-            risk_distance=risk_distance,
-            risk_closing_scale=risk_closing_scale,
-        )
+    def _gate_targets(groups, device):
+        unknown = sorted(set(groups.tolist()) - {"standard", "dense"})
+        if unknown:
+            raise ValueError(f"Unsupported gate supervision groups: {unknown}")
+        return torch.as_tensor(
+            (groups == "dense").astype("float32"), device=device
+        ).unsqueeze(1)
 
     @staticmethod
-    def _risk_actor_metrics(gate, correction, interaction_risk):
-        metrics = {}
-        risk = interaction_risk.detach().reshape(-1)
-        gate = gate.detach().reshape(-1)
-        correction = correction.detach().abs().mean(dim=1)
-        for name, mask in (
-            ("low_risk", risk < 0.1),
-            ("high_risk", risk > 0.4),
-        ):
-            if mask.any():
-                metrics[f"{name}_gate_mean"] = float(gate[mask].mean().cpu())
-                metrics[f"{name}_correction_abs_mean"] = float(
-                    correction[mask].mean().cpu()
-                )
-        return metrics
-
-    @staticmethod
-    def _group_actor_metrics(gate, residual, correction, groups):
+    def _group_actor_metrics(gate, base_action, attention_action, groups):
         metrics = {}
         gate = gate.detach()
-        residual = residual.detach()
-        correction = correction.detach()
-        for group in ("standard", "pair", "three"):
+        base_action = base_action.detach()
+        attention_action = attention_action.detach()
+        correction = gate * (attention_action - base_action)
+        for group in ("standard", "dense"):
             mask = torch.as_tensor(groups == group, device=gate.device)
             if not mask.any():
                 continue
@@ -511,7 +532,7 @@ class SpatioTemporalTD3:
             ):
                 metrics[f"{group}_gate_{statistic}"] = float(value.cpu())
             for index, action_name in enumerate(("linear", "angular")):
-                values = residual[mask, index]
+                values = attention_action[mask, index]
                 for statistic, value in (
                     ("mean", values.mean()),
                     ("std", values.std(unbiased=False)),
@@ -519,7 +540,7 @@ class SpatioTemporalTD3:
                     ("max", values.max()),
                 ):
                     metrics[
-                        f"{group}_residual_{action_name}_{statistic}"
+                        f"{group}_attention_action_{action_name}_{statistic}"
                     ] = float(value.cpu())
                 values = correction[mask, index]
                 for statistic, value in (
@@ -554,7 +575,9 @@ class SpatioTemporalTD3:
             "critic_target": self.critic_target.state_dict(),
             "actor_optimizer": self.actor_optimizer.state_dict(),
             "critic_optimizer": self.critic_optimizer.state_dict(),
-            "actor_lr": self.actor_lr,
+            "base_actor_lr": self.base_actor_lr,
+            "attention_lr": self.attention_lr,
+            "attention_enabled": self.attention_enabled,
             "total_updates": self.total_updates,
         }
 
@@ -565,5 +588,7 @@ class SpatioTemporalTD3:
         self.critic_target.load_state_dict(state["critic_target"])
         self.actor_optimizer.load_state_dict(state["actor_optimizer"])
         self.critic_optimizer.load_state_dict(state["critic_optimizer"])
-        self.actor_lr = float(state["actor_lr"])
+        self.base_actor_lr = float(state["base_actor_lr"])
+        self.attention_lr = float(state["attention_lr"])
+        self.attention_enabled = bool(state.get("attention_enabled", False))
         self.total_updates = int(state["total_updates"])

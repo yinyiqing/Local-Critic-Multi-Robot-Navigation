@@ -9,12 +9,12 @@ LAUNCHFILE="multi_robot_scenario_attention_5.launch"
 LAUNCH_PATH="$TD3_DIR/assets/$LAUNCHFILE"
 CASES_PATH="$PROJECT_ROOT/experiments/cases/attention_mixed_5.json"
 BASE_MODEL="${DRL_ATTENTION_BASE_MODEL:-TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best}"
-MODEL_NAME="${DRL_ATTENTION_MODEL_NAME:-TD3_velodyne_multi_v5_attention_residual_from_5d_history_mlp_critic_v7}"
+MODEL_NAME="${DRL_ATTENTION_MODEL_NAME:-TD3_velodyne_multi_v9_staged_standard_dense_attention_forward_only}"
 ROS_PORT="${DRL_ATTENTION_ROS_PORT:-12821}"
 GAZEBO_PORT="${DRL_ATTENTION_GAZEBO_PORT:-12921}"
 
 if [[ ! -f "$TD3_DIR/pytorch_models/${BASE_MODEL}_actor.pth" ]]; then
-  echo "Missing frozen base actor: $TD3_DIR/pytorch_models/${BASE_MODEL}_actor.pth"
+  echo "Missing base Actor initialization: $TD3_DIR/pytorch_models/${BASE_MODEL}_actor.pth"
   exit 1
 fi
 
@@ -62,7 +62,7 @@ setsid bash -lc "
 echo $! > "$PID_FILE"
 echo "Spatiotemporal attention training started."
 echo "PID: $(<"$PID_FILE")"
-echo "Frozen base actor: $BASE_MODEL"
+echo "Base Actor initialization: $BASE_MODEL"
 echo "Attention model: $MODEL_NAME"
 echo "Curriculum: $CASES_PATH"
 echo "ROS/Gazebo ports: $ROS_PORT / $GAZEBO_PORT"

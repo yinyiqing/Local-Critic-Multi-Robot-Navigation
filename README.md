@@ -44,7 +44,7 @@ TD3 仍作为连续动作强化学习的基础算法，Attention 是当前主要
 - 时间 Attention：处理连续多帧观测，识别其他车辆的接近、远离和横向穿越趋势。
 - 时空特征参与动作决策，使机器人不只对当前最近距离做瞬时反应，还能根据交互变化调整速度和转向。
 
-当前代码采用一条保守的实现路径：冻结已有的 `5D` 多车 Actor，让 Attention 根据最近 6 帧本车观测输出有界残差动作。这个结构是当前实验实现，不是研究目标本身；研究目标始终是验证 Attention 能否提高多机器人交互导航能力。
+当前代码采用两阶段训练：先用旧 `5D` 权重初始化一个可训练的基础 Actor，使其学习完整的局部驾驶动作；再启用时空 Attention 和场景门控进行联合微调。门控只根据本车历史观测判断是否需要更多使用 Attention 信息。
 
 核心实验假设是：**在相同 TD3 基础、观测边界、训练场景和评价条件下，时空 Attention 应当比无 Attention 的策略更好地处理多车交互。**
 
@@ -61,16 +61,15 @@ TD3 仍作为连续动作强化学习的基础算法，Attention 是当前主要
 
 ## 当前实现
 
-旧课程、局部 Critic、奖励塑形和双 Actor 等实验已经移入 `trash/MRNA_refactor_20260716/`。当前工作区只保留单车、多车共享策略、冻结 `5D` 和当前 Attention 所需的代码、入口与模型。
+旧课程、局部 Critic 和双 Actor 等实验已经归档。当前工作区只保留单车、多车共享策略、基础 Actor 初始化和当前 Attention 所需的代码、入口与模型。
 
 当前实现为：
 
 ```text
-冻结 5D 多车 Actor
-  + 最近 6 帧本车观测
-  + 激光扇区空间 Attention
-  + 时间 Attention
-  + 门控残差动作
+阶段一：训练基础 Actor，Attention 旁路
+阶段二：基础 Actor + 时空 Attention 联合微调
+  + standard/dense 场景门控
+  + 门控混合基础动作与 Attention 动作
 ```
 
 后续所有结构调整和实验对照都应围绕同一个问题展开：**Attention 是否真正学到了有助于多车交互的时空信息，并因此提高多机器人各自到达目标的能力。**
@@ -82,9 +81,9 @@ TD3 仍作为连续动作强化学习的基础算法，Attention 是当前主要
 | 单智能体 TD3 | 验证原始局部导航与基础训练链路 | `start_training_detached.sh` | `TD3_velodyne` |
 | 通用多智能体 TD3 | 验证共享策略和同场多车流程 | `start_training_detached_multi.sh` | `TD3_velodyne_multi_v4` |
 | 五车共享策略 | 无 Attention 的直接五车对照 | `start_training_detached_multi_baseline_5.sh` | `TD3_velodyne_multi_v4_shared_policy_5_best` |
-| 冻结 `5D` | 当前 Attention 的基础 Actor 和强多车对照 | `start_test_detached_multi_5d_baseline.sh` | `TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best` |
+| `5D` 初始化 | 当前基础 Actor 的参数起点和历史强基线 | `start_test_detached_multi_5d_baseline.sh` | `TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best` |
 
-保留 `5D` 只是因为当前 Attention 初始化和消融直接依赖该模型，不表示继续沿用旧课程研究。新实验必须与适用的 baseline 在相同场景、随机种子、回合数和指标口径下比较，不能只和旧 Attention 版本纵向比较。
+保留 `5D` 只用于初始化和历史对照；新主线不会冻结其 Actor。新实验必须与适用的 baseline 在相同场景、随机种子、回合数和指标口径下比较，不能只和旧 Attention 版本纵向比较。
 
 ## 文档入口
 
