@@ -1,0 +1,286 @@
+diff --git a/TD3/multi_agent_velodyne_env.py b/TD3/multi_agent_velodyne_env.py
+index 4822d52..ffbe280 100644
+--- a/TD3/multi_agent_velodyne_env.py
++++ b/TD3/multi_agent_velodyne_env.py
+@@ -19,6 +19,7 @@ from std_srvs.srv import Empty
+ from visualization_msgs.msg import Marker
+ from visualization_msgs.msg import MarkerArray
+ 
++from scenario_manifests import load_manifest_dataset, validate_manifest_scenarios
+ from velodyne_env import COLLISION_DIST, GOAL_REACHED_DIST, TIME_DELTA, check_pos
+ 
+ 
+@@ -137,13 +138,15 @@ class MultiAgentGazeboEnv:
+         self.weak_coupling_layout = weak_coupling_layout
+         self.active_neighbors_only = active_neighbors_only
+         self.scenario_mode = scenario_mode.strip().lower()
+-        if self.scenario_mode not in ("standard", "dense", "curriculum"):
++        if self.scenario_mode not in ("standard", "dense", "curriculum", "manifest"):
+             raise ValueError(
+-                "scenario_mode must be one of: standard, dense, curriculum"
++                "scenario_mode must be one of: standard, dense, curriculum, manifest"
+             )
+         self.curriculum_cases = []
+         self.curriculum_case_index = 0
+         self.current_curriculum_case = None
++        self.roscore_process = None
++        self.roslaunch_process = None
+ 
+         self.upper = 5.0
+         self.lower = -5.0
+@@ -196,6 +199,9 @@ class MultiAgentGazeboEnv:
+                 "Curriculum scenario enabled: %i cases loaded"
+                 % len(self.curriculum_cases)
+             )
++        elif self.scenario_mode == "manifest":
++            self.curriculum_cases = self._load_manifest_cases()
++            print("Fixed manifest enabled: %i scenarios loaded" % len(self.curriculum_cases))
+ 
+         self.velodyne_data = {
+             name: np.ones(self.environment_dim) * 10 for name in self.agent_names
+@@ -230,7 +236,7 @@ class MultiAgentGazeboEnv:
+             except Exception:
+                 should_launch_roscore = True
+         if should_launch_roscore:
+-            subprocess.Popen(["roscore", "-p", port])
++            self.roscore_process = subprocess.Popen(["roscore", "-p", port])
+             print("Roscore launched!")
+         else:
+             print("Using existing ROS master:", ros_master_uri)
+@@ -243,7 +249,7 @@ class MultiAgentGazeboEnv:
+         if not path.exists(fullpath):
+             raise IOError("File " + fullpath + " does not exist")
+ 
+-        subprocess.Popen(["roslaunch", "-p", port, fullpath])
++        self.roslaunch_process = subprocess.Popen(["roslaunch", "-p", port, fullpath])
+         print("Gazebo launched!")
+ 
+         self.vel_pubs = {
+@@ -289,6 +295,17 @@ class MultiAgentGazeboEnv:
+         state.pose.orientation.w = 1.0
+         return state
+ 
++    def close(self):
++        for process in (self.roslaunch_process, self.roscore_process):
++            if process is None or process.poll() is not None:
++                continue
++            process.terminate()
++            try:
++                process.wait(timeout=10)
++            except subprocess.TimeoutExpired:
++                process.kill()
++                process.wait(timeout=5)
++
+     def _load_curriculum_cases(self):
+         cases_path = os.environ.get("DRL_MULTI_CURRICULUM_CASES", "").strip()
+         if not cases_path:
+@@ -362,6 +379,20 @@ class MultiAgentGazeboEnv:
+             normalized.append(case)
+         return normalized
+ 
++    def _load_manifest_cases(self):
++        manifest_path = os.environ.get("DRL_MULTI_MANIFEST_PATH", "").strip()
++        if not manifest_path:
++            raise ValueError(
++                "DRL_MULTI_MANIFEST_PATH must point to a split JSON file when "
++                "DRL_MULTI_SCENARIO=manifest"
++            )
++        if not os.path.isabs(manifest_path):
++            manifest_path = os.path.join(os.getcwd(), manifest_path)
++        payload = load_manifest_dataset(manifest_path)
++        self.manifest_path = os.path.abspath(manifest_path)
++        self.manifest_dataset_id = str(payload.get("dataset_id", "unknown"))
++        return validate_manifest_scenarios(payload["scenarios"], self.agent_names)
++
+     def _current_case_uses_standard_layout(self):
+         return bool(
+             self.scenario_mode == "curriculum"
+@@ -371,7 +402,12 @@ class MultiAgentGazeboEnv:
+         )
+ 
+     def _select_curriculum_case(self):
+-        mode = os.environ.get("DRL_MULTI_CURRICULUM_SAMPLING", "cycle").strip().lower()
++        variable = (
++            "DRL_MULTI_MANIFEST_SAMPLING"
++            if self.scenario_mode == "manifest"
++            else "DRL_MULTI_CURRICULUM_SAMPLING"
++        )
++        mode = os.environ.get(variable, "cycle").strip().lower()
+         if mode == "random":
+             weights = [
+                 max(float(case.get("weight", 1.0)), 0.0)
+@@ -381,7 +417,7 @@ class MultiAgentGazeboEnv:
+                 return random.choice(self.curriculum_cases)
+             return random.choices(self.curriculum_cases, weights=weights, k=1)[0]
+         if mode != "cycle":
+-            raise ValueError("DRL_MULTI_CURRICULUM_SAMPLING must be cycle or random")
++            raise ValueError(f"{variable} must be cycle or random")
+         case = self.curriculum_cases[self.curriculum_case_index % len(self.curriculum_cases)]
+         self.curriculum_case_index += 1
+         return case
+@@ -391,6 +427,8 @@ class MultiAgentGazeboEnv:
+         if len(value) != 2:
+             raise ValueError(f"{name}.{key} must contain [x, y]")
+         base = np.array([float(value[0]), float(value[1])])
++        if self.scenario_mode == "manifest":
++            return base
+         jitter_key = f"{key}_jitter"
+         jitter = self.current_curriculum_case["agents"][name].get(jitter_key)
+         if jitter is None:
+@@ -831,7 +869,7 @@ class MultiAgentGazeboEnv:
+     ):
+         if not self.local_navigation_reward or target or collision:
+             return 0.0
+-        if self.scenario_mode == "curriculum" and self.current_curriculum_case:
++        if self.scenario_mode in ("curriculum", "manifest") and self.current_curriculum_case:
+             case_override = self.current_curriculum_case.get("local_navigation_reward")
+             if case_override is not None and not bool(case_override):
+                 return 0.0
+@@ -970,7 +1008,7 @@ class MultiAgentGazeboEnv:
+ 
+     def _sample_start_heading(self, name):
+         if (
+-            self.scenario_mode == "curriculum"
++            self.scenario_mode in ("curriculum", "manifest")
+             and not self._current_case_uses_standard_layout()
+         ):
+             agent_case = self.current_curriculum_case["agents"][name]
+@@ -1192,7 +1230,7 @@ class MultiAgentGazeboEnv:
+         last_error = None
+         for reset_attempt in range(20):
+             try:
+-                if self.scenario_mode == "curriculum":
++                if self.scenario_mode in ("curriculum", "manifest"):
+                     self.current_curriculum_case = self._select_curriculum_case()
+                 spawn_positions = self._sample_robot_positions()
+                 for name, position in spawn_positions.items():
+@@ -1223,7 +1261,7 @@ class MultiAgentGazeboEnv:
+             state.pose.orientation.w = quaternion.w
+             self.set_state.publish(state)
+ 
+-        if self.scenario_mode == "curriculum":
++        if self.scenario_mode in ("curriculum", "manifest"):
+             self._apply_curriculum_boxes()
+         else:
+             self.random_box()
+@@ -1256,7 +1294,7 @@ class MultiAgentGazeboEnv:
+ 
+     def _sample_robot_positions(self, min_clearance=1.2):
+         if (
+-            self.scenario_mode == "curriculum"
++            self.scenario_mode in ("curriculum", "manifest")
+             and not self._current_case_uses_standard_layout()
+         ):
+             return {
+@@ -1296,7 +1334,7 @@ class MultiAgentGazeboEnv:
+ 
+     def _sample_goal_positions(self, min_clearance=1.2):
+         if (
+-            self.scenario_mode == "curriculum"
++            self.scenario_mode in ("curriculum", "manifest")
+             and not self._current_case_uses_standard_layout()
+         ):
+             return {
+diff --git a/TD3/test_velodyne_td3_multi.py b/TD3/test_velodyne_td3_multi.py
+index 0153bb9..d6802be 100644
+--- a/TD3/test_velodyne_td3_multi.py
++++ b/TD3/test_velodyne_td3_multi.py
+@@ -272,7 +272,7 @@ def append_stats(record):
+ def current_case_name(env):
+     case = getattr(env, "current_curriculum_case", None)
+     if isinstance(case, dict):
+-        return str(case.get("name") or "unnamed_curriculum_case")
++        return str(case.get("scenario_id") or case.get("name") or "unnamed_curriculum_case")
+     return "standard"
+ 
+ 
+@@ -466,6 +466,9 @@ if dual_actor_enabled:
+ else:
+     print("Dual actor mode: disabled")
+ print("Scenario mode:", scenario_mode)
++if scenario_mode == "manifest":
++    print("Manifest path:", os.environ.get("DRL_MULTI_MANIFEST_PATH", ""))
++    print("Manifest sampling:", os.environ.get("DRL_MULTI_MANIFEST_SAMPLING", "cycle"))
+ print("Seed:", seed)
+ print("Device:", device)
+ if torch.cuda.is_available():
+@@ -478,7 +481,7 @@ print("Starting episode:", episode_num)
+ print("Starting env steps:", total_env_steps)
+ print("Starting agent samples:", total_agent_samples)
+ print("Target test episodes:", target_test_episodes or "unlimited")
+-if scenario_mode == "curriculum":
++if scenario_mode in ("curriculum", "manifest"):
+     print("Case-level stats enabled")
+ print("==============================================")
+ 
+diff --git a/TD3/train_velodyne_td3_multi.py b/TD3/train_velodyne_td3_multi.py
+index c6641a5..3bfd9a9 100644
+--- a/TD3/train_velodyne_td3_multi.py
++++ b/TD3/train_velodyne_td3_multi.py
+@@ -815,6 +815,9 @@ print("Training version:", training_version)
+ print("Training process PID:", os.getpid())
+ print("Launchfile:", launchfile)
+ print("Scenario mode:", scenario_mode)
++if scenario_mode == "manifest":
++    print("Manifest path:", os.environ.get("DRL_MULTI_MANIFEST_PATH", ""))
++    print("Manifest sampling:", os.environ.get("DRL_MULTI_MANIFEST_SAMPLING", "cycle"))
+ print("Seed:", seed)
+ print("Device:", device)
+ if torch.cuda.is_available():
+diff --git a/TD3/velodyne_env.py b/TD3/velodyne_env.py
+index 7af8918..ac062d5 100644
+--- a/TD3/velodyne_env.py
++++ b/TD3/velodyne_env.py
+@@ -17,6 +17,8 @@ from std_srvs.srv import Empty
+ from visualization_msgs.msg import Marker
+ from visualization_msgs.msg import MarkerArray
+ 
++from scenario_geometry import is_valid_map_position
++
+ GOAL_REACHED_DIST = 0.3
+ COLLISION_DIST = 0.35
+ TIME_DELTA = 0.1
+@@ -24,42 +26,7 @@ TIME_DELTA = 0.1
+ 
+ # Check if the random goal position is located on an obstacle and do not accept it if it is
+ def check_pos(x, y):
+-    goal_ok = True
+-
+-    if -3.8 > x > -6.2 and 6.2 > y > 3.8:
+-        goal_ok = False
+-
+-    if -1.3 > x > -2.7 and 4.7 > y > -0.2:
+-        goal_ok = False
+-
+-    if -0.3 > x > -4.2 and 2.7 > y > 1.3:
+-        goal_ok = False
+-
+-    if -0.8 > x > -4.2 and -2.3 > y > -4.2:
+-        goal_ok = False
+-
+-    if -1.3 > x > -3.7 and -0.8 > y > -2.7:
+-        goal_ok = False
+-
+-    if 4.2 > x > 0.8 and -1.8 > y > -3.2:
+-        goal_ok = False
+-
+-    if 4 > x > 2.5 and 0.7 > y > -3.2:
+-        goal_ok = False
+-
+-    if 6.2 > x > 3.8 and -3.3 > y > -4.2:
+-        goal_ok = False
+-
+-    if 4.2 > x > 1.3 and 3.7 > y > 1.5:
+-        goal_ok = False
+-
+-    if -3.0 > x > -7.2 and 0.5 > y > -1.5:
+-        goal_ok = False
+-
+-    if x > 4.5 or x < -4.5 or y > 4.5 or y < -4.5:
+-        goal_ok = False
+-
+-    return goal_ok
++    return is_valid_map_position(x, y)
+ 
+ 
+ class GazeboEnv:

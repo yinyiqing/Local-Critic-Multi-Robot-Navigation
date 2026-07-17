@@ -1,0 +1,40 @@
+{
+  "dataset_id": "standard-fixed-random-v1-train",
+  "split": "train",
+  "candidate_count": 3600,
+  "rejected_count": 1,
+  "rejected": [
+    {
+      "scenario_id": "standard-20260717002625-0304b50dd587",
+      "generation_seed": 20260717002625,
+      "reason": "r2:initial_clearance",
+      "all_reasons": [
+        "r2:initial_clearance",
+        "r2:initial_collision",
+        "r2:initial_terminal"
+      ],
+      "measurements": {
+        "r1": {
+          "position_error_m": 0.00016183745920941197,
+          "min_laser_m": 0.9625768859737165
+        },
+        "r2": {
+          "position_error_m": 0.0001616882566978569,
+          "min_laser_m": 0.325313102782382
+        },
+        "r3": {
+          "position_error_m": 0.0001618319671145508,
+          "min_laser_m": 0.7664903981868083
+        },
+        "r4": {
+          "position_error_m": 0.00016173589860944424,
+          "min_laser_m": 0.9694824201310158
+        },
+        "r5": {
+          "position_error_m": 0.00016178513775052774,
+          "min_laser_m": 2.377999422605693
+        }
+      }
+    }
+  ]
+}

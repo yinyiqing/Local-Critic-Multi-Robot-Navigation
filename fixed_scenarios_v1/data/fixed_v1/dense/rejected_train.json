@@ -1,0 +1,7 @@
+{
+  "dataset_id": "dense-fixed-random-v1-train",
+  "split": "train",
+  "candidate_count": 7200,
+  "rejected_count": 0,
+  "rejected": []
+}

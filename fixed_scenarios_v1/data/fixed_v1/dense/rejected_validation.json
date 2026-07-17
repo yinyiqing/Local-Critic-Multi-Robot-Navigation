@@ -1,0 +1,7 @@
+{
+  "dataset_id": "dense-fixed-random-v1-validation",
+  "split": "validation",
+  "candidate_count": 1200,
+  "rejected_count": 0,
+  "rejected": []
+}
