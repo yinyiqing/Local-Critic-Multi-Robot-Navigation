@@ -583,22 +583,16 @@ class MultiAgentGazeboEnv:
 
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
+            if self.last_odom[name] is not None:
+                return
             try:
-                rospy.wait_for_service("/gazebo/unpause_physics", timeout=5.0)
+                rospy.wait_for_service("/gazebo/unpause_physics", timeout=1.0)
                 self.unpause()
             except (rospy.ROSException, rospy.ServiceException):
                 pass
 
-            remaining = deadline - time.monotonic()
-            if remaining <= 0.0:
-                break
-            try:
-                self.last_odom[name] = rospy.wait_for_message(
-                    f"/{name}/odom", Odometry, timeout=min(5.0, remaining)
-                )
-                return
-            except rospy.ROSException:
-                continue
+            # rospy timeouts use simulated time and never expire while /clock is paused.
+            time.sleep(min(0.2, max(deadline - time.monotonic(), 0.0)))
 
         raise TimeoutError(
             f"Timed out waiting for /{name}/odom after {timeout} seconds"
