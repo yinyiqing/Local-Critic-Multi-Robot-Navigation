@@ -19,7 +19,6 @@ LOG_BASENAME="docker_train_${TRAIN_MODE}_$(date +%Y%m%d_%H%M%S).log"
 HOST_LOG_FILE="$LOG_DIR/$LOG_BASENAME"
 CONTAINER_LOG_FILE="/workspace/Local-Critic-Multi-Robot-Navigation/logs/$LOG_BASENAME"
 ATTENTION_BASE_MODEL="${DRL_ATTENTION_BASE_MODEL:-TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best}"
-ATTENTION_MODEL_NAME="${DRL_ATTENTION_MODEL_NAME:-TD3_velodyne_multi_v9_staged_standard_dense_attention_forward_only}"
 
 if [[ "$TRAIN_MODE" == "attention5d" ]]; then
   base_actor_path="$PROJECT_ROOT/TD3/pytorch_models/${ATTENTION_BASE_MODEL}_actor.pth"
@@ -69,7 +68,6 @@ run_args=(
   -e DRL_DOCKER_GAZEBO_PORT="$GAZEBO_PORT"
   -e DRL_DOCKER_SKIP_CATKIN_BUILD="${DRL_DOCKER_SKIP_CATKIN_BUILD:-0}"
   -e DRL_ATTENTION_BASE_MODEL="$ATTENTION_BASE_MODEL"
-  -e DRL_ATTENTION_MODEL_NAME="$ATTENTION_MODEL_NAME"
   -v "$PROJECT_ROOT":/workspace/Local-Critic-Multi-Robot-Navigation
   -w /workspace/Local-Critic-Multi-Robot-Navigation
 )
@@ -128,17 +126,21 @@ container_id="$(
         ;;
       attention5d)
         LAUNCHFILE=\"\${DRL_ATTENTION_LAUNCHFILE:-multi_robot_scenario_attention_5.launch}\"
-        CASES_PATH=\"\${DRL_MULTI_CURRICULUM_CASES:-/workspace/Local-Critic-Multi-Robot-Navigation/experiments/cases/attention_mixed_5.json}\"
+        MANIFEST_ROOT=/workspace/Local-Critic-Multi-Robot-Navigation/fixed_scenarios_v1/data/fixed_v1
+        TRAIN_MANIFESTS=\"\${DRL_MULTI_MANIFEST_PATHS:-\$MANIFEST_ROOT/standard/train.json.gz:\$MANIFEST_ROOT/dense/train.json.gz}\"
+        VALIDATION_MANIFESTS=\"\${DRL_ATTENTION_VALIDATION_MANIFEST_PATHS:-\$MANIFEST_ROOT/standard/validation.json.gz:\$MANIFEST_ROOT/dense/validation.json.gz}\"
         BASE_MODEL=\"\${DRL_ATTENTION_BASE_MODEL:-TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best}\"
         if [[ ! -f \"TD3/pytorch_models/\${BASE_MODEL}_actor.pth\" ]]; then
           echo \"Missing base Actor initialization: TD3/pytorch_models/\${BASE_MODEL}_actor.pth\" | tee '$CONTAINER_LOG_FILE'
           exit 1
         fi
         python3 scripts/generate_multi_robot_launch.py --num-agents 5 --output \"TD3/assets/\$LAUNCHFILE\"
-        export DRL_MULTI_CURRICULUM_CASES=\"\$CASES_PATH\"
-        export DRL_MULTI_CURRICULUM_SAMPLING=\"\${DRL_MULTI_CURRICULUM_SAMPLING:-random}\"
+        export DRL_MULTI_MANIFEST_PATHS=\"\$TRAIN_MANIFESTS\"
+        export DRL_MULTI_MANIFEST_SAMPLING=\"\${DRL_MULTI_MANIFEST_SAMPLING:-random}\"
+        export DRL_ATTENTION_VALIDATION_MANIFEST_PATHS=\"\$VALIDATION_MANIFESTS\"
         export DRL_ATTENTION_LAUNCHFILE=\"\$LAUNCHFILE\"
         export DRL_ATTENTION_BASE_MODEL=\"\$BASE_MODEL\"
+        export DRL_ATTENTION_START_STEP=\"\${DRL_ATTENTION_START_STEP:-30000}\"
         cd TD3
         python3 -u train_spatiotemporal_attention.py > '$CONTAINER_LOG_FILE' 2>&1
         ;;

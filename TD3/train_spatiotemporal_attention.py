@@ -10,8 +10,9 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from multi_agent_velodyne_env import MultiAgentGazeboEnv
+from scenario_manifests import load_manifest_cases
 from sequence_replay_buffer import SequenceReplayBuffer
-from spatiotemporal_attention import SpatioTemporalTD3
+from spatiotemporal_attention import BaseActor, SpatioTemporalTD3
 
 
 def env_int(name, default):
@@ -48,6 +49,24 @@ def policy_action_to_env(raw_action, forward_speed):
     return [float(linear), float(raw_action[1])]
 
 
+class FrozenBasePolicy:
+    """Immutable 5D Actor used as the fixed benchmark and actor anchor source."""
+
+    def __init__(self, state_dict, device):
+        self.device = device
+        self.actor = BaseActor().to(self.device)
+        self.actor.load_state_dict(state_dict)
+        self.actor.eval()
+
+    def select_action(self, history):
+        state = torch.as_tensor(
+            history[-1], dtype=torch.float32, device=self.device
+        ).unsqueeze(0)
+        with torch.no_grad():
+            action = self.actor(state)
+        return action.cpu().numpy().reshape(-1)
+
+
 def local_driving_shaping(
     next_state,
     env_action,
@@ -70,9 +89,10 @@ def local_driving_shaping(
 def evaluate_group(
     agent,
     env,
+    evaluation_cases,
     group,
     history_len,
-    episodes_per_case,
+    episodes,
     max_episode_steps,
     evaluation_seed,
     forward_speed,
@@ -80,27 +100,28 @@ def evaluate_group(
     original_cases = env.curriculum_cases
     original_index = env.curriculum_case_index
     original_case = env.current_curriculum_case
-    original_sampling = os.environ.get("DRL_MULTI_CURRICULUM_SAMPLING")
+    original_sampling = os.environ.get("DRL_MULTI_MANIFEST_SAMPLING")
     original_upper = env.upper
     original_lower = env.lower
     random_state = random.getstate()
     numpy_state = np.random.get_state()
     torch_state = torch.get_rng_state()
     cuda_states = torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None
-    group_cases = [case for case in original_cases if case.get("group") == group]
+    group_cases = [case for case in evaluation_cases if case.get("group") == group]
     if not group_cases:
-        raise ValueError(f"No curriculum cases found for evaluation group: {group}")
+        raise ValueError(f"No validation manifest cases found for group: {group}")
 
-    episodes = int(episodes_per_case) * len(group_cases)
+    episodes = int(episodes)
     successes = 0
     collisions = 0
     full_successes = 0
     timeouts = 0
+    initial_goal_distances = []
     total_agents = episodes * env.num_agents
     try:
         env.curriculum_cases = group_cases
         env.curriculum_case_index = 0
-        os.environ["DRL_MULTI_CURRICULUM_SAMPLING"] = "cycle"
+        os.environ["DRL_MULTI_MANIFEST_SAMPLING"] = "cycle"
         env.upper = 10.0
         env.lower = -10.0
         random.seed(evaluation_seed)
@@ -110,6 +131,8 @@ def evaluate_group(
             torch.cuda.manual_seed_all(evaluation_seed)
         for _ in range(episodes):
             states = env.reset()
+            scenario_id = env.current_scenario_id()
+            initial_goal_distances.extend(float(state[20]) for state in states)
             histories = make_histories(states, history_len)
             active = [True] * env.num_agents
             episode_success = np.zeros(env.num_agents, dtype=np.int32)
@@ -144,6 +167,19 @@ def evaluate_group(
             successes += int(episode_success.sum())
             collisions += int(episode_collision.sum())
             full_successes += int(episode_success.sum() == env.num_agents)
+            print(
+                "Eval scenario | group=%s | scenario_id=%s | success=%d/%d | "
+                "collision=%d/%d | full=%d"
+                % (
+                    group,
+                    scenario_id,
+                    int(episode_success.sum()),
+                    env.num_agents,
+                    int(episode_collision.sum()),
+                    env.num_agents,
+                    int(episode_success.sum() == env.num_agents),
+                )
+            )
     finally:
         env.curriculum_cases = original_cases
         env.curriculum_case_index = original_index
@@ -151,9 +187,9 @@ def evaluate_group(
         env.upper = original_upper
         env.lower = original_lower
         if original_sampling is None:
-            os.environ.pop("DRL_MULTI_CURRICULUM_SAMPLING", None)
+            os.environ.pop("DRL_MULTI_MANIFEST_SAMPLING", None)
         else:
-            os.environ["DRL_MULTI_CURRICULUM_SAMPLING"] = original_sampling
+            os.environ["DRL_MULTI_MANIFEST_SAMPLING"] = original_sampling
         random.setstate(random_state)
         np.random.set_state(numpy_state)
         torch.set_rng_state(torch_state)
@@ -165,6 +201,7 @@ def evaluate_group(
         "collision_rate": collisions / total_agents,
         "full_success_rate": full_successes / episodes,
         "timeout_rate": timeouts / episodes,
+        "initial_goal_distance_mean": float(np.mean(initial_goal_distances)),
     }
 
 
@@ -181,19 +218,24 @@ seed = env_int("DRL_ATTENTION_SEED", 0)
 history_len = env_int("DRL_ATTENTION_HISTORY_LEN", 6)
 model_dim = env_int("DRL_ATTENTION_MODEL_DIM", 96)
 num_heads = env_int("DRL_ATTENTION_NUM_HEADS", 4)
-attention_logit_scale = env_float("DRL_ATTENTION_LOGIT_SCALE", 3.0)
-initial_gate = env_float("DRL_ATTENTION_INITIAL_GATE", 0.1)
+attention_logit_scale = env_float("DRL_ATTENTION_LOGIT_SCALE", 0.5)
+initial_gate = env_float("DRL_ATTENTION_INITIAL_GATE", 0.05)
 base_actor_lr = env_float("DRL_ATTENTION_BASE_ACTOR_LR", 1e-5)
 attention_lr = env_float("DRL_ATTENTION_LR", 1e-5)
 critic_lr = env_float("DRL_ATTENTION_CRITIC_LR", 2e-5)
 critic_hidden_dim = env_int("DRL_ATTENTION_CRITIC_HIDDEN_DIM", 256)
-actor_start_step = env_int("DRL_ATTENTION_ACTOR_START_STEP", 5000)
-attention_start_step = env_int("DRL_ATTENTION_START_STEP", 100000)
+actor_start_step = env_int("DRL_ATTENTION_ACTOR_START_STEP", 20000)
+attention_start_step = env_int("DRL_ATTENTION_START_STEP", 30000)
 actor_lr_warmup_steps = env_int("DRL_ATTENTION_ACTOR_WARMUP_STEPS", 10000)
 actor_lr_decay_steps = env_int("DRL_ATTENTION_ACTOR_DECAY_STEPS", 100000)
 actor_lr_min_ratio = env_float("DRL_ATTENTION_ACTOR_MIN_LR_RATIO", 0.1)
-base_finetune_lr_ratio = env_float("DRL_ATTENTION_BASE_FINETUNE_LR_RATIO", 0.1)
-gate_supervision_weight = env_float("DRL_ATTENTION_GATE_LOSS_WEIGHT", 1.0)
+base_finetune_lr_ratio = env_float("DRL_ATTENTION_BASE_FINETUNE_LR_RATIO", 0.05)
+gate_supervision_weight = env_float("DRL_ATTENTION_GATE_LOSS_WEIGHT", 0.1)
+actor_anchor_weight = env_float("DRL_ATTENTION_ACTOR_ANCHOR_WEIGHT", 5.0)
+attention_correction_weight = env_float(
+    "DRL_ATTENTION_CORRECTION_WEIGHT", 1.0
+)
+discount = env_float("DRL_ATTENTION_DISCOUNT", 0.99)
 exploration_noise = env_float("DRL_ATTENTION_EXPLORATION_NOISE", 0.1)
 gradient_clip = env_float("DRL_ATTENTION_GRADIENT_CLIP", 1.0)
 reward_scale = env_float("DRL_ATTENTION_REWARD_SCALE", 0.1)
@@ -249,8 +291,10 @@ def validate_training_config():
         raise ValueError(
             "DRL_ATTENTION_BASE_FINETUNE_LR_RATIO must be between 0 and 1"
         )
-    if gate_supervision_weight < 0.0:
-        raise ValueError("DRL_ATTENTION_GATE_LOSS_WEIGHT must be non-negative")
+    if min(gate_supervision_weight, actor_anchor_weight, attention_correction_weight) < 0.0:
+        raise ValueError("Attention regularization weights must be non-negative")
+    if not 0.0 < discount < 1.0:
+        raise ValueError("DRL_ATTENTION_DISCOUNT must be between 0 and 1")
     if exploration_noise < 0.0 or gradient_clip <= 0.0 or reward_scale <= 0.0:
         raise ValueError(
             "Exploration noise must be non-negative; gradient clip and reward "
@@ -285,6 +329,28 @@ def validate_training_config():
 validate_training_config()
 
 agent_names = [f"r{index}" for index in range(1, 6)]
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+manifest_root = os.path.join(project_root, "fixed_scenarios_v1", "data", "fixed_v1")
+default_train_manifests = os.pathsep.join(
+    [
+        os.path.join(manifest_root, "standard", "train.json.gz"),
+        os.path.join(manifest_root, "dense", "train.json.gz"),
+    ]
+)
+default_validation_manifests = os.pathsep.join(
+    [
+        os.path.join(manifest_root, "standard", "validation.json.gz"),
+        os.path.join(manifest_root, "dense", "validation.json.gz"),
+    ]
+)
+train_manifest_paths = os.environ.get(
+    "DRL_MULTI_MANIFEST_PATHS", default_train_manifests
+).strip()
+validation_manifest_paths = os.environ.get(
+    "DRL_ATTENTION_VALIDATION_MANIFEST_PATHS", default_validation_manifests
+).strip()
+os.environ["DRL_MULTI_MANIFEST_PATHS"] = train_manifest_paths
+os.environ.setdefault("DRL_MULTI_MANIFEST_SAMPLING", "random")
 launchfile = os.environ.get(
     "DRL_ATTENTION_LAUNCHFILE", "multi_robot_scenario_attention_5.launch"
 )
@@ -292,10 +358,7 @@ base_model = os.environ.get(
     "DRL_ATTENTION_BASE_MODEL",
     "TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best",
 )
-model_name = os.environ.get(
-    "DRL_ATTENTION_MODEL_NAME",
-    "TD3_velodyne_multi_v9_staged_standard_dense_attention_forward_only",
-)
+model_name = "TD3_velodyne_multi_fixed_manifest_attention"
 base_actor_path = os.path.join("pytorch_models", f"{base_model}_actor.pth")
 checkpoint_path = os.path.join("checkpoints", f"{model_name}_latest.pt")
 best_checkpoint_path = os.path.join("checkpoints", f"{model_name}_best.pt")
@@ -320,6 +383,7 @@ agent = SpatioTemporalTD3(
     critic_lr=critic_lr,
     critic_hidden_dim=critic_hidden_dim,
 )
+reference_policy = FrozenBasePolicy(base_actor_state, agent.device)
 replay_buffer = SequenceReplayBuffer(
     replay_capacity, seed, group_ratios=replay_group_ratios
 )
@@ -334,9 +398,17 @@ env = MultiAgentGazeboEnv(
     local_navigation_reward=False,
     robot_safe_distance=0.0,
     weak_coupling_layout=True,
-    scenario_mode="curriculum",
+    scenario_mode="manifest",
     active_neighbors_only=True,
 )
+validation_cases, validation_manifest_metadata = load_manifest_cases(
+    validation_manifest_paths,
+    agent_names,
+)
+if {item["split"] for item in env.manifest_metadata} != {"train"}:
+    raise ValueError("Attention training manifests must all use the train split")
+if {item["split"] for item in validation_manifest_metadata} != {"validation"}:
+    raise ValueError("Attention evaluation manifests must all use the validation split")
 for agent_name in agent_names:
     env.wait_for_odom(agent_name, timeout=startup_odom_timeout)
 print("All robot odometry topics are ready; training may start")
@@ -351,9 +423,11 @@ agent_samples = 0
 best_metrics = None
 evaluations_without_improvement = 0
 base_stage_saved = False
+reference_metrics = None
 
 training_config = {
-    "training_version": 9,
+    "training_version": "fixed_manifest_stable",
+    "seed": seed,
     "history_len": history_len,
     "model_dim": model_dim,
     "num_heads": num_heads,
@@ -364,14 +438,39 @@ training_config = {
     "base_model": base_model,
     "base_actor_lr": base_actor_lr,
     "attention_lr": attention_lr,
+    "critic_lr": critic_lr,
+    "actor_start_step": actor_start_step,
     "attention_start_step": attention_start_step,
+    "actor_lr_warmup_steps": actor_lr_warmup_steps,
+    "actor_lr_decay_steps": actor_lr_decay_steps,
+    "actor_lr_min_ratio": actor_lr_min_ratio,
     "base_finetune_lr_ratio": base_finetune_lr_ratio,
     "gate_supervision_weight": gate_supervision_weight,
+    "actor_anchor_weight": actor_anchor_weight,
+    "attention_correction_weight": attention_correction_weight,
+    "discount": discount,
     "reward_scale": reward_scale,
+    "exploration_noise": exploration_noise,
+    "gradient_clip": gradient_clip,
+    "batch_size": batch_size,
+    "replay_capacity": replay_capacity,
+    "learning_starts": learning_starts,
     "replay_group_ratios": replay_group_ratios,
     "forward_speed": forward_speed,
     "slowdown_distance": slowdown_distance,
     "slowdown_penalty_weight": slowdown_penalty_weight,
+    "max_episode_steps": max_episode_steps,
+    "eval_interval": eval_interval,
+    "standard_eval_episodes": standard_eval_episodes,
+    "dense_eval_episodes": dense_eval_episodes,
+    "evaluation_seed": evaluation_seed,
+    "early_stopping_patience": early_stopping_patience,
+    "train_manifest_dataset_ids": [
+        item["dataset_id"] for item in env.manifest_metadata
+    ],
+    "validation_manifest_dataset_ids": [
+        item["dataset_id"] for item in validation_manifest_metadata
+    ],
 }
 
 
@@ -386,6 +485,7 @@ def save_checkpoint(path):
             "best_metrics": best_metrics,
             "evaluations_without_improvement": evaluations_without_improvement,
             "base_stage_saved": base_stage_saved,
+            "reference_metrics": reference_metrics,
             "config": training_config,
         },
         path,
@@ -395,9 +495,24 @@ def save_checkpoint(path):
 if os.path.exists(checkpoint_path):
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     config = checkpoint["config"]
-    if config != training_config:
+    changed_config_keys = {
+        key
+        for key in set(config) | set(training_config)
+        if config.get(key) != training_config.get(key)
+    }
+    can_adjust_attention_start = (
+        changed_config_keys == {"attention_start_step"}
+        and not bool(checkpoint["agent"].get("attention_enabled", False))
+        and int(checkpoint["agent_samples"]) < attention_start_step
+    )
+    if config != training_config and not can_adjust_attention_start:
         raise ValueError(
             f"Checkpoint config mismatch: {config} != {training_config}"
+        )
+    if can_adjust_attention_start:
+        print(
+            "Resuming with attention start adjusted from %d to %d samples"
+            % (int(config["attention_start_step"]), attention_start_step)
         )
     agent.load_state_dict(checkpoint["agent"])
     replay_buffer.load_state_dict(checkpoint["replay_buffer"])
@@ -409,9 +524,43 @@ if os.path.exists(checkpoint_path):
         checkpoint.get("evaluations_without_improvement", 0)
     )
     base_stage_saved = bool(checkpoint.get("base_stage_saved", False))
+    reference_metrics = checkpoint.get("reference_metrics")
     print("Resumed attention training from:", checkpoint_path)
 
 agent.set_attention_enabled(agent_samples >= attention_start_step)
+
+if reference_metrics is None:
+    print("Evaluating immutable 5D reference on fixed validation manifests")
+    reference_metrics = {
+        "standard": evaluate_group(
+            reference_policy,
+            env,
+            validation_cases,
+            "standard",
+            history_len,
+            standard_eval_episodes,
+            max_episode_steps,
+            evaluation_seed,
+            forward_speed,
+        ),
+        "dense": evaluate_group(
+            reference_policy,
+            env,
+            validation_cases,
+            "dense",
+            history_len,
+            dense_eval_episodes,
+            max_episode_steps,
+            evaluation_seed + 1000,
+            forward_speed,
+        ),
+    }
+    print("Reference standard:", reference_metrics["standard"])
+    print("Reference dense:", reference_metrics["dense"])
+    for group, metrics in reference_metrics.items():
+        for name, value in metrics.items():
+            writer.add_scalar(f"reference/{group}_{name}", value, 0)
+    save_checkpoint(checkpoint_path)
 
 print("==============================================")
 print("Training: trainable base Actor, then gated spatiotemporal Attention")
@@ -419,7 +568,12 @@ print("Initialization model:", base_model)
 print("History length:", history_len)
 print("Attention model dim / heads:", model_dim, "/", num_heads)
 print("Initial gate / zero Attention delta head:", initial_gate, "/", True)
-print("Curriculum groups: standard, dense")
+print("Fixed manifest groups: standard, dense")
+print("Training datasets:", ", ".join(training_config["train_manifest_dataset_ids"]))
+print(
+    "Validation datasets:",
+    ", ".join(training_config["validation_manifest_dataset_ids"]),
+)
 print(
     "Base Actor start / Attention start:",
     actor_start_step,
@@ -449,6 +603,8 @@ print(
     slowdown_penalty_weight,
 )
 print("Gate supervision weight:", gate_supervision_weight)
+print("Actor anchor / correction weight:", actor_anchor_weight, "/", attention_correction_weight)
+print("TD3 discount:", discount)
 print("Batch size / expected samples per group:", batch_size, "/", batch_size // 2)
 print(
     "Fixed evaluation episodes: standard=%d, dense=%d, seed=%d"
@@ -463,10 +619,11 @@ print("==============================================")
 try:
     while episode < max_episodes:
         states = env.reset()
-        case_name = str(env.current_curriculum_case.get("name", "unknown"))
-        case_group = str(env.current_curriculum_case.get("group", "unknown"))
+        case_name = env.current_scenario_id()
+        case_group = env.current_scenario_group()
         if case_group not in replay_group_ratios:
             raise ValueError(f"Unsupported training group: {case_group}")
+        initial_goal_distance = float(np.mean([state[20] for state in states]))
         histories = make_histories(states, history_len)
         active = [True] * env.num_agents
         episode_rewards = np.zeros(env.num_agents, dtype=np.float32)
@@ -533,7 +690,6 @@ try:
             if not base_stage_saved and agent_samples >= attention_start_step:
                 torch.save(agent.actor.base_actor.state_dict(), base_stage_actor_path)
                 base_stage_saved = True
-                best_metrics = None
                 evaluations_without_improvement = 0
                 agent.set_attention_enabled(True)
                 print("Base stage completed. Saved Actor:", base_stage_actor_path)
@@ -542,6 +698,7 @@ try:
                 step_losses = agent.train_step(
                     replay_buffer,
                     batch_size=batch_size,
+                    discount=discount,
                     actor_start_step=actor_start_step,
                     attention_start_step=attention_start_step,
                     actor_lr_warmup_steps=actor_lr_warmup_steps,
@@ -549,6 +706,8 @@ try:
                     actor_lr_min_ratio=actor_lr_min_ratio,
                     base_finetune_lr_ratio=base_finetune_lr_ratio,
                     gate_supervision_weight=gate_supervision_weight,
+                    actor_anchor_weight=actor_anchor_weight,
+                    attention_correction_weight=attention_correction_weight,
                     reward_scale=reward_scale,
                     gradient_clip=gradient_clip,
                     environment_step=agent_samples,
@@ -573,6 +732,14 @@ try:
         writer.add_scalar("train/collision_rate", collision_rate, episode)
         writer.add_scalar("train/full_success", full_success, episode)
         writer.add_scalar("train/mean_reward", episode_rewards.mean(), episode)
+        writer.add_scalar(
+            "diagnostic/initial_goal_distance_mean", initial_goal_distance, episode
+        )
+        writer.add_scalar(
+            f"diagnostic/{case_group}_initial_goal_distance_mean",
+            initial_goal_distance,
+            episode,
+        )
         for group, count in replay_buffer.group_counts().items():
             writer.add_scalar(f"replay/{group}_count", count, episode)
         if last_losses:
@@ -614,6 +781,7 @@ try:
         standard_metrics = evaluate_group(
             agent,
             env,
+            validation_cases,
             "standard",
             history_len,
             standard_eval_episodes,
@@ -624,6 +792,7 @@ try:
         dense_metrics = evaluate_group(
             agent,
             env,
+            validation_cases,
             "dense",
             history_len,
             dense_eval_episodes,
@@ -649,8 +818,17 @@ try:
             continue
 
         candidate = {"standard": standard_metrics, "dense": dense_metrics}
-        if best_metrics is None or best_key(standard_metrics, dense_metrics) > best_key(
-            best_metrics["standard"], best_metrics["dense"]
+        candidate_key = best_key(standard_metrics, dense_metrics)
+        reference_key = best_key(
+            reference_metrics["standard"], reference_metrics["dense"]
+        )
+        incumbent_key = (
+            None
+            if best_metrics is None
+            else best_key(best_metrics["standard"], best_metrics["dense"])
+        )
+        if candidate_key > reference_key and (
+            incumbent_key is None or candidate_key > incumbent_key
         ):
             best_metrics = candidate
             evaluations_without_improvement = 0
@@ -659,6 +837,8 @@ try:
             print("Updated dual-benchmark best:", best_checkpoint_path)
         else:
             evaluations_without_improvement += 1
+            if candidate_key <= reference_key:
+                print("Attention candidate did not exceed the immutable 5D reference")
         save_checkpoint(checkpoint_path)
         if (
             early_stopping_patience > 0

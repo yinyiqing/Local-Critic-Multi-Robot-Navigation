@@ -86,6 +86,18 @@ class StagedAttentionActorTest(unittest.TestCase):
                 np.asarray(["standard", "pair"]), torch.device("cpu")
             )
 
+    def test_gate_features_ignore_goal_distance_and_bearing(self):
+        altered_history = self.history.clone()
+        altered_history[:, :, 20:22] = torch.randn_like(altered_history[:, :, 20:22])
+
+        with torch.no_grad():
+            gate_logits = self.actor.gate_head(self.actor._gate_features(self.history))
+            altered_gate_logits = self.actor.gate_head(
+                self.actor._gate_features(altered_history)
+            )
+
+        torch.testing.assert_close(altered_gate_logits, gate_logits)
+
     def test_optimizer_updates_only_the_active_stage(self):
         agent = SpatioTemporalTD3(
             BaseActor().state_dict(),
@@ -127,6 +139,50 @@ class StagedAttentionActorTest(unittest.TestCase):
         self.assertFalse(
             torch.equal(attention_before, agent.actor.gate_head.bias)
         )
+
+    def test_attention_regularization_keeps_reference_actor_frozen(self):
+        agent = SpatioTemporalTD3(
+            BaseActor().state_dict(),
+            history_len=6,
+            model_dim=16,
+            num_heads=4,
+            base_actor_lr=1e-3,
+            attention_lr=1e-3,
+            critic_hidden_dim=16,
+            device=torch.device("cpu"),
+        )
+        replay = FixedReplay()
+        reference_before = {
+            name: parameter.detach().clone()
+            for name, parameter in agent.reference_base_actor.named_parameters()
+        }
+        with torch.no_grad():
+            agent.actor.base_actor.layer_3.bias.add_(0.1)
+
+        agent.train_step(
+            replay,
+            batch_size=4,
+            policy_delay=1,
+            actor_start_step=0,
+            attention_start_step=10,
+            actor_lr_warmup_steps=0,
+            environment_step=20,
+        )
+        metrics = agent.train_step(
+            replay,
+            batch_size=4,
+            policy_delay=1,
+            actor_start_step=0,
+            attention_start_step=10,
+            actor_lr_warmup_steps=0,
+            environment_step=21,
+        )
+
+        self.assertGreater(metrics["base_anchor_loss"], 0.0)
+        self.assertGreater(metrics["attention_correction_loss"], 0.0)
+        for name, parameter in agent.reference_base_actor.named_parameters():
+            torch.testing.assert_close(parameter, reference_before[name])
+            self.assertFalse(parameter.requires_grad)
 
 
 if __name__ == "__main__":

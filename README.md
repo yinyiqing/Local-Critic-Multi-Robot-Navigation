@@ -66,6 +66,10 @@ TD3 仍作为连续动作强化学习的基础算法，Attention 是当前主要
 当前实现为：
 
 ```text
+固定 standard/dense 五车 manifest
+  -> 训练集按场景组均衡抽样
+  -> 验证集按 scenario_id 固定顺序回放
+
 阶段一：训练基础 Actor，Attention 旁路
 阶段二：基础 Actor + 时空 Attention 联合微调
   + standard/dense 场景门控
@@ -88,6 +92,7 @@ TD3 仍作为连续动作强化学习的基础算法，Attention 是当前主要
 ## 文档入口
 
 1. [Attention 方法与消融](experiments/attention/README.md)
+2. [固定场景数据说明](fixed_scenarios_v1/data/fixed_v1/README.md)
 
 ## 运行指南
 
@@ -118,6 +123,15 @@ bash scripts/docker_stop_noetic.sh
 ```
 
 模型结构、场景分组和消融要求见 [Attention 方法文档](experiments/attention/README.md)。训练日志默认写入 `logs/attention/`。
+
+Attention 主线默认使用冻结的五车场景：训练读取 `standard/train.json.gz` 和 `dense/train.json.gz`，周期评估读取对应的 `validation.json.gz`。两组训练场景按 1:1 概率选择，不受 3000:6000 文件规模影响；每条日志中的 `case` 是原始 `scenario_id`。
+
+需要覆盖默认数据路径时，多个 manifest 用系统路径分隔符连接（Linux 为 `:`）：
+
+```bash
+export DRL_MULTI_MANIFEST_PATHS=/path/standard/train.json.gz:/path/dense/train.json.gz
+export DRL_ATTENTION_VALIDATION_MANIFEST_PATHS=/path/standard/validation.json.gz:/path/dense/validation.json.gz
+```
 
 ### Baseline
 
@@ -164,9 +178,6 @@ python3 scripts/generate_multi_robot_launch.py \
   --num-agents 5 \
   --output TD3/assets/multi_robot_scenario_multi_5.launch
 
-# 容量检查
-bash scripts/start_capacity_check_multi.sh 5
-bash scripts/stop_capacity_check_multi.sh 5
 ```
 
 ## 仓库结构
@@ -176,6 +187,7 @@ Local-Critic-Multi-Robot-Navigation/
 ├── TD3/               # 环境、模型、训练和测试代码
 ├── catkin_ws/         # ROS 工作区、机器人模型和 Gazebo 插件
 ├── scripts/           # 训练、测试、停止和观察脚本
-├── experiments/       # 当前 Attention 方法和场景定义
+├── experiments/       # 当前 Attention 方法说明
+├── fixed_scenarios_v1/# 冻结的 standard/dense manifest 数据
 └── trash/             # 已退出主线的可恢复归档
 ```

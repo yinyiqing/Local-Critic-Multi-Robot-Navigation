@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import time
 
 import rospy
 from gazebo_msgs.srv import SpawnModel
@@ -55,7 +56,8 @@ def main():
         if not response.success:
             raise RuntimeError(f"Failed to spawn {name}: {response.status_message}")
         rospy.loginfo("Spawned %s: %s", name, response.status_message)
-        rospy.sleep(0.5)
+        # Gazebo's /clock may not advance while the next model plugins initialize.
+        time.sleep(0.5)
 
     rospy.loginfo("Sequentially spawned %d robots", len(args.robots))
     rospy.spin()

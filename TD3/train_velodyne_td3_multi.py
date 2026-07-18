@@ -761,6 +761,9 @@ print("Training version:", training_version)
 print("Training process PID:", os.getpid())
 print("Launchfile:", launchfile)
 print("Scenario mode:", scenario_mode)
+if scenario_mode == "manifest":
+    print("Manifest paths:", os.environ.get("DRL_MULTI_MANIFEST_PATHS", ""))
+    print("Manifest sampling:", os.environ.get("DRL_MULTI_MANIFEST_SAMPLING", "cycle"))
 print("Seed:", seed)
 print("Device:", device)
 if torch.cuda.is_available():

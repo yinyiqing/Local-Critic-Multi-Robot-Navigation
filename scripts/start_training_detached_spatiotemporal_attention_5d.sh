@@ -7,9 +7,11 @@ LOG_DIR="${DRL_ATTENTION_LOG_DIR:-$PROJECT_ROOT/logs/attention}"
 PID_FILE="$PROJECT_ROOT/.train_spatiotemporal_attention_5d_detached.pid"
 LAUNCHFILE="multi_robot_scenario_attention_5.launch"
 LAUNCH_PATH="$TD3_DIR/assets/$LAUNCHFILE"
-CASES_PATH="$PROJECT_ROOT/experiments/cases/attention_mixed_5.json"
+TRAIN_MANIFESTS="${DRL_MULTI_MANIFEST_PATHS:-$PROJECT_ROOT/fixed_scenarios_v1/data/fixed_v1/standard/train.json.gz:$PROJECT_ROOT/fixed_scenarios_v1/data/fixed_v1/dense/train.json.gz}"
+VALIDATION_MANIFESTS="${DRL_ATTENTION_VALIDATION_MANIFEST_PATHS:-$PROJECT_ROOT/fixed_scenarios_v1/data/fixed_v1/standard/validation.json.gz:$PROJECT_ROOT/fixed_scenarios_v1/data/fixed_v1/dense/validation.json.gz}"
 BASE_MODEL="${DRL_ATTENTION_BASE_MODEL:-TD3_velodyne_multi_v4_curriculum_stage2_to_5d_geo_critic_from_5a_guarded_best}"
-MODEL_NAME="${DRL_ATTENTION_MODEL_NAME:-TD3_velodyne_multi_v9_staged_standard_dense_attention_forward_only}"
+MODEL_NAME="TD3_velodyne_multi_fixed_manifest_attention"
+ATTENTION_START_STEP="${DRL_ATTENTION_START_STEP:-30000}"
 ROS_PORT="${DRL_ATTENTION_ROS_PORT:-12821}"
 GAZEBO_PORT="${DRL_ATTENTION_GAZEBO_PORT:-12921}"
 
@@ -48,11 +50,12 @@ setsid bash -lc "
   export ROS_PORT_SIM=${ROS_PORT}
   export GAZEBO_MASTER_URI=http://localhost:${GAZEBO_PORT}
   export GAZEBO_RESOURCE_PATH='$PROJECT_ROOT/catkin_ws/src/multi_robot_scenario/launch'
-  export DRL_MULTI_CURRICULUM_CASES='$CASES_PATH'
-  export DRL_MULTI_CURRICULUM_SAMPLING=random
+  export DRL_MULTI_MANIFEST_PATHS='$TRAIN_MANIFESTS'
+  export DRL_MULTI_MANIFEST_SAMPLING=random
+  export DRL_ATTENTION_VALIDATION_MANIFEST_PATHS='$VALIDATION_MANIFESTS'
   export DRL_ATTENTION_LAUNCHFILE='$LAUNCHFILE'
   export DRL_ATTENTION_BASE_MODEL='$BASE_MODEL'
-  export DRL_ATTENTION_MODEL_NAME='$MODEL_NAME'
+  export DRL_ATTENTION_START_STEP='$ATTENTION_START_STEP'
   cd '$PROJECT_ROOT/catkin_ws'
   source devel_isolated/setup.bash
   cd '$TD3_DIR'
@@ -64,6 +67,8 @@ echo "Spatiotemporal attention training started."
 echo "PID: $(<"$PID_FILE")"
 echo "Base Actor initialization: $BASE_MODEL"
 echo "Attention model: $MODEL_NAME"
-echo "Curriculum: $CASES_PATH"
+echo "Attention start samples: $ATTENTION_START_STEP"
+echo "Training manifests: $TRAIN_MANIFESTS"
+echo "Validation manifests: $VALIDATION_MANIFESTS"
 echo "ROS/Gazebo ports: $ROS_PORT / $GAZEBO_PORT"
 echo "Log: $log_file"

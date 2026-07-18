@@ -29,9 +29,4 @@ d2a09cf8d51b89a366d3661487471d2383ef6ef4490133ab0efd6c59772f9a23  dense/train.js
 
 拒绝报告保存在对应 pool 的 `rejected_*.json` 中。候选全集可由固定 seed 和生成器重新生成，不纳入 Git。
 
-完整性审计：
-
-```bash
-python scripts/audit_fixed_scenarios.py \
-  experiments/04_保留专门化/05_论文主线/datasets/fixed_v1/{standard,dense}/{train,validation,test}.json.gz
-```
+主线单元测试会校验 manifest 的 schema、split、组别和几何约束。

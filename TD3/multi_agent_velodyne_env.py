@@ -19,6 +19,7 @@ from std_srvs.srv import Empty
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
 
+from scenario_manifests import load_manifest_cases
 from velodyne_env import COLLISION_DIST, GOAL_REACHED_DIST, TIME_DELTA, check_pos
 
 
@@ -137,13 +138,16 @@ class MultiAgentGazeboEnv:
         self.weak_coupling_layout = weak_coupling_layout
         self.active_neighbors_only = active_neighbors_only
         self.scenario_mode = scenario_mode.strip().lower()
-        if self.scenario_mode not in ("standard", "dense", "curriculum"):
+        if self.scenario_mode not in ("standard", "dense", "curriculum", "manifest"):
             raise ValueError(
-                "scenario_mode must be one of: standard, dense, curriculum"
+                "scenario_mode must be one of: standard, dense, curriculum, manifest"
             )
         self.curriculum_cases = []
         self.curriculum_case_index = 0
         self.current_curriculum_case = None
+        self.manifest_metadata = []
+        self.manifest_paths = []
+        self.manifest_dataset_ids = []
 
         self.upper = 5.0
         self.lower = -5.0
@@ -195,6 +199,12 @@ class MultiAgentGazeboEnv:
             print(
                 "Curriculum scenario enabled: %i cases loaded"
                 % len(self.curriculum_cases)
+            )
+        elif self.scenario_mode == "manifest":
+            self.curriculum_cases = self._load_manifest_cases()
+            print(
+                "Fixed manifest scenario enabled: %i cases from %s"
+                % (len(self.curriculum_cases), ", ".join(self.manifest_dataset_ids))
             )
 
         self.velodyne_data = {
@@ -362,6 +372,29 @@ class MultiAgentGazeboEnv:
             normalized.append(case)
         return normalized
 
+    def _load_manifest_cases(self):
+        path_value = os.environ.get("DRL_MULTI_MANIFEST_PATHS", "").strip()
+        if not path_value:
+            path_value = os.environ.get("DRL_MULTI_MANIFEST_PATH", "").strip()
+        if not path_value:
+            raise ValueError(
+                "DRL_MULTI_MANIFEST_PATHS must list one or more split files when "
+                "DRL_MULTI_SCENARIO=manifest"
+            )
+        group_ratios = {
+            "standard": _env_float("DRL_MULTI_MANIFEST_STANDARD_RATIO", 1.0),
+            "dense": _env_float("DRL_MULTI_MANIFEST_DENSE_RATIO", 1.0),
+        }
+        cases, metadata = load_manifest_cases(
+            path_value,
+            self.agent_names,
+            group_ratios=group_ratios,
+        )
+        self.manifest_metadata = metadata
+        self.manifest_paths = [item["path"] for item in metadata]
+        self.manifest_dataset_ids = [item["dataset_id"] for item in metadata]
+        return cases
+
     def _current_case_uses_standard_layout(self):
         return bool(
             self.scenario_mode == "curriculum"
@@ -383,14 +416,19 @@ class MultiAgentGazeboEnv:
 
     def _current_case_uses_fixed_layout(self):
         return bool(
-            self.scenario_mode == "curriculum"
+            self.scenario_mode in ("curriculum", "manifest")
             and self.current_curriculum_case
             and str(self.current_curriculum_case.get("layout", "fixed")).lower()
             == "fixed"
         )
 
     def _select_curriculum_case(self):
-        mode = os.environ.get("DRL_MULTI_CURRICULUM_SAMPLING", "cycle").strip().lower()
+        variable = (
+            "DRL_MULTI_MANIFEST_SAMPLING"
+            if self.scenario_mode == "manifest"
+            else "DRL_MULTI_CURRICULUM_SAMPLING"
+        )
+        mode = os.environ.get(variable, "cycle").strip().lower()
         if mode == "random":
             weights = [
                 max(float(case.get("weight", 1.0)), 0.0)
@@ -400,7 +438,7 @@ class MultiAgentGazeboEnv:
                 return random.choice(self.curriculum_cases)
             return random.choices(self.curriculum_cases, weights=weights, k=1)[0]
         if mode != "cycle":
-            raise ValueError("DRL_MULTI_CURRICULUM_SAMPLING must be cycle or random")
+            raise ValueError(f"{variable} must be cycle or random")
         case = self.curriculum_cases[self.curriculum_case_index % len(self.curriculum_cases)]
         self.curriculum_case_index += 1
         return case
@@ -471,6 +509,8 @@ class MultiAgentGazeboEnv:
 
     def _empty_last_step_info(self):
         return {
+            "scenario_id": self.current_scenario_id(),
+            "scenario_group": self.current_scenario_group(),
             "agents": {
                 name: {
                     "target": False,
@@ -501,6 +541,20 @@ class MultiAgentGazeboEnv:
             "mean_anti_stagnation_reward": 0.0,
         }
 
+    def current_scenario_id(self):
+        if not isinstance(self.current_curriculum_case, dict):
+            return None
+        return str(
+            self.current_curriculum_case.get("scenario_id")
+            or self.current_curriculum_case.get("name")
+            or "unknown"
+        )
+
+    def current_scenario_group(self):
+        if not isinstance(self.current_curriculum_case, dict):
+            return self.scenario_mode
+        return str(self.current_curriculum_case.get("group") or self.scenario_mode)
+
     def set_cooperative_reward(self, enabled):
         self.cooperative_reward = enabled
 
@@ -516,35 +570,39 @@ class MultiAgentGazeboEnv:
     def wait_for_odom(self, name, timeout=60.0, recover_with_unpause=True):
         if self.last_odom[name] is not None:
             return
-        if recover_with_unpause:
+        if not recover_with_unpause:
             try:
-                rospy.wait_for_service("/gazebo/unpause_physics", timeout=5.0)
-                self.unpause()
-                time.sleep(max(TIME_DELTA, 0.2))
-            except (rospy.ROSException, rospy.ServiceException):
-                pass
-        try:
-            self.last_odom[name] = rospy.wait_for_message(
-                f"/{name}/odom", Odometry, timeout=timeout
-            )
-            return
-        except rospy.ROSException as exc:
-            if not recover_with_unpause:
-                raise TimeoutError(
-                    f"Timed out waiting for /{name}/odom after {timeout} seconds"
-                ) from exc
-            try:
-                rospy.wait_for_service("/gazebo/unpause_physics", timeout=5.0)
-                self.unpause()
-                time.sleep(max(TIME_DELTA * 2, 0.4))
                 self.last_odom[name] = rospy.wait_for_message(
                     f"/{name}/odom", Odometry, timeout=timeout
                 )
                 return
-            except (rospy.ROSException, rospy.ServiceException) as retry_exc:
+            except rospy.ROSException as exc:
                 raise TimeoutError(
-                    f"Timed out waiting for /{name}/odom after reset recovery"
-                ) from retry_exc
+                    f"Timed out waiting for /{name}/odom after {timeout} seconds"
+                ) from exc
+
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            try:
+                rospy.wait_for_service("/gazebo/unpause_physics", timeout=5.0)
+                self.unpause()
+            except (rospy.ROSException, rospy.ServiceException):
+                pass
+
+            remaining = deadline - time.monotonic()
+            if remaining <= 0.0:
+                break
+            try:
+                self.last_odom[name] = rospy.wait_for_message(
+                    f"/{name}/odom", Odometry, timeout=min(5.0, remaining)
+                )
+                return
+            except rospy.ROSException:
+                continue
+
+        raise TimeoutError(
+            f"Timed out waiting for /{name}/odom after {timeout} seconds"
+        )
 
     def wait_for_all_odom(self, timeout_per_agent=2.0, attempts=5):
         missing = []
@@ -835,7 +893,7 @@ class MultiAgentGazeboEnv:
     ):
         if not self.local_navigation_reward or target or collision:
             return 0.0
-        if self.scenario_mode == "curriculum" and self.current_curriculum_case:
+        if self.scenario_mode in ("curriculum", "manifest") and self.current_curriculum_case:
             case_override = self.current_curriculum_case.get("local_navigation_reward")
             if case_override is not None and not bool(case_override):
                 return 0.0
@@ -1142,6 +1200,8 @@ class MultiAgentGazeboEnv:
             if idx < len(active_mask) and active_mask[idx]
         ]
         self.last_step_info = {
+            "scenario_id": self.current_scenario_id(),
+            "scenario_group": self.current_scenario_group(),
             "agents": step_agents_info,
             "mean_reward": float(np.mean(rewards)) if rewards else 0.0,
             "success_count": int(sum(int(flag) for flag in targets)),
@@ -1196,7 +1256,7 @@ class MultiAgentGazeboEnv:
         last_error = None
         for reset_attempt in range(20):
             try:
-                if self.scenario_mode == "curriculum":
+                if self.scenario_mode in ("curriculum", "manifest"):
                     self.current_curriculum_case = self._select_curriculum_case()
                 spawn_positions = self._sample_robot_positions()
                 for name, position in spawn_positions.items():
@@ -1227,7 +1287,10 @@ class MultiAgentGazeboEnv:
             state.pose.orientation.w = quaternion.w
             self.set_state.publish(state)
 
-        if self.scenario_mode == "curriculum":
+        self.last_step_info["scenario_id"] = self.current_scenario_id()
+        self.last_step_info["scenario_group"] = self.current_scenario_group()
+
+        if self.scenario_mode in ("curriculum", "manifest"):
             self._apply_curriculum_boxes()
         else:
             self.random_box()
