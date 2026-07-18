@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import os
 import time
 
 import rospy
@@ -30,6 +31,9 @@ def main():
     )
     parser.add_argument("robots", nargs="+", type=parse_robot)
     args = parser.parse_args(rospy.myargv()[1:])
+    settle_seconds = float(os.environ.get("DRL_MULTI_SPAWN_SETTLE_SECONDS", "2.0"))
+    if settle_seconds < 0.0:
+        raise ValueError("DRL_MULTI_SPAWN_SETTLE_SECONDS must be non-negative")
 
     rospy.init_node("sequential_multi_robot_spawner")
     rospy.wait_for_service("/gazebo/spawn_urdf_model")
@@ -56,8 +60,8 @@ def main():
         if not response.success:
             raise RuntimeError(f"Failed to spawn {name}: {response.status_message}")
         rospy.loginfo("Spawned %s: %s", name, response.status_message)
-        # Gazebo's /clock may not advance while the next model plugins initialize.
-        time.sleep(0.5)
+        # Let model plugins finish before the next synchronous spawn request.
+        time.sleep(settle_seconds)
 
     rospy.loginfo("Sequentially spawned %d robots", len(args.robots))
     rospy.spin()
