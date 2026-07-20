@@ -6,6 +6,7 @@ IMAGE_NAME="${DRL_DOCKER_IMAGE:-local-critic-multi-robot-navigation:noetic}"
 CONTAINER_NAME="${DRL_DOCKER_TRAIN_CONTAINER:-drl-noetic-train}"
 DOCKER_RUNTIME="${DRL_DOCKER_RUNTIME:-nvidia}"
 DOCKER_GPUS="${DRL_DOCKER_GPUS:-all}"
+CPU_ONLY="${DRL_DOCKER_CPU_ONLY:-0}"
 TRAIN_MODE="${DRL_DOCKER_TRAIN_MODE:-single}"
 DETACHED="${DRL_DOCKER_DETACHED:-1}"
 KEEP_CONTAINER="${DRL_DOCKER_KEEP_CONTAINER:-0}"
@@ -40,10 +41,20 @@ if [[ -n "${DRL_DOCKER_ENV_FILE:-}" ]]; then
   extra_env+=(--env-file "$DRL_DOCKER_ENV_FILE")
 fi
 
+accelerator_args=(--runtime "$DOCKER_RUNTIME" --gpus "$DOCKER_GPUS")
+cuda_visible_devices="${CUDA_VISIBLE_DEVICES:-0}"
+nvidia_visible_devices="${NVIDIA_VISIBLE_DEVICES:-all}"
+libgl_always_software="${LIBGL_ALWAYS_SOFTWARE:-0}"
+if [[ "$CPU_ONLY" == "1" ]]; then
+  accelerator_args=(--runtime "$DOCKER_RUNTIME")
+  cuda_visible_devices=""
+  nvidia_visible_devices="void"
+  libgl_always_software="1"
+fi
+
 run_args=(
   --name "$CONTAINER_NAME"
-  --runtime "$DOCKER_RUNTIME"
-  --gpus "$DOCKER_GPUS"
+  "${accelerator_args[@]}"
   --ipc host
   --pids-limit -1
   --ulimit nproc=65535:65535
@@ -61,10 +72,10 @@ run_args=(
   -e MKL_NUM_THREADS="${MKL_NUM_THREADS:-1}"
   -e TORCHDYNAMO_DISABLE="${TORCHDYNAMO_DISABLE:-1}"
   -e TORCHINDUCTOR_CACHE_DIR=/tmp/torchinductor
-  -e CUDA_VISIBLE_DEVICES="${CUDA_VISIBLE_DEVICES:-0}"
-  -e NVIDIA_VISIBLE_DEVICES="${NVIDIA_VISIBLE_DEVICES:-all}"
+  -e CUDA_VISIBLE_DEVICES="$cuda_visible_devices"
+  -e NVIDIA_VISIBLE_DEVICES="$nvidia_visible_devices"
   -e NVIDIA_DRIVER_CAPABILITIES="${NVIDIA_DRIVER_CAPABILITIES:-compute,utility,graphics,display}"
-  -e LIBGL_ALWAYS_SOFTWARE="${LIBGL_ALWAYS_SOFTWARE:-0}"
+  -e LIBGL_ALWAYS_SOFTWARE="$libgl_always_software"
   -e GAZEBO_HEADLESS_RENDERING=1
   -e DRL_DOCKER_TRAIN_MODE="$TRAIN_MODE"
   -e DRL_DOCKER_ROS_PORT="$ROS_PORT"
@@ -159,7 +170,11 @@ if [[ "$DETACHED" == "1" ]]; then
   echo "Docker training started."
   echo "Container: $CONTAINER_NAME ($container_id)"
   echo "Mode: $TRAIN_MODE"
-  echo "GPU: $DOCKER_GPUS"
+  if [[ "$CPU_ONLY" == "1" ]]; then
+    echo "Accelerator: CPU"
+  else
+    echo "GPU: $DOCKER_GPUS"
+  fi
   echo "ROS/Gazebo ports: $ROS_PORT / $GAZEBO_PORT"
   echo "Log: $HOST_LOG_FILE"
 else

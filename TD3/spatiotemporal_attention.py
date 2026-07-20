@@ -123,12 +123,15 @@ class StagedAttentionActor(nn.Module):
         num_heads=4,
         attention_logit_scale=0.5,
         initial_gate=0.05,
+        gate_temperature=1.0,
     ):
         super().__init__()
         if not 0.0 < initial_gate < 1.0:
             raise ValueError("initial_gate must be between 0 and 1")
         if attention_logit_scale <= 0.0:
             raise ValueError("attention_logit_scale must be positive")
+        if gate_temperature <= 0.0:
+            raise ValueError("gate_temperature must be positive")
         self.base_actor = base_actor
         self.encoder = SpatioTemporalEncoder(
             history_len=history_len,
@@ -144,7 +147,12 @@ class StagedAttentionActor(nn.Module):
         nn.init.zeros_(self.attention_head[2].bias)
         self.gate_head = nn.Linear(model_dim, 1)
         nn.init.zeros_(self.gate_head.weight)
-        gate_logit = math.log(initial_gate / (1.0 - initial_gate))
+        self.gate_temperature = float(gate_temperature)
+        # Keep initialization, inference, and gate supervision in the same
+        # logit scale. Otherwise a low temperature suppresses the initial gate.
+        gate_logit = self.gate_temperature * math.log(
+            initial_gate / (1.0 - initial_gate)
+        )
         nn.init.constant_(self.gate_head.bias, gate_logit)
         self.attention_logit_scale = float(attention_logit_scale)
         self.state_dim = int(state_dim)
@@ -155,6 +163,9 @@ class StagedAttentionActor(nn.Module):
         gate_history = history.clone()
         gate_history[:, :, self.laser_dim : self.laser_dim + 2] = 0.0
         return self.encoder(gate_history)
+
+    def gate_logits_for_probability(self, gate_logits):
+        return gate_logits / self.gate_temperature
 
     def forward(self, history, attention_enabled=True, return_details=False):
         base_logits = self.base_actor.action_logits(
@@ -170,7 +181,7 @@ class StagedAttentionActor(nn.Module):
         )
         attention_action = torch.tanh(base_logits + attention_delta)
         gate_logits = self.gate_head(self._gate_features(history))
-        learned_gate = torch.sigmoid(gate_logits)
+        learned_gate = torch.sigmoid(self.gate_logits_for_probability(gate_logits))
         effective_gate = (
             learned_gate if attention_enabled else torch.zeros_like(learned_gate)
         )
@@ -243,6 +254,7 @@ class SpatioTemporalTD3:
         num_heads=4,
         attention_logit_scale=0.5,
         initial_gate=0.05,
+        gate_temperature=1.0,
         base_actor_lr=1e-5,
         attention_lr=1e-5,
         critic_lr=2e-5,
@@ -266,6 +278,7 @@ class SpatioTemporalTD3:
             num_heads=num_heads,
             attention_logit_scale=attention_logit_scale,
             initial_gate=initial_gate,
+            gate_temperature=gate_temperature,
         ).to(self.device)
         self.actor_target = copy.deepcopy(self.actor).to(self.device)
         self.critic = TwinHistoryMLPCritic(
@@ -336,7 +349,10 @@ class SpatioTemporalTD3:
         actor_lr_decay_steps=100000,
         actor_lr_min_ratio=0.1,
         base_finetune_lr_ratio=0.1,
+        attention_base_warmup_steps=0,
         gate_supervision_weight=1.0,
+        gate_positive_weight=1.0,
+        gate_safe_sparsity_weight=0.0,
         actor_anchor_weight=5.0,
         attention_correction_weight=1.0,
         reward_scale=0.1,
@@ -349,8 +365,13 @@ class SpatioTemporalTD3:
             )
         if not 0.0 <= base_finetune_lr_ratio <= 1.0:
             raise ValueError("base_finetune_lr_ratio must be between 0 and 1")
-        if gate_supervision_weight < 0.0:
-            raise ValueError("gate_supervision_weight must be non-negative")
+        if attention_base_warmup_steps < 0:
+            raise ValueError("attention_base_warmup_steps must be non-negative")
+        if (
+            min(gate_supervision_weight, gate_safe_sparsity_weight) < 0.0
+            or gate_positive_weight <= 0.0
+        ):
+            raise ValueError("Gate weights must be non-negative with positive class weight")
         if actor_anchor_weight < 0.0 or attention_correction_weight < 0.0:
             raise ValueError("Actor regularization weights must be non-negative")
 
@@ -361,12 +382,16 @@ class SpatioTemporalTD3:
             dones,
             next_histories,
             groups,
+            interaction_risks,
         ) = replay_buffer.sample(batch_size)
         history = torch.as_tensor(histories, device=self.device)
         action = torch.as_tensor(actions, device=self.device)
         reward = torch.as_tensor(rewards, device=self.device) * reward_scale
         done = torch.as_tensor(dones, device=self.device)
         next_history = torch.as_tensor(next_histories, device=self.device)
+        interaction_risks = torch.as_tensor(
+            interaction_risks, dtype=torch.float32, device=self.device
+        )
 
         attention_enabled = environment_step >= attention_start_step
         self.set_attention_enabled(attention_enabled)
@@ -417,6 +442,8 @@ class SpatioTemporalTD3:
                     / self.attention_lr
                     * base_finetune_lr_ratio
                 )
+                if environment_step < attention_start_step + attention_base_warmup_steps:
+                    base_lr = 0.0
             else:
                 attention_lr = 0.0
                 base_lr = self._actor_learning_rate(
@@ -448,18 +475,30 @@ class SpatioTemporalTD3:
                 with torch.no_grad():
                     reference_action = self.reference_base_actor(history[:, -1])
                 anchor_loss = F.mse_loss(base_action, reference_action)
-                correction_loss = (actor_action - base_action).pow(2).mean()
                 if attention_enabled:
-                    gate_targets = self._gate_targets(groups, gate_logits.device)
+                    gate_targets = interaction_risks
                     gate_loss = F.binary_cross_entropy_with_logits(
-                        gate_logits, gate_targets
+                        self.actor.gate_logits_for_probability(gate_logits),
+                        gate_targets,
+                        pos_weight=torch.tensor(
+                            [gate_positive_weight], device=self.device
+                        ),
                     )
+                    gate_safe_sparsity_loss = (
+                        (1.0 - gate_targets) * gate
+                    ).mean()
                 else:
                     gate_loss = torch.zeros((), device=self.device)
+                    gate_safe_sparsity_loss = torch.zeros((), device=self.device)
+                    gate_targets = torch.zeros_like(gate)
+                correction_loss = (
+                    (1.0 - gate_targets) * (actor_action - base_action).pow(2)
+                ).mean()
                 actor_loss = (
                     policy_loss
                     + actor_anchor_weight * anchor_loss
                     + gate_supervision_weight * gate_loss
+                    + gate_safe_sparsity_weight * gate_safe_sparsity_loss
                     + attention_correction_weight * correction_loss
                 )
                 self.actor_optimizer.zero_grad()
@@ -475,6 +514,9 @@ class SpatioTemporalTD3:
             actor_metrics = {
                 "policy_loss": float(policy_loss.detach().cpu()),
                 "gate_supervision_loss": float(gate_loss.detach().cpu()),
+                "gate_safe_sparsity_loss": float(
+                    gate_safe_sparsity_loss.detach().cpu()
+                ),
                 "base_anchor_loss": float(anchor_loss.detach().cpu()),
                 "attention_correction_loss": float(correction_loss.detach().cpu()),
                 "actor_q_abs_mean": float(actor_q.detach().abs().mean().cpu()),
@@ -491,6 +533,7 @@ class SpatioTemporalTD3:
                     groups,
                 )
             )
+            actor_metrics.update(self._risk_gate_metrics(gate, interaction_risks))
 
             self._soft_update(self.actor, self.actor_target, tau)
 
@@ -531,15 +574,6 @@ class SpatioTemporalTD3:
                 group["lr"] = base_lr
             elif group["name"] == "attention":
                 group["lr"] = attention_lr
-
-    @staticmethod
-    def _gate_targets(groups, device):
-        unknown = sorted(set(groups.tolist()) - {"standard", "dense"})
-        if unknown:
-            raise ValueError(f"Unsupported gate supervision groups: {unknown}")
-        return torch.as_tensor(
-            (groups == "dense").astype("float32"), device=device
-        ).unsqueeze(1)
 
     @staticmethod
     def _group_actor_metrics(
@@ -583,6 +617,29 @@ class SpatioTemporalTD3:
                     metrics[
                         f"{group}_correction_{action_name}_{statistic}"
                     ] = float(value.cpu())
+        return metrics
+
+    @staticmethod
+    def _risk_gate_metrics(gate, interaction_risks):
+        gate = gate.detach().reshape(-1)
+        interaction_risks = interaction_risks.detach().reshape(-1)
+        metrics = {
+            "interaction_risk_mean": float(interaction_risks.mean().cpu()),
+            "risk_gate_mean": float(gate.mean().cpu()),
+        }
+        low_risk = interaction_risks < 0.1
+        high_risk = interaction_risks >= 0.5
+        if low_risk.any():
+            metrics["low_risk_gate_mean"] = float(gate[low_risk].mean().cpu())
+        if high_risk.any():
+            metrics["high_risk_gate_mean"] = float(gate[high_risk].mean().cpu())
+        gate_centered = gate - gate.mean()
+        risk_centered = interaction_risks - interaction_risks.mean()
+        denominator = gate_centered.norm() * risk_centered.norm()
+        if denominator > 1e-8:
+            metrics["risk_gate_correlation"] = float(
+                (gate_centered * risk_centered).sum().div(denominator).cpu()
+            )
         return metrics
 
     @staticmethod

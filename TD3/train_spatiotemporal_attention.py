@@ -10,6 +10,11 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from multi_agent_velodyne_env import MultiAgentGazeboEnv
+from hard_case_sampling import (
+    apply_group_balanced_hard_case_weights,
+    episode_failure_signal,
+    update_failure_score,
+)
 from scenario_manifests import load_manifest_cases
 from sequence_replay_buffer import SequenceReplayBuffer
 from spatiotemporal_attention import BaseActor, SpatioTemporalTD3
@@ -23,6 +28,18 @@ def env_int(name, default):
 def env_float(name, default):
     value = os.environ.get(name)
     return default if value is None or not value.strip() else float(value)
+
+
+def env_bool(name, default=False):
+    value = os.environ.get(name)
+    if value is None or not value.strip():
+        return bool(default)
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes", "on"}:
+        return True
+    if normalized in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"{name} must be a boolean value")
 
 
 def make_histories(states, history_len):
@@ -58,7 +75,7 @@ class FrozenBasePolicy:
         self.actor.load_state_dict(state_dict)
         self.actor.eval()
 
-    def select_action(self, history):
+    def select_action(self, history, attention_enabled=None):
         state = torch.as_tensor(
             history[-1], dtype=torch.float32, device=self.device
         ).unsqueeze(0)
@@ -96,6 +113,7 @@ def evaluate_group(
     max_episode_steps,
     evaluation_seed,
     forward_speed,
+    attention_enabled=None,
 ):
     original_cases = env.curriculum_cases
     original_index = env.curriculum_case_index
@@ -143,7 +161,10 @@ def evaluate_group(
                     if not active[index]:
                         actions.append([0.0, 0.0])
                         continue
-                    raw_action = agent.select_action(history_array(histories, index))
+                    raw_action = agent.select_action(
+                        history_array(histories, index),
+                        attention_enabled=attention_enabled,
+                    )
                     actions.append(policy_action_to_env(raw_action, forward_speed))
                 next_states, _, dones, targets, collision_flags = env.step(
                     actions, active
@@ -219,7 +240,8 @@ history_len = env_int("DRL_ATTENTION_HISTORY_LEN", 6)
 model_dim = env_int("DRL_ATTENTION_MODEL_DIM", 96)
 num_heads = env_int("DRL_ATTENTION_NUM_HEADS", 4)
 attention_logit_scale = env_float("DRL_ATTENTION_LOGIT_SCALE", 0.5)
-initial_gate = env_float("DRL_ATTENTION_INITIAL_GATE", 0.05)
+initial_gate = env_float("DRL_ATTENTION_INITIAL_GATE", 0.1)
+gate_temperature = env_float("DRL_ATTENTION_GATE_TEMPERATURE", 0.5)
 base_actor_lr = env_float("DRL_ATTENTION_BASE_ACTOR_LR", 1e-5)
 attention_lr = env_float("DRL_ATTENTION_LR", 1e-5)
 critic_lr = env_float("DRL_ATTENTION_CRITIC_LR", 2e-5)
@@ -229,8 +251,11 @@ attention_start_step = env_int("DRL_ATTENTION_START_STEP", 30000)
 actor_lr_warmup_steps = env_int("DRL_ATTENTION_ACTOR_WARMUP_STEPS", 10000)
 actor_lr_decay_steps = env_int("DRL_ATTENTION_ACTOR_DECAY_STEPS", 100000)
 actor_lr_min_ratio = env_float("DRL_ATTENTION_ACTOR_MIN_LR_RATIO", 0.1)
-base_finetune_lr_ratio = env_float("DRL_ATTENTION_BASE_FINETUNE_LR_RATIO", 0.05)
-gate_supervision_weight = env_float("DRL_ATTENTION_GATE_LOSS_WEIGHT", 0.1)
+base_finetune_lr_ratio = env_float("DRL_ATTENTION_BASE_FINETUNE_LR_RATIO", 0.0)
+attention_base_warmup_steps = env_int("DRL_ATTENTION_BASE_WARMUP_STEPS", 10000)
+gate_supervision_weight = env_float("DRL_ATTENTION_GATE_LOSS_WEIGHT", 0.5)
+gate_positive_weight = env_float("DRL_ATTENTION_GATE_POSITIVE_WEIGHT", 4.0)
+gate_safe_sparsity_weight = env_float("DRL_ATTENTION_GATE_SAFE_SPARSITY", 0.01)
 actor_anchor_weight = env_float("DRL_ATTENTION_ACTOR_ANCHOR_WEIGHT", 5.0)
 attention_correction_weight = env_float(
     "DRL_ATTENTION_CORRECTION_WEIGHT", 1.0
@@ -242,6 +267,21 @@ reward_scale = env_float("DRL_ATTENTION_REWARD_SCALE", 0.1)
 forward_speed = env_float("DRL_ATTENTION_FORWARD_SPEED", 1.0)
 slowdown_distance = env_float("DRL_ATTENTION_SLOWDOWN_DISTANCE", 1.8)
 slowdown_penalty_weight = env_float("DRL_ATTENTION_SLOWDOWN_PENALTY", 2.0)
+robot_safe_distance = env_float("DRL_ATTENTION_ROBOT_SAFE_DISTANCE", 0.8)
+team_completion_bonus = env_float("DRL_ATTENTION_TEAM_COMPLETION_BONUS", 5.0)
+team_progress_bonus = env_float("DRL_ATTENTION_TEAM_PROGRESS_BONUS", 1.0)
+interaction_risk_visible_range = env_float(
+    "DRL_ATTENTION_RISK_VISIBLE_RANGE", 4.0
+)
+interaction_risk_distance = env_float("DRL_ATTENTION_RISK_DISTANCE", 1.5)
+interaction_risk_ttc_horizon = env_float("DRL_ATTENTION_RISK_TTC_HORIZON", 2.0)
+hard_case_sampling_start_step = env_int(
+    "DRL_ATTENTION_HARD_CASE_START_STEP",
+    attention_start_step + attention_base_warmup_steps,
+)
+hard_case_sampling_strength = env_float("DRL_ATTENTION_HARD_CASE_STRENGTH", 1.5)
+hard_case_uniform_fraction = env_float("DRL_ATTENTION_HARD_CASE_UNIFORM_FRACTION", 0.3)
+hard_case_score_ema = env_float("DRL_ATTENTION_HARD_CASE_SCORE_EMA", 0.9)
 batch_size = env_int("DRL_ATTENTION_BATCH_SIZE", 96)
 replay_capacity = env_int("DRL_ATTENTION_REPLAY_CAPACITY", 200000)
 replay_group_ratios = {
@@ -258,6 +298,7 @@ evaluation_seed = env_int("DRL_ATTENTION_EVAL_SEED", 20260713)
 early_stopping_patience = env_int("DRL_ATTENTION_EARLY_STOPPING_PATIENCE", 8)
 checkpoint_interval = env_int("DRL_ATTENTION_CHECKPOINT_INTERVAL", 10)
 startup_odom_timeout = env_float("DRL_ATTENTION_STARTUP_ODOM_TIMEOUT", 240.0)
+resume_training = env_bool("DRL_ATTENTION_RESUME", False)
 
 
 def validate_training_config():
@@ -272,11 +313,13 @@ def validate_training_config():
         raise ValueError("DRL_ATTENTION_LOGIT_SCALE must be positive")
     if not 0.0 < initial_gate < 1.0:
         raise ValueError("DRL_ATTENTION_INITIAL_GATE must be between 0 and 1")
+    if gate_temperature <= 0.0:
+        raise ValueError("DRL_ATTENTION_GATE_TEMPERATURE must be positive")
     if min(base_actor_lr, attention_lr, critic_lr) <= 0.0:
         raise ValueError("Actor, Attention, and Critic learning rates must be positive")
     if critic_hidden_dim < 2:
         raise ValueError("DRL_ATTENTION_CRITIC_HIDDEN_DIM must be at least 2")
-    if actor_start_step < 0 or actor_lr_warmup_steps < 0:
+    if min(actor_start_step, actor_lr_warmup_steps, attention_base_warmup_steps) < 0:
         raise ValueError("Attention actor start and warmup steps must be non-negative")
     if attention_start_step <= actor_start_step:
         raise ValueError(
@@ -291,7 +334,23 @@ def validate_training_config():
         raise ValueError(
             "DRL_ATTENTION_BASE_FINETUNE_LR_RATIO must be between 0 and 1"
         )
-    if min(gate_supervision_weight, actor_anchor_weight, attention_correction_weight) < 0.0:
+    if base_finetune_lr_ratio != 0.0:
+        raise ValueError(
+            "Causal Attention training keeps the base Actor frozen after "
+            "DRL_ATTENTION_START_STEP; set DRL_ATTENTION_BASE_FINETUNE_LR_RATIO=0"
+        )
+    if (
+        min(
+            gate_supervision_weight,
+            gate_safe_sparsity_weight,
+            actor_anchor_weight,
+            attention_correction_weight,
+            robot_safe_distance,
+            team_completion_bonus,
+            team_progress_bonus,
+        ) < 0.0
+        or gate_positive_weight <= 0.0
+    ):
         raise ValueError("Attention regularization weights must be non-negative")
     if not 0.0 < discount < 1.0:
         raise ValueError("DRL_ATTENTION_DISCOUNT must be between 0 and 1")
@@ -304,6 +363,22 @@ def validate_training_config():
         raise ValueError("Forward speed limit and slowdown distance must be positive")
     if slowdown_penalty_weight < 0.0:
         raise ValueError("Local driving shaping weight must be non-negative")
+    if min(
+        interaction_risk_visible_range,
+        interaction_risk_distance,
+        interaction_risk_ttc_horizon,
+    ) <= 0.0:
+        raise ValueError("Interaction-risk distances and TTC horizon must be positive")
+    if hard_case_sampling_start_step < attention_start_step:
+        raise ValueError(
+            "Hard-case sampling must begin after Attention is enabled"
+        )
+    if hard_case_sampling_strength < 0.0:
+        raise ValueError("Hard-case sampling strength must be non-negative")
+    if not 0.0 <= hard_case_uniform_fraction <= 1.0:
+        raise ValueError("Hard-case uniform fraction must be between 0 and 1")
+    if not 0.0 <= hard_case_score_ema < 1.0:
+        raise ValueError("Hard-case score EMA must be in [0, 1)")
     if batch_size < len(replay_group_ratios):
         raise ValueError("DRL_ATTENTION_BATCH_SIZE must cover all replay groups")
     if any(ratio <= 0.0 for ratio in replay_group_ratios.values()):
@@ -378,6 +453,7 @@ agent = SpatioTemporalTD3(
     num_heads=num_heads,
     attention_logit_scale=attention_logit_scale,
     initial_gate=initial_gate,
+    gate_temperature=gate_temperature,
     base_actor_lr=base_actor_lr,
     attention_lr=attention_lr,
     critic_lr=critic_lr,
@@ -396,10 +472,15 @@ env = MultiAgentGazeboEnv(
     anti_stagnation_reward=False,
     wall_clearance_reward=False,
     local_navigation_reward=False,
-    robot_safe_distance=0.0,
+    robot_safe_distance=robot_safe_distance,
     weak_coupling_layout=True,
     scenario_mode="manifest",
     active_neighbors_only=True,
+    team_completion_bonus=team_completion_bonus,
+    team_progress_bonus=team_progress_bonus,
+    interaction_risk_visible_range=interaction_risk_visible_range,
+    interaction_risk_distance=interaction_risk_distance,
+    interaction_risk_ttc_horizon=interaction_risk_ttc_horizon,
 )
 validation_cases, validation_manifest_metadata = load_manifest_cases(
     validation_manifest_paths,
@@ -424,9 +505,11 @@ best_metrics = None
 evaluations_without_improvement = 0
 base_stage_saved = False
 reference_metrics = None
+attention_reference_metrics = None
+case_failure_scores = {}
 
 training_config = {
-    "training_version": "fixed_manifest_stable",
+    "training_version": "causal_interaction_risk_gated",
     "seed": seed,
     "history_len": history_len,
     "model_dim": model_dim,
@@ -435,6 +518,7 @@ training_config = {
     "critic_hidden_dim": critic_hidden_dim,
     "attention_logit_scale": attention_logit_scale,
     "initial_gate": initial_gate,
+    "gate_temperature": gate_temperature,
     "base_model": base_model,
     "base_actor_lr": base_actor_lr,
     "attention_lr": attention_lr,
@@ -445,7 +529,10 @@ training_config = {
     "actor_lr_decay_steps": actor_lr_decay_steps,
     "actor_lr_min_ratio": actor_lr_min_ratio,
     "base_finetune_lr_ratio": base_finetune_lr_ratio,
+    "attention_base_warmup_steps": attention_base_warmup_steps,
     "gate_supervision_weight": gate_supervision_weight,
+    "gate_positive_weight": gate_positive_weight,
+    "gate_safe_sparsity_weight": gate_safe_sparsity_weight,
     "actor_anchor_weight": actor_anchor_weight,
     "attention_correction_weight": attention_correction_weight,
     "discount": discount,
@@ -459,6 +546,16 @@ training_config = {
     "forward_speed": forward_speed,
     "slowdown_distance": slowdown_distance,
     "slowdown_penalty_weight": slowdown_penalty_weight,
+    "robot_safe_distance": robot_safe_distance,
+    "team_completion_bonus": team_completion_bonus,
+    "team_progress_bonus": team_progress_bonus,
+    "interaction_risk_visible_range": interaction_risk_visible_range,
+    "interaction_risk_distance": interaction_risk_distance,
+    "interaction_risk_ttc_horizon": interaction_risk_ttc_horizon,
+    "hard_case_sampling_start_step": hard_case_sampling_start_step,
+    "hard_case_sampling_strength": hard_case_sampling_strength,
+    "hard_case_uniform_fraction": hard_case_uniform_fraction,
+    "hard_case_score_ema": hard_case_score_ema,
     "max_episode_steps": max_episode_steps,
     "eval_interval": eval_interval,
     "standard_eval_episodes": standard_eval_episodes,
@@ -486,13 +583,15 @@ def save_checkpoint(path):
             "evaluations_without_improvement": evaluations_without_improvement,
             "base_stage_saved": base_stage_saved,
             "reference_metrics": reference_metrics,
+            "attention_reference_metrics": attention_reference_metrics,
+            "case_failure_scores": case_failure_scores,
             "config": training_config,
         },
         path,
     )
 
 
-if os.path.exists(checkpoint_path):
+if resume_training and os.path.exists(checkpoint_path):
     checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
     config = checkpoint["config"]
     changed_config_keys = {
@@ -525,7 +624,29 @@ if os.path.exists(checkpoint_path):
     )
     base_stage_saved = bool(checkpoint.get("base_stage_saved", False))
     reference_metrics = checkpoint.get("reference_metrics")
+    attention_reference_metrics = checkpoint.get("attention_reference_metrics")
+    case_failure_scores = dict(checkpoint.get("case_failure_scores", {}))
+    apply_group_balanced_hard_case_weights(
+        env.curriculum_cases,
+        case_failure_scores,
+        strength=hard_case_sampling_strength,
+        uniform_fraction=hard_case_uniform_fraction,
+    )
     print("Resumed attention training from:", checkpoint_path)
+elif os.path.exists(checkpoint_path):
+    print(
+        "Starting a fresh interaction-risk run; set DRL_ATTENTION_RESUME=1 "
+        "only for a checkpoint created with this training configuration."
+    )
+    for stale_path in (
+        checkpoint_path,
+        best_checkpoint_path,
+        f"pytorch_models/{model_name}_actor.pth",
+        base_stage_actor_path,
+    ):
+        if os.path.exists(stale_path):
+            os.remove(stale_path)
+            print("Removed stale Attention artifact:", stale_path)
 
 agent.set_attention_enabled(agent_samples >= attention_start_step)
 
@@ -563,11 +684,18 @@ if reference_metrics is None:
     save_checkpoint(checkpoint_path)
 
 print("==============================================")
-print("Training: trainable base Actor, then gated spatiotemporal Attention")
+print("Training: trainable base Actor, then causally gated spatiotemporal Attention")
 print("Initialization model:", base_model)
 print("History length:", history_len)
 print("Attention model dim / heads:", model_dim, "/", num_heads)
-print("Initial gate / zero Attention delta head:", initial_gate, "/", True)
+print(
+    "Initial gate / temperature / zero Attention delta head:",
+    initial_gate,
+    "/",
+    gate_temperature,
+    "/",
+    True,
+)
 print("Fixed manifest groups: standard, dense")
 print("Training datasets:", ", ".join(training_config["train_manifest_dataset_ids"]))
 print(
@@ -581,13 +709,16 @@ print(
     attention_start_step,
 )
 print(
-    "LR warmup / decay / base fine-tune ratio:",
+    "LR warmup / decay / base fine-tune ratio / Attention base warmup:",
     actor_lr_warmup_steps,
     "/",
     actor_lr_decay_steps,
     "/",
     base_finetune_lr_ratio,
+    "/",
+    attention_base_warmup_steps,
 )
+print("Base Actor is frozen for the full Attention stage.")
 print("Replay group ratios:", replay_group_ratios)
 print("Critic reward scale:", reward_scale)
 print(
@@ -602,8 +733,41 @@ print(
     "/",
     slowdown_penalty_weight,
 )
-print("Gate supervision weight:", gate_supervision_weight)
+print(
+    "Risk-gate supervision / positive weight / safe sparsity:",
+    gate_supervision_weight,
+    "/",
+    gate_positive_weight,
+    "/",
+    gate_safe_sparsity_weight,
+)
 print("Actor anchor / correction weight:", actor_anchor_weight, "/", attention_correction_weight)
+print(
+    "Robot safe distance / team progress / team completion:",
+    robot_safe_distance,
+    "/",
+    team_progress_bonus,
+    "/",
+    team_completion_bonus,
+)
+print(
+    "Risk label visible range / distance / TTC horizon:",
+    interaction_risk_visible_range,
+    "/",
+    interaction_risk_distance,
+    "/",
+    interaction_risk_ttc_horizon,
+)
+print(
+    "Hard-case sampling start / strength / uniform fraction / EMA:",
+    hard_case_sampling_start_step,
+    "/",
+    hard_case_sampling_strength,
+    "/",
+    hard_case_uniform_fraction,
+    "/",
+    hard_case_score_ema,
+)
 print("TD3 discount:", discount)
 print("Batch size / expected samples per group:", batch_size, "/", batch_size // 2)
 print(
@@ -632,6 +796,7 @@ try:
         last_losses = None
 
         for episode_step in range(max_episode_steps):
+            interaction_risks = env.interaction_risk_labels(active)
             raw_actions = []
             env_actions = []
             current_histories = {}
@@ -675,6 +840,9 @@ try:
                     dones[index] or truncated,
                     next_history,
                     case_group,
+                    interaction_risk=max(
+                        float(interaction_risks[index]), float(collisions[index])
+                    ),
                 )
                 agent_samples += 1
                 episode_rewards[index] += shaped_reward
@@ -705,7 +873,10 @@ try:
                     actor_lr_decay_steps=actor_lr_decay_steps,
                     actor_lr_min_ratio=actor_lr_min_ratio,
                     base_finetune_lr_ratio=base_finetune_lr_ratio,
+                    attention_base_warmup_steps=attention_base_warmup_steps,
                     gate_supervision_weight=gate_supervision_weight,
+                    gate_positive_weight=gate_positive_weight,
+                    gate_safe_sparsity_weight=gate_safe_sparsity_weight,
                     actor_anchor_weight=actor_anchor_weight,
                     attention_correction_weight=attention_correction_weight,
                     reward_scale=reward_scale,
@@ -728,9 +899,26 @@ try:
         success_rate = float(episode_success.mean())
         collision_rate = float(episode_collision.mean())
         full_success = int(episode_success.sum() == env.num_agents)
+        timeout = int(any(active))
+        if agent_samples >= hard_case_sampling_start_step:
+            failure_signal = episode_failure_signal(
+                full_success, collision_rate, timeout
+            )
+            case_failure_scores[case_name] = update_failure_score(
+                case_failure_scores.get(case_name, 0.0),
+                failure_signal,
+                ema=hard_case_score_ema,
+            )
+            apply_group_balanced_hard_case_weights(
+                env.curriculum_cases,
+                case_failure_scores,
+                strength=hard_case_sampling_strength,
+                uniform_fraction=hard_case_uniform_fraction,
+            )
         writer.add_scalar("train/success_rate", success_rate, episode)
         writer.add_scalar("train/collision_rate", collision_rate, episode)
         writer.add_scalar("train/full_success", full_success, episode)
+        writer.add_scalar("train/timeout", timeout, episode)
         writer.add_scalar("train/mean_reward", episode_rewards.mean(), episode)
         writer.add_scalar(
             "diagnostic/initial_goal_distance_mean", initial_goal_distance, episode
@@ -738,6 +926,11 @@ try:
         writer.add_scalar(
             f"diagnostic/{case_group}_initial_goal_distance_mean",
             initial_goal_distance,
+            episode,
+        )
+        writer.add_scalar(
+            "diagnostic/current_case_failure_score",
+            case_failure_scores.get(case_name, 0.0),
             episode,
         )
         for group, count in replay_buffer.group_counts().items():
@@ -750,6 +943,8 @@ try:
                         if "_gate_" in name
                         or "attention_" in name
                         or "_correction_" in name
+                        or "risk_" in name
+                        or name.startswith("interaction_risk")
                         else "optimization"
                     )
                     writer.add_scalar(
@@ -817,28 +1012,77 @@ try:
             save_checkpoint(checkpoint_path)
             continue
 
+        if attention_reference_metrics is None:
+            print("Evaluating frozen base-stage branch for causal Attention reference")
+            attention_reference_metrics = {
+                "standard": evaluate_group(
+                    agent,
+                    env,
+                    validation_cases,
+                    "standard",
+                    history_len,
+                    standard_eval_episodes,
+                    max_episode_steps,
+                    evaluation_seed,
+                    forward_speed,
+                    attention_enabled=False,
+                ),
+                "dense": evaluate_group(
+                    agent,
+                    env,
+                    validation_cases,
+                    "dense",
+                    history_len,
+                    dense_eval_episodes,
+                    max_episode_steps,
+                    evaluation_seed + 1000,
+                    forward_speed,
+                    attention_enabled=False,
+                ),
+            }
+            print(
+                "Base-stage reference standard:",
+                attention_reference_metrics["standard"],
+            )
+            print(
+                "Base-stage reference dense:", attention_reference_metrics["dense"])
+            for group, metrics in attention_reference_metrics.items():
+                for name, value in metrics.items():
+                    writer.add_scalar(
+                        f"reference/base_stage_{group}_{name}", value, episode
+                    )
+            save_checkpoint(checkpoint_path)
+
         candidate = {"standard": standard_metrics, "dense": dense_metrics}
         candidate_key = best_key(standard_metrics, dense_metrics)
         reference_key = best_key(
             reference_metrics["standard"], reference_metrics["dense"]
+        )
+        attention_reference_key = best_key(
+            attention_reference_metrics["standard"],
+            attention_reference_metrics["dense"],
         )
         incumbent_key = (
             None
             if best_metrics is None
             else best_key(best_metrics["standard"], best_metrics["dense"])
         )
-        if candidate_key > reference_key and (
-            incumbent_key is None or candidate_key > incumbent_key
+        if (
+            candidate_key > reference_key
+            and candidate_key > attention_reference_key
+            and (incumbent_key is None or candidate_key > incumbent_key)
         ):
             best_metrics = candidate
             evaluations_without_improvement = 0
             torch.save(agent.actor.state_dict(), f"pytorch_models/{model_name}_actor.pth")
             save_checkpoint(best_checkpoint_path)
-            print("Updated dual-benchmark best:", best_checkpoint_path)
+            print("Updated causal Attention best:", best_checkpoint_path)
         else:
             evaluations_without_improvement += 1
             if candidate_key <= reference_key:
                 print("Attention candidate did not exceed the immutable 5D reference")
+            if candidate_key <= attention_reference_key:
+                print("Attention candidate did not exceed the frozen base-stage branch")
         save_checkpoint(checkpoint_path)
         if (
             early_stopping_patience > 0

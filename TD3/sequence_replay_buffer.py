@@ -17,7 +17,16 @@ class SequenceReplayBuffer:
         self.order = deque()
         self.next_id = 0
 
-    def add(self, history, action, reward, done, next_history, group):
+    def add(
+        self,
+        history,
+        action,
+        reward,
+        done,
+        next_history,
+        group,
+        interaction_risk=0.0,
+    ):
         group = str(group)
         transition = (
             np.asarray(history, dtype=np.float32),
@@ -25,6 +34,7 @@ class SequenceReplayBuffer:
             float(reward),
             float(done),
             np.asarray(next_history, dtype=np.float32),
+            float(np.clip(interaction_risk, 0.0, 1.0)),
         )
         transition_id = self.next_id
         self.next_id += 1
@@ -67,7 +77,9 @@ class SequenceReplayBuffer:
             group, transition = self.entries[transition_id]
             groups.append(group)
             transitions.append(transition)
-        histories, actions, rewards, dones, next_histories = zip(*transitions)
+        histories, actions, rewards, dones, next_histories, interaction_risks = zip(
+            *transitions
+        )
         return (
             np.stack(histories),
             np.stack(actions),
@@ -75,6 +87,7 @@ class SequenceReplayBuffer:
             np.asarray(dones, dtype=np.float32).reshape(-1, 1),
             np.stack(next_histories),
             np.asarray(groups),
+            np.asarray(interaction_risks, dtype=np.float32).reshape(-1, 1),
         )
 
     def group_counts(self):
@@ -85,7 +98,7 @@ class SequenceReplayBuffer:
 
     def state_dict(self):
         return {
-            "version": 2,
+            "version": 3,
             "capacity": self.capacity,
             "group_ratios": self.group_ratios,
             "buffer": [self.entries[transition_id] for transition_id in self.order],
@@ -107,7 +120,10 @@ class SequenceReplayBuffer:
                 group, transition = stored
             else:
                 group, transition = "unknown", stored
-            self.add(*transition, group=group)
+            if len(transition) == 5:
+                self.add(*transition, group=group)
+            else:
+                self.add(*transition[:5], group=group, interaction_risk=transition[5])
         self.rng.setstate(state["rng_state"])
 
     def _sample_counts(self, batch_size):

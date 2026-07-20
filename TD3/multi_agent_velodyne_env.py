@@ -21,6 +21,7 @@ from visualization_msgs.msg import MarkerArray
 
 from scenario_manifests import load_manifest_cases
 from velodyne_env import COLLISION_DIST, GOAL_REACHED_DIST, TIME_DELTA, check_pos
+from interaction_risk import interaction_risk as kinematic_interaction_risk
 
 
 AGENT_COLORS = [
@@ -95,6 +96,11 @@ class MultiAgentGazeboEnv:
         weak_coupling_layout=False,
         scenario_mode="standard",
         active_neighbors_only=False,
+        team_completion_bonus=0.0,
+        team_progress_bonus=0.0,
+        interaction_risk_visible_range=4.0,
+        interaction_risk_distance=1.5,
+        interaction_risk_ttc_horizon=2.0,
     ):
         self.environment_dim = environment_dim
         self.agent_names = agent_names or ["r1", "r2", "r3"]
@@ -137,6 +143,22 @@ class MultiAgentGazeboEnv:
         self.robot_safe_distance = robot_safe_distance
         self.weak_coupling_layout = weak_coupling_layout
         self.active_neighbors_only = active_neighbors_only
+        self.team_completion_bonus = float(team_completion_bonus)
+        self.team_progress_bonus = float(team_progress_bonus)
+        self.interaction_risk_visible_range = float(interaction_risk_visible_range)
+        self.interaction_risk_distance = float(interaction_risk_distance)
+        self.interaction_risk_ttc_horizon = float(interaction_risk_ttc_horizon)
+        if min(
+            self.team_completion_bonus,
+            self.team_progress_bonus,
+        ) < 0.0:
+            raise ValueError("Team completion rewards must be non-negative")
+        if min(
+            self.interaction_risk_visible_range,
+            self.interaction_risk_distance,
+            self.interaction_risk_ttc_horizon,
+        ) <= 0.0:
+            raise ValueError("Interaction-risk distances and horizon must be positive")
         self.scenario_mode = scenario_mode.strip().lower()
         if self.scenario_mode not in ("standard", "dense", "curriculum", "manifest"):
             raise ValueError(
@@ -212,6 +234,8 @@ class MultiAgentGazeboEnv:
         }
         self.last_odom = {name: None for name in self.agent_names}
         self.previous_distances = {name: None for name in self.agent_names}
+        self.episode_targets = {name: False for name in self.agent_names}
+        self.episode_collisions = {name: False for name in self.agent_names}
         self.goal_positions = {name: np.array([1.0, 0.0]) for name in self.agent_names}
         self.robot_positions = {name: np.array([0.0, 0.0]) for name in self.agent_names}
         self.set_self_states = {name: self._create_model_state(name) for name in self.agent_names}
@@ -525,6 +549,7 @@ class MultiAgentGazeboEnv:
                     "anti_stagnation_reward": 0.0,
                     "wall_clearance_reward": 0.0,
                     "local_navigation_reward": 0.0,
+                    "team_completion_reward": 0.0,
                     "reward_neighbors": [],
                     "active_visible_neighbor_count": 0,
                     "nearest_active_visible_neighbor_distance": None,
@@ -936,6 +961,76 @@ class MultiAgentGazeboEnv:
             return float("inf")
         return float(min(distances))
 
+    def _world_linear_velocity(self, name):
+        odom = self.last_odom[name]
+        if odom is None:
+            return np.zeros(2, dtype=np.float32)
+        yaw = self._get_robot_yaw(name)
+        linear = odom.twist.twist.linear
+        return np.array(
+            [
+                math.cos(yaw) * linear.x - math.sin(yaw) * linear.y,
+                math.sin(yaw) * linear.x + math.cos(yaw) * linear.y,
+            ],
+            dtype=np.float32,
+        )
+
+    def interaction_risk_labels(self, active_mask=None):
+        """Build simulation-only gate targets without changing policy inputs."""
+        if active_mask is None:
+            active_mask = [True] * self.num_agents
+        active_names = {
+            name
+            for index, name in enumerate(self.agent_names)
+            if index < len(active_mask) and active_mask[index]
+        }
+        for name in active_names:
+            odom = self.last_odom[name]
+            if odom is not None:
+                self.robot_positions[name] = np.array(
+                    [odom.pose.pose.position.x, odom.pose.pose.position.y]
+                )
+
+        labels = []
+        for index, name in enumerate(self.agent_names):
+            if index >= len(active_mask) or not active_mask[index]:
+                labels.append(0.0)
+                continue
+            neighbor_names = sorted(active_names - {name})
+            labels.append(
+                kinematic_interaction_risk(
+                    self.robot_positions[name],
+                    self._world_linear_velocity(name),
+                    self._get_robot_yaw(name),
+                    [self.robot_positions[other] for other in neighbor_names],
+                    [self._world_linear_velocity(other) for other in neighbor_names],
+                    visible_range=self.interaction_risk_visible_range,
+                    visible_fov=self.reward_neighbor_fov,
+                    close_distance=self.interaction_risk_distance,
+                    ttc_horizon=self.interaction_risk_ttc_horizon,
+                )
+            )
+        return np.asarray(labels, dtype=np.float32)
+
+    def _team_completion_rewards(self, active_mask, targets):
+        rewards = np.zeros(self.num_agents, dtype=np.float32)
+        active_indices = [
+            index
+            for index in range(self.num_agents)
+            if index < len(active_mask) and active_mask[index]
+        ]
+        newly_completed = sum(
+            int(targets[index]) for index in active_indices if index < len(targets)
+        )
+        if newly_completed and self.team_progress_bonus > 0.0:
+            progress_reward = self.team_progress_bonus * newly_completed / self.num_agents
+            for index in active_indices:
+                rewards[index] += progress_reward
+        if active_indices and all(self.episode_targets.values()):
+            for index in active_indices:
+                rewards[index] += self.team_completion_bonus
+        return rewards
+
     def _uses_capacity_layout(self):
         return (
             (
@@ -1134,10 +1229,24 @@ class MultiAgentGazeboEnv:
                 "anti_stagnation_reward": -anti_stagnation_penalty,
                 "wall_clearance_reward": -wall_clearance_penalty,
                 "local_navigation_reward": local_navigation_bonus,
+                "team_completion_reward": 0.0,
                 "reward_neighbors": [],
                 "active_visible_neighbor_count": 0,
                 "nearest_active_visible_neighbor_distance": None,
             }
+
+        for idx, name in enumerate(self.agent_names):
+            if idx < len(active_mask) and active_mask[idx]:
+                self.episode_targets[name] |= bool(targets[idx])
+                self.episode_collisions[name] |= bool(collisions[idx])
+        team_completion_rewards = self._team_completion_rewards(active_mask, targets)
+        for idx, name in enumerate(self.agent_names):
+            team_reward = float(team_completion_rewards[idx])
+            if team_reward == 0.0:
+                continue
+            rewards[idx] += team_reward
+            step_agents_info[name]["reward"] += team_reward
+            step_agents_info[name]["team_completion_reward"] = team_reward
 
         if self.cooperative_reward:
             rewards = self._apply_cooperative_reward(
@@ -1193,6 +1302,11 @@ class MultiAgentGazeboEnv:
             for idx, name in enumerate(self.agent_names)
             if idx < len(active_mask) and active_mask[idx]
         ]
+        team_completion_rewards = [
+            step_agents_info[name]["team_completion_reward"]
+            for idx, name in enumerate(self.agent_names)
+            if idx < len(active_mask) and active_mask[idx]
+        ]
         self.last_step_info = {
             "scenario_id": self.current_scenario_id(),
             "scenario_group": self.current_scenario_group(),
@@ -1227,6 +1341,11 @@ class MultiAgentGazeboEnv:
                 if local_navigation_rewards
                 else 0.0
             ),
+            "mean_team_completion_reward": (
+                float(np.mean(team_completion_rewards))
+                if team_completion_rewards
+                else 0.0
+            ),
         }
 
         return next_states, rewards, dones, targets, collisions
@@ -1245,6 +1364,8 @@ class MultiAgentGazeboEnv:
 
         self.last_odom = {name: None for name in self.agent_names}
         self.previous_distances = {name: None for name in self.agent_names}
+        self.episode_targets = {name: False for name in self.agent_names}
+        self.episode_collisions = {name: False for name in self.agent_names}
         self.last_step_info = self._empty_last_step_info()
 
         last_error = None
